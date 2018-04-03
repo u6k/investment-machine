@@ -1,11 +1,11 @@
-# Ruby on Railsチュートリアル "サンプル・アプリケーション" _(rails-tutorial-sample-app)_
+# 投資マシン _(investment-machine)_
 
-[![Travis](https://img.shields.io/travis/u6k/rails-tutorial-sample-app.svg)](https://travis-ci.org/u6k/rails-tutorial-sample-app)
-[![license](https://img.shields.io/github/license/u6k/rails-tutorial-sample-app.svg)](https://github.com/u6k/rails-tutorial-sample-app/blob/master/LICENSE)
-[![GitHub tag](https://img.shields.io/github/tag/u6k/rails-tutorial-sample-app.svg)](https://github.com/u6k/rails-tutorial-sample-app/releases)
+[![Travis](https://img.shields.io/travis/u6k/investment-machine.svg)](https://travis-ci.org/u6k/investment-machine)
+[![license](https://img.shields.io/github/license/u6k/investment-machine.svg)](https://github.com/u6k/investment-machine/blob/master/LICENSE)
+[![GitHub tag](https://img.shields.io/github/tag/u6k/investment-machine.svg)](https://github.com/u6k/investment-machine/releases)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-> Ruby on Railsチュートリアル (https://railstutorial.jp/) の第3章「ほぼ静的なページを作成」の作業を管理します。
+> 投資マシン。
 
 ## Install
 
@@ -14,51 +14,34 @@ Dockerを使用します。
 ```
 $ docker version
 Client:
- Version:       17.12.0-ce
- API version:   1.35
- Go version:    go1.9.2
- Git commit:    c97c6d6
- Built: Wed Dec 27 20:03:51 2017
+ Version:       18.03.0-ce
+ API version:   1.37
+ Go version:    go1.9.4
+ Git commit:    0520e24
+ Built: Wed Mar 21 23:06:22 2018
  OS/Arch:       darwin/amd64
+ Experimental:  false
+ Orchestrator:  swarm
 
 Server:
  Engine:
-  Version:      17.12.0-ce
-  API version:  1.35 (minimum version 1.12)
-  Go version:   go1.9.2
-  Git commit:   c97c6d6
-  Built:        Wed Dec 27 20:12:29 2017
+  Version:      18.03.0-ce
+  API version:  1.37 (minimum version 1.12)
+  Go version:   go1.9.4
+  Git commit:   0520e24
+  Built:        Wed Mar 21 23:14:32 2018
   OS/Arch:      linux/amd64
   Experimental: true
+yu1-no-MacBook-Pro:investment-machine yu1$
+
+$ docker-compose version
+docker-compose version 1.20.1, build 5d8c71b
+docker-py version: 3.1.4
+CPython version: 3.6.4
+OpenSSL version: OpenSSL 1.0.2n  7 Dec 2017
 ```
 
-環境変数ファイルを作成します。`.env.example`を参考に、`.env`を作成します。
-
-本番用Dockerイメージをビルドします。
-
-```
-$ docker-compose -f docker-compose.production.yml build
-```
-
-DBをマイグレートします。
-
-```
-$ docker-compose -f docker-compose.production.yml run app rails db:migrate
-```
-
-テストを実行します。
-
-```
-$ docker-compose -f docker-compose.production.yml run app rails test
-```
-
-本番用Dockerコンテナを起動します。
-
-```
-$ docker-compose -f docker-compose.production.yml up -d
-```
-
-https://railstutorial.u6k.me/ にアクセスすると、トップ・ページが表示されます。
+ビルド手順は、`.travis.yml`を参照すること。起動は`docker-compose.production.yml`を参照すること。
 
 ## Development
 
@@ -86,7 +69,12 @@ $ docker-compose run app rails test
 $ docker-compose up -d
 ```
 
-https://test.railstutorial.u6k.me/ にアクセスすると、トップ・ページが表示されます。
+簡単に動作確認をします。
+
+```
+$ curl http://localhost:3000
+```
+
 ## Maintainer
 
 - [u6k - GitHub](https://github.com/u6k/)
@@ -99,4 +87,4 @@ https://test.railstutorial.u6k.me/ にアクセスすると、トップ・ペー
 
 ## License
 
-[MIT License](https://github.com/u6k/rails-tutorial-sample-app/blob/master/LICENSE)
+[MIT License](https://github.com/u6k/investment-machine/blob/master/LICENSE)
