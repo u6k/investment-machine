@@ -11,6 +11,7 @@ before_install:
   - sudo apt-get -y install docker-ce
 
 script:
+  - git clean -xdf
   - mv .env.example .env
   - docker build -t u6kapps/investment-machine -f Dockerfile.production .
   - docker-compose -f docker-compose.production.yml run app rails db:migrate
