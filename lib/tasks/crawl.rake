@@ -1,8 +1,21 @@
 require "open-uri"
 require "nokogiri"
+require "aws-sdk-s3"
 
 namespace :crawl do
   desc "Crawler"
+
+  task hello: :environment do
+    Aws.config.update({
+      region: "my_region",
+      credentials: Aws::Credentials.new("s3_access_key", "s3_secret_key")
+    })
+    s3 = Aws::S3::Resource.new(endpoint: "http://s3:9000", force_path_style: true)
+
+    bucket = s3.bucket("hello")
+    obj = bucket.object("hello.txt")
+    obj.put(body: "test")
+  end
 
   task stocks: :environment do
     Rails.logger = Logger.new(STDOUT)
