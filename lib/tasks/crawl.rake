@@ -5,42 +5,27 @@ namespace :crawl do
   desc "Crawler"
 
   task stocks: :environment do
-    url = "https://kabuoji3.com/stock/"
-    http_header = {
-      "User-Agent" => "curl/7.54.0",
-      "Accept" => "*/*"
-    }
+    Rails.logger = Logger.new(STDOUT)
+    Rails.logger.level = Logger::INFO
+    Rails.logger.info "stocks: start"
 
+    Rails.logger.info "  download_page_links: start"
+    page_links = Stock.download_page_links
     sleep(1)
+    Rails.logger.info "  download_page_links: end: length=#{page_links.length}"
 
-    charset = nil
-    html = open(url, http_header) do |f|
-      charset = f.charset
-      f.read
+    page_links.each do |page_link|
+      Rails.logger.info "  download_stocks: start: #{page_link}"
+      stocks_data = Stock.download_stocks(page_link)
+      sleep(1)
+      Rails.logger.info "  download_stocks: end: length=#{stocks_data.length}"
+
+      Rails.logger.info "  import: start"
+      stocks = Stock.import(stocks_data)
+      Rails.logger.info "  import: end: length=#{stocks.length}"
     end
 
-    doc = Nokogiri::HTML.parse(html, nil, charset)
-    p doc.title
-
-    stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr/td/a")
-
-    stocks = []
-    stock_table_lines.each do |stock_table_line|
-      stocks << {
-        "code" => stock_table_line.text[0..3],
-        "name" => stock_table_line.text[5..-1]
-      }
-    end
-
-    pager_lines = doc.xpath("//ul[@class='pager']/li/a")
-
-    page_links = []
-    pager_lines.each do |pager_line|
-      page_links << pager_line["href"]
-    end
-
-    p stocks
-    p page_links
+    Rails.logger.info "stocks: end: Stock.all.length=#{Stock.all.length}"
   end
 
 end
