@@ -34,6 +34,27 @@ class Stock < ApplicationRecord
     stocks
   end
 
+  def self.import(data)
+    stocks = []
+
+    data.each do |d|
+      stock = Stock.find_by(ticker_symbol: d[:ticker_symbol])
+      if stock == nil
+        stock = Stock.new(
+          ticker_symbol: d[:ticker_symbol],
+          company_name: d[:company_name]
+        )
+      else
+        stock.company_name = d[:company_name]
+      end
+      stock.save!
+
+      stocks << stock
+    end
+
+    stocks
+  end
+
   private
 
   def self.download_and_parse_page(url)
