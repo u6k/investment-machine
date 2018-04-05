@@ -1,7 +1,14 @@
 require 'test_helper'
 
 class StockTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  
+  test "save stock" do
+    assert_equal 0, Stock.all.length
+
+    stock = Stock.new
+    assert stock.save
+
+    assert_equal 1, Stock.all.length
+  end
+
 end
