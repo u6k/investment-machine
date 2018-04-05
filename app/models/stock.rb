@@ -5,18 +5,7 @@ class Stock < ApplicationRecord
 
   def self.download_page_links
     url = "https://kabuoji3.com/stock/"
-    http_header = {
-      "User-Agent" => "curl/7.54.0",
-      "Accept" => "*/*"
-    }
-
-    charset = nil
-    html = open(url, http_header) do |f|
-      charset = f.charset
-      f.read
-    end
-
-    doc = Nokogiri::HTML.parse(html, nil, charset)
+    doc = self.download_and_parse_page(url)
 
     pager_lines = doc.xpath("//ul[@class='pager']/li/a")
 
@@ -29,19 +18,8 @@ class Stock < ApplicationRecord
   end
 
   def self.download_stocks(page_link)
-    url = "https://kabuoji3.com/stock/"
-    http_header = {
-      "User-Agent" => "curl/7.54.0",
-      "Accept" => "*/*"
-    }
-
-    charset = nil
-    html = open(url, http_header) do |f|
-      charset = f.charset
-      f.read
-    end
-
-    doc = Nokogiri::HTML.parse(html, nil, charset)
+    url = "https://kabuoji3.com/stock/" + page_link
+    doc = self.download_and_parse_page(url)
 
     stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr/td/a")
 
@@ -56,5 +34,21 @@ class Stock < ApplicationRecord
     stocks
   end
 
+  private
+
+  def self.download_and_parse_page(url)
+    http_header = {
+      "User-Agent" => "curl/7.54.0",
+      "Accept" => "*/*"
+    }
+
+    charset = nil
+    html = open(url, http_header) do |f|
+      charset = f.charset
+      f.read
+    end
+
+    doc = Nokogiri::HTML.parse(html, nil, charset)
+  end
 
 end
