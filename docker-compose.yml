@@ -9,10 +9,15 @@ services:
       - "DB_USERNAME=db_user"
       - "DB_PASSWORD=db_pass"
       - "DB_DATABASE=db"
+      - "S3_ENDPOINT=http://s3:9000"
+      - "S3_REGION=my_region"
+      - "S3_ACCESS_KEY=s3_access_key"
+      - "S3_SECRET_KEY=s3_secret_key"
     volumes:
       - ".:/var/myapp"
     depends_on:
       - "db"
+      - "s3"
     ports:
       - "3000:3000"
   db:
@@ -23,7 +28,18 @@ services:
       - "POSTGRES_DB=db"
     volumes:
       - "db:/var/lib/postgresql/data"
+  s3:
+    image: minio/minio
+    volumes:
+      - "s3:/export"
+    environment:
+      - "MINIO_ACCESS_KEY=s3_access_key"
+      - "MINIO_SECRET_KEY=s3_secret_key"
+      - "MINIO_REGION=my_region"
+    command: server /export
 
 volumes:
   db:
+    driver: local
+  s3:
     driver: local
