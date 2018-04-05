@@ -26,8 +26,8 @@ class Stock < ApplicationRecord
     stocks = []
     stock_table_lines.each do |stock_table_line|
       stocks << {
-        code: stock_table_line.text[0..3],
-        name: stock_table_line.text[5..-1]
+        ticker_symbol: stock_table_line.text[0..3],
+        company_name:  stock_table_line.text[5..-1]
       }
     end
 
