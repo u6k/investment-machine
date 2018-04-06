@@ -29,7 +29,7 @@ class StockPriceTest < ActiveSupport::TestCase
 
     assert stock_prices_data.length > 0
     stock_prices_data.each do |stock_price|
-      assert stock_price[:date].date?
+      assert stock_price[:date].instance_of?(Date)
       assert stock_price[:date] >= expected_date_min && stock_price[:date] < expected_date_max
       assert stock_price[:opening_price].integer?
       assert stock_price[:high_price].integer?
