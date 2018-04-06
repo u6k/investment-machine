@@ -62,14 +62,13 @@ class Stock < ApplicationRecord
   end
 
   def self._get_s3_bucket
-    # TODO
     Aws.config.update({
-      region: "my_region",
-      credentials: Aws::Credentials.new("s3_access_key", "s3_secret_key")
+      region: Rails.application.secrets.s3_region,
+      credentials: Aws::Credentials.new(Rails.application.secrets.s3_access_key, Rails.application.secrets.s3_secret_key)
     })
-    s3 = Aws::S3::Resource.new(endpoint: "http://s3:9000", force_path_style: true)
+    s3 = Aws::S3::Resource.new(endpoint: Rails.application.secrets.s3_endpoint, force_path_style: true)
 
-    bucket = s3.bucket("hello")
+    bucket = s3.bucket(Rails.application.secrets.s3_bucket)
   end
 
   private
