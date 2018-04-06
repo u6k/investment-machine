@@ -1,9 +1,11 @@
 require 'test_helper'
 
 class StockTest < ActiveSupport::TestCase
-  
+
   test "download page links" do
-    page_links = Stock.download_page_links
+    transaction_id = Stock._generate_transaction_id
+
+    page_links = Stock.download_page_links(transaction_id)
     sleep(1)
 
     assert page_links.length > 0
@@ -12,13 +14,18 @@ class StockTest < ActiveSupport::TestCase
     end
 
     assert_equal 0, Stock.all.length
+
+    bucket = Stock._get_s3_bucket
+    assert bucket.object("#{transaction_id}/index.html").exists?
   end
 
   test "download stocks" do
-    page_links = Stock.download_page_links
+    transaction_id = Stock._generate_transaction_id
+
+    page_links = Stock.download_page_links(transaction_id)
     sleep(1)
 
-    stocks = Stock.download_stocks(page_links[0])
+    stocks = Stock.download_stocks(page_links[0], transaction_id)
     sleep(1)
 
     assert stocks.length > 0
@@ -28,6 +35,10 @@ class StockTest < ActiveSupport::TestCase
     end
 
     assert_equal 0, Stock.all.length
+
+    bucket = Stock._get_s3_bucket
+    assert bucket.object("#{transaction_id}/index.html").exists?
+    assert bucket.object("#{transaction_id}/stock_list_#{page_links[0]}.html").exists?
   end
 
   test "import stock" do
@@ -65,9 +76,11 @@ class StockTest < ActiveSupport::TestCase
   end
 
   test "download and import stocks" do
-    page_links = Stock.download_page_links
+    transaction_id = Stock._generate_transaction_id
+
+    page_links = Stock.download_page_links(transaction_id)
     sleep(1)
-    stocks_data = Stock.download_stocks(page_links[0])
+    stocks_data = Stock.download_stocks(page_links[0], transaction_id)
     sleep(1)
     stocks = Stock.import(stocks_data)
 
@@ -80,6 +93,10 @@ class StockTest < ActiveSupport::TestCase
       stock_actual = Stock.find_by(ticker_symbol: s.ticker_symbol)
       assert_equal s.company_name, stock_actual.company_name
     end
+
+    bucket = Stock._get_s3_bucket
+    assert bucket.object("#{transaction_id}/index.html").exists?
+    assert bucket.object("#{transaction_id}/stock_list_#{page_links[0]}.html").exists?
   end
 
 end

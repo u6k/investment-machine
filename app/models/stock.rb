@@ -3,9 +3,10 @@ require "nokogiri"
 
 class Stock < ApplicationRecord
 
-  def self.download_page_links
+  def self.download_page_links(transaction_id)
     url = "https://kabuoji3.com/stock/"
-    doc = self.download_and_parse_page(url)
+    object_key = "#{transaction_id}/index.html"
+    doc = self.download_and_parse_page(url, object_key)
 
     pager_lines = doc.xpath("//ul[@class='pager']/li/a")
 
@@ -17,9 +18,10 @@ class Stock < ApplicationRecord
     page_links
   end
 
-  def self.download_stocks(page_link)
+  def self.download_stocks(page_link, transaction_id)
     url = "https://kabuoji3.com/stock/" + page_link
-    doc = self.download_and_parse_page(url)
+    object_key = "#{transaction_id}/stock_list_#{page_link}.html"
+    doc = self.download_and_parse_page(url, object_key)
 
     stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr/td/a")
 
@@ -55,9 +57,24 @@ class Stock < ApplicationRecord
     stocks
   end
 
+  def self._generate_transaction_id
+    DateTime.now.strftime("%Y%m%d%H%M%S_#{SecureRandom.uuid}")
+  end
+
+  def self._get_s3_bucket
+    # TODO
+    Aws.config.update({
+      region: "my_region",
+      credentials: Aws::Credentials.new("s3_access_key", "s3_secret_key")
+    })
+    s3 = Aws::S3::Resource.new(endpoint: "http://s3:9000", force_path_style: true)
+
+    bucket = s3.bucket("hello")
+  end
+
   private
 
-  def self.download_and_parse_page(url)
+  def self.download_and_parse_page(url, object_key)
     http_header = {
       "User-Agent" => "curl/7.54.0",
       "Accept" => "*/*"
@@ -69,7 +86,15 @@ class Stock < ApplicationRecord
       f.read
     end
 
+    bucket = Stock._get_s3_bucket
+    object = bucket.object(object_key)
+    object.put(body: html)
+
     doc = Nokogiri::HTML.parse(html, nil, charset)
+  end
+
+  def validate_transaction_id(transaction_id)
+    raise ArgumentError, "transaction_id invalid (#{transaction_id}" if not transaction_id.match(/^[0-9a-zA-Z\-_]+$/)
   end
 
 end
