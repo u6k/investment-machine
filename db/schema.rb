@@ -32,7 +32,7 @@ ActiveRecord::Schema.define(version: 20180404112625) do
   create_table "stocks", force: :cascade do |t|
     t.string "ticker_symbol"
     t.string "company_name"
-    t.string "marcket"
+    t.string "market"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

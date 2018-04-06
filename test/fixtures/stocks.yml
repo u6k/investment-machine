@@ -3,9 +3,9 @@
 #one:
 #  ticker_symbol: MyString
 #  company_name: MyString
-#  marcket: MyString
+#  market: MyString
 
 #two:
 #  ticker_symbol: MyString
 #  company_name: MyString
-#  marcket: MyString
+#  market: MyString
