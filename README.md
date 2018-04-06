@@ -51,22 +51,34 @@ OpenSSL version: OpenSSL 1.0.2n  7 Dec 2017
 $ docker-compose build
 ```
 
-DBをマイグレートします。
+環境変数を設定するため、 `.env` を作成します。
 
 ```
-$ docker-compose run app rails db:migrate
-```
-
-テストを実行します。
-
-```
-$ docker-compose run app rails test
+$ mv .env.example .env
 ```
 
 開発用Dockerコンテナを起動します。
 
 ```
 $ docker-compose up -d
+```
+
+DBをマイグレートします。
+
+```
+$ docker-compose exec app rails db:migrate
+```
+
+Minioのバケットを作成します。
+
+```
+$ docker-compose exec s3 mkdir /export/investment
+```
+
+テストを実行します。
+
+```
+$ docker-compose exec app rails test
 ```
 
 簡単に動作確認をします。
