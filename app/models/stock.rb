@@ -1,5 +1,6 @@
 require "open-uri"
 require "nokogiri"
+require "net/http"
 
 class Stock < ApplicationRecord
 
@@ -90,6 +91,25 @@ class Stock < ApplicationRecord
     object.put(body: html)
 
     doc = Nokogiri::HTML.parse(html, nil, charset)
+  end
+
+  def self.post_data(url, data, object_key)
+    uri = URI(url)
+
+    req = Net::HTTP::Post.new(uri)
+    req["User-Agent"] = "curl/7.54.0"
+    req["Accept"] = "*/*"
+    req.set_form_data(data)
+
+    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
+      http.request(req)
+    end
+
+    bucket = Stock._get_s3_bucket
+    obj = bucket.object(object_key)
+    obj.put(body: res.body)
+
+    res.body
   end
 
   def validate_transaction_id(transaction_id)
