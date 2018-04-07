@@ -117,4 +117,17 @@ class StockTest < ActiveSupport::TestCase
     end
   end
 
+  test "download stock detail page and get years" do
+    transaction_id = Stock._generate_transaction_id
+
+    sleep(1)
+    stock_detail_page_object_key = Stock.download_stock_detail_page(transaction_id, "1301")
+    years = Stock.get_years(stock_detail_page_object_key)
+
+    assert_equal 36, years.length
+    (1983..2018).each do |year|
+      assert_includes years, year
+    end
+  end
+
 end

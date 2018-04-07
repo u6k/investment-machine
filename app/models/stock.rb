@@ -88,6 +88,31 @@ class Stock < ApplicationRecord
     stock_ids
   end
 
+  def self.download_stock_detail_page(transaction_id, ticker_symbol)
+    url = "https://kabuoji3.com/stock/#{ticker_symbol}/"
+    object_key = "#{transaction_id}/stock_detail_#{ticker_symbol}.html"
+
+    self._download_with_get(url, object_key)
+
+    object_key
+  end
+ 
+  def self.get_years(stock_detail_page_object_key)
+    bucket = self._get_s3_bucket
+    html = bucket.object(stock_detail_page_object_key).get.body
+
+    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
+
+    year_nodes = doc.xpath("//ul[@class='stock_yselect mt_10']/li/a")
+
+    years = []
+    year_nodes.each do |year_node|
+      years << year_node.text.to_i if year_node.text.match(/^[0-9]{4}$/)
+    end
+
+    years.sort
+  end
+
   def self._generate_transaction_id
     DateTime.now.strftime("%Y%m%d%H%M%S_#{SecureRandom.uuid}")
   end
