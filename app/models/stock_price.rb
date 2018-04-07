@@ -41,4 +41,39 @@ class StockPrice < ApplicationRecord
     stock_prices_data
   end
 
+  def self.import(ticker_symbol, data)
+    stock = Stock.find_by(ticker_symbol: ticker_symbol)
+
+    stock_price_ids = []
+
+    data.each do |d|
+      stock_prices = StockPrice.where("stock_id = :stock_id and date = :date", stock_id: stock.id, date: d[:date])
+      if stock_prices.empty?
+        stock_price = StockPrice.new(
+          date: d[:date],
+          opening_price: d[:opening_price],
+          high_price: d[:high_price],
+          low_price: d[:low_price],
+          close_price: d[:close_price],
+          turnover: d[:turnover],
+          adjustment_value: d[:adjustment_value],
+          stock: stock
+        )
+      else
+        stock_price = stock_prices[0]
+        stock_price.opening_price = d[:opening_price]
+        stock_price.high_price = d[:high_price]
+        stock_price.low_price = d[:low_price]
+        stock_price.close_price = d[:close_price]
+        stock_price.turnover = d[:turnover]
+        stock_price.adjustment_value = d[:adjustment_value]
+      end
+      stock_price.save!
+
+      stock_price_ids << stock_price.id
+    end
+
+    stock_price_ids
+  end
+
 end
