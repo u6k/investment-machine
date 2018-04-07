@@ -1,13 +1,26 @@
-require "open-uri"
 require "nokogiri"
 require "net/http"
 
 class Stock < ApplicationRecord
 
-  def self.download_page_links(transaction_id)
+  validates :ticker_symbol, presence: true, format: { with: /\d{4}/i }
+  validates :company_name, presence: true, format: { with: /.+/i }
+  validates :market, presence: true, format: { with: /.+/i }
+
+  def self.download_index_page(transaction_id)
     url = "https://kabuoji3.com/stock/"
     object_key = "#{transaction_id}/index.html"
-    doc = self.download_and_parse_page(url, object_key)
+
+    self._download_with_get(url, object_key)
+
+    object_key
+  end
+
+  def self.get_page_links(index_page_object_key)
+    bucket = self._get_s3_bucket
+    html = bucket.object(index_page_object_key).get.body
+
+    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
     pager_lines = doc.xpath("//ul[@class='pager']/li/a")
 
@@ -19,38 +32,31 @@ class Stock < ApplicationRecord
     page_links
   end
 
-  def self.download_stocks(page_link, transaction_id)
+  def self.download_stock_list_page(transaction_id, page_link)
     url = "https://kabuoji3.com/stock/" + page_link
     object_key = "#{transaction_id}/stock_list_#{page_link}.html"
-    doc = self.download_and_parse_page(url, object_key)
 
-    stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr/td/a")
+    self._download_with_get(url, object_key)
+
+    object_key
+  end
+
+  def self.get_stocks(stock_list_page_object_key)
+    bucket = self._get_s3_bucket
+    html = bucket.object(stock_list_page_object_key).get.body
+
+    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
+
+    stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr")
 
     stocks = []
     stock_table_lines.each do |stock_table_line|
-      stocks << {
-        ticker_symbol: stock_table_line.text[0..3],
-        company_name:  stock_table_line.text[5..-1]
-      }
-    end
-
-    stocks
-  end
-
-  def self.import(data)
-    stocks = []
-
-    data.each do |d|
-      stock = Stock.find_by(ticker_symbol: d[:ticker_symbol])
-      if stock == nil
-        stock = Stock.new(
-          ticker_symbol: d[:ticker_symbol],
-          company_name: d[:company_name]
-        )
-      else
-        stock.company_name = d[:company_name]
-      end
-      stock.save!
+      stock = Stock.new(
+        ticker_symbol: stock_table_line.xpath("td/a").text[0..3],
+        company_name: stock_table_line.xpath("td/a").text[5..-1],
+        market: stock_table_line.xpath("td[2]").text
+      )
+      raise stock.errors.messages.to_s if stock.invalid?
 
       stocks << stock
     end
@@ -58,8 +64,36 @@ class Stock < ApplicationRecord
     stocks
   end
 
+  def self.import(stocks)
+    stock_ids = []
+
+    stocks.each do |stock|
+      s = Stock.find_by(ticker_symbol: stock.ticker_symbol)
+
+      if s.nil?
+        s = Stock.new(
+          ticker_symbol: stock.ticker_symbol,
+          company_name: stock.company_name,
+          market: stock.market
+        )
+      else
+        s.company_name = stock.company_name
+        s.market = stock.market
+      end
+
+      s.save!
+      stock_ids << s.id
+    end
+
+    stock_ids
+  end
+
   def self._generate_transaction_id
     DateTime.now.strftime("%Y%m%d%H%M%S_#{SecureRandom.uuid}")
+  end
+
+  def self._validate_transaction_id(transaction_id)
+    raise ArgumentError, "transaction_id invalid (#{transaction_id}" if not transaction_id.match(/^[0-9a-zA-Z\-_]+$/)
   end
 
   def self._get_s3_bucket
@@ -72,28 +106,23 @@ class Stock < ApplicationRecord
     bucket = s3.bucket(Rails.application.secrets.s3_bucket)
   end
 
-  private
+  def self._download_with_get(url, object_key)
+    uri = URI(url)
 
-  def self.download_and_parse_page(url, object_key)
-    http_header = {
-      "User-Agent" => "curl/7.54.0",
-      "Accept" => "*/*"
-    }
-
-    charset = nil
-    html = open(url, http_header) do |f|
-      charset = f.charset
-      f.read
+    req = Net::HTTP::Get.new(uri)
+    req["User-Agent"] = "curl/7.54.0"
+    req["Accept"] = "*/*"
+ 
+    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
+      http.request(req)
     end
 
     bucket = Stock._get_s3_bucket
     object = bucket.object(object_key)
-    object.put(body: html)
-
-    doc = Nokogiri::HTML.parse(html, nil, charset)
+    object.put(body: res.body)
   end
 
-  def self.post_data(url, data, object_key)
+  def self._download_with_post(url, data, object_key)
     uri = URI(url)
 
     req = Net::HTTP::Post.new(uri)
@@ -108,12 +137,6 @@ class Stock < ApplicationRecord
     bucket = Stock._get_s3_bucket
     obj = bucket.object(object_key)
     obj.put(body: res.body)
-
-    res.body
-  end
-
-  def validate_transaction_id(transaction_id)
-    raise ArgumentError, "transaction_id invalid (#{transaction_id}" if not transaction_id.match(/^[0-9a-zA-Z\-_]+$/)
   end
 
 end

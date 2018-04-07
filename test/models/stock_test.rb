@@ -2,11 +2,12 @@ require 'test_helper'
 
 class StockTest < ActiveSupport::TestCase
 
-  test "download page links" do
+  test "download index page and get page links" do
     transaction_id = Stock._generate_transaction_id
 
-    page_links = Stock.download_page_links(transaction_id)
     sleep(1)
+    index_page_object_key = Stock.download_index_page(transaction_id)
+    page_links = Stock.get_page_links(index_page_object_key)
 
     assert page_links.length > 0
     page_links.each do |l|
@@ -16,87 +17,104 @@ class StockTest < ActiveSupport::TestCase
     assert_equal 0, Stock.all.length
 
     bucket = Stock._get_s3_bucket
-    assert bucket.object("#{transaction_id}/index.html").exists?
+    assert bucket.object(index_page_object_key).exists?
   end
 
-  test "download stocks" do
+  test "download page 1 and get stocks" do
     transaction_id = Stock._generate_transaction_id
 
-    page_links = Stock.download_page_links(transaction_id)
     sleep(1)
+    index_page_object_key = Stock.download_index_page(transaction_id)
+    page_links = Stock.get_page_links(index_page_object_key)
 
-    stocks = Stock.download_stocks(page_links[0], transaction_id)
     sleep(1)
+    stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
+    stocks = Stock.get_stocks(stock_list_page_object_key)
 
     assert stocks.length > 0
-    stocks.each do |s|
-      assert s[:ticker_symbol].match(/^[0-9]{4}$/)
-      assert_not s[:company_name].empty?
+    stocks.each do |stock|
+      assert stock.valid?
     end
 
     assert_equal 0, Stock.all.length
-
-    bucket = Stock._get_s3_bucket
-    assert bucket.object("#{transaction_id}/index.html").exists?
-    assert bucket.object("#{transaction_id}/stock_list_#{page_links[0]}.html").exists?
   end
 
-  test "import stock" do
-    stock_data = [
-      { ticker_symbol: "1001", company_name: "foo" },
-      { ticker_symbol: "1002", company_name: "bar" },
-      { ticker_symbol: "1003", company_name: "boo" }
+  test "import stocks" do
+    stocks = [
+      Stock.new(ticker_symbol: "1001", company_name: "foo", market: "hoge"),
+      Stock.new(ticker_symbol: "1002", company_name: "bar", market: "hoge"),
+      Stock.new(ticker_symbol: "1003", company_name: "boo", market: "hoge")
     ]
 
-    stocks = Stock.import(stock_data)
-    assert_equal 3, stocks.length
-  end
+    stock_ids = Stock.import(stocks)
 
-  test "overwrite stock" do
-    stock_data = [
-      { ticker_symbol: "1001", company_name: "foo" },
-      { ticker_symbol: "1002", company_name: "bar" },
-      { ticker_symbol: "1003", company_name: "boo" }
-    ]
-
-    stocks = Stock.import(stock_data)
-    assert_equal 3, stocks.length
- 
-    stock_data = [
-      { ticker_symbol: "1002", company_name: "hoge" }
-    ]
-
-    stocks = Stock.import(stock_data)
-    assert_equal 1, stocks.length
-
+    assert_equal 3, stock_ids.length
     assert_equal 3, Stock.all.length
-    assert_equal "foo" , Stock.find_by(ticker_symbol: "1001").company_name
-    assert_equal "hoge", Stock.find_by(ticker_symbol: "1002").company_name
-    assert_equal "boo" , Stock.find_by(ticker_symbol: "1003").company_name
+    stocks.each do |stock|
+      stock_actual = Stock.find_by(ticker_symbol: stock.ticker_symbol)
+
+      assert_equal stock.company_name, stock_actual.company_name
+      assert_equal stock.market, stock_actual.market
+    end
   end
 
-  test "download and import stocks" do
-    transaction_id = Stock._generate_transaction_id
+  test "overwrite import stocks" do
+    stocks = [
+      Stock.new(ticker_symbol: "1001", company_name: "foo", market: "hoge"),
+      Stock.new(ticker_symbol: "1002", company_name: "bar", market: "hoge"),
+      Stock.new(ticker_symbol: "1003", company_name: "boo", market: "hoge")
+    ]
 
-    page_links = Stock.download_page_links(transaction_id)
-    sleep(1)
-    stocks_data = Stock.download_stocks(page_links[0], transaction_id)
-    sleep(1)
-    stocks = Stock.import(stocks_data)
+    stock_ids = Stock.import(stocks)
 
-    assert stocks_data.length > 30
-    assert_equal stocks_data.length, stocks.length
+    assert_equal 3, stock_ids.length
+    assert_equal 3, Stock.all.length
+    stocks.each do |stock|
+      stock_actual = Stock.find_by(ticker_symbol: stock.ticker_symbol)
 
-    assert_equal stocks.length, Stock.all.length
-
-    stocks.each do |s|
-      stock_actual = Stock.find_by(ticker_symbol: s.ticker_symbol)
-      assert_equal s.company_name, stock_actual.company_name
+      assert_equal stock.company_name, stock_actual.company_name
+      assert_equal stock.market, stock_actual.market
     end
 
-    bucket = Stock._get_s3_bucket
-    assert bucket.object("#{transaction_id}/index.html").exists?
-    assert bucket.object("#{transaction_id}/stock_list_#{page_links[0]}.html").exists?
+    stocks[1].company_name = "foo bar"
+
+    stocks << Stock.new(ticker_symbol: "1004", company_name: "hoge hoge", market: "hoge")
+
+    stock_ids = Stock.import(stocks)
+
+    assert_equal 4, stock_ids.length
+    assert_equal 4, Stock.all.length
+    stocks.each do |stock|
+      stock_actual = Stock.find_by(ticker_symbol: stock.ticker_symbol)
+
+      assert_equal stock.company_name, stock_actual.company_name
+      assert_equal stock.market, stock_actual.market
+    end
+  end
+
+  test "download page 1 and get stocks and import stocks" do
+    transaction_id = Stock._generate_transaction_id
+
+    sleep(1)
+    index_page_object_key = Stock.download_index_page(transaction_id)
+    page_links = Stock.get_page_links(index_page_object_key)
+
+    sleep(1)
+    stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
+    stocks = Stock.get_stocks(stock_list_page_object_key)
+
+    assert_equal 0, Stock.all.length
+
+    stock_ids = Stock.import(stocks)
+
+    assert_equal stock_ids.length, Stock.all.length
+
+    stocks.each do |stock|
+      stock_actual = Stock.find_by(ticker_symbol: stock.ticker_symbol)
+
+      assert_equal stock.company_name, stock_actual.company_name
+      assert_equal stock.market, stock_actual.market
+    end
   end
 
 end
