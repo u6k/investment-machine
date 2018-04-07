@@ -2,163 +2,123 @@ require 'test_helper'
 
 class StockPriceTest < ActiveSupport::TestCase
 
-  test "download years for stock" do
-    transaction_id = Stock._generate_transaction_id
-    ticker_symbol = "1301"
+  test "download csv and get stock prices" do
+    Stock.new(ticker_symbol: "1301", company_name: "foo", market: "hoge").save!
 
-    years = StockPrice.download_years(ticker_symbol, transaction_id)
-
-    assert_equal 36, years.length
-    (1983..2018).each do |year|
-      assert_includes years, year
-    end
-
-    bucket = Stock._get_s3_bucket
-    assert bucket.object("#{transaction_id}/stock_detail_1301.html").exists?
-  end
-
-  test "download csv with ticker symbol and year" do
     transaction_id = Stock._generate_transaction_id
     ticker_symbol = "1301"
     year = 2001
 
-    stock_prices_data = StockPrice.download_stock_prices(ticker_symbol, year, transaction_id)
-
-    expected_date_min = Date.new(2001, 1, 1)
-    expected_date_max = Date.new(2002, 1, 1)
-
-    assert stock_prices_data.length > 0
-    stock_prices_data.each do |stock_price|
-      assert stock_price[:date].instance_of?(Date)
-      assert stock_price[:date] >= expected_date_min && stock_price[:date] < expected_date_max
-      assert stock_price[:opening_price].integer?
-      assert stock_price[:high_price].integer?
-      assert stock_price[:low_price].integer?
-      assert stock_price[:close_price].integer?
-      assert stock_price[:turnover].integer?
-      assert stock_price[:adjustment_value].integer?
-    end
-
-    bucket = Stock._get_s3_bucket
-    assert bucket.object("#{transaction_id}/stock_price_1301_2001.csv").exists?
-  end
-
-  test "import stock_price data" do
-    Stock.new(ticker_symbol: "1301", company_name: "foo").save!
-
-    stock_prices_data = []
-
-    stock_prices_data << {
-      date: Date.parse("2001-01-01"),
-      opening_price: 100,
-      high_price: 200,
-      low_price: 300,
-      close_price: 400,
-      turnover: 500,
-      adjustment_value: 600
-    }
-    stock_prices_data << {
-      date: Date.parse("2001-01-02"),
-      opening_price: 1100,
-      high_price: 1200,
-      low_price: 1300,
-      close_price: 1400,
-      turnover: 1500,
-      adjustment_value: 1600
-    }
-    stock_prices_data << {
-      date: Date.parse("2001-01-03"),
-      opening_price: 2100,
-      high_price: 2200,
-      low_price: 2300,
-      close_price: 2400,
-      turnover: 2500,
-      adjustment_value: 2600
-    }
-
-    stock_price_ids = StockPrice.import("1301", stock_prices_data)
-    assert_equal 3, stock_price_ids.length
-
-    stock_price_ids.each do |stock_price_id|
-      assert StockPrice.find(stock_price_id)
-    end
-
-    stock_prices = StockPrice.all
-    assert_equal 3, stock_prices.length
-
-    stock_prices_data.each do |d|
-      stock_price = StockPrice.find_by(date: d[:date])
-
-      assert_equal stock_price.opening_price, d[:opening_price]
-      assert_equal stock_price.high_price, d[:high_price]
-      assert_equal stock_price.low_price, d[:low_price]
-      assert_equal stock_price.close_price, d[:close_price]
-      assert_equal stock_price.turnover, d[:turnover]
-      assert_equal stock_price.adjustment_value, d[:adjustment_value]
-    end
-
-    stock_prices_data[1][:opening_price] = 10001
-    stock_prices_data[1][:high_price] = 10002
-    stock_prices_data[1][:low_price] = 10003
-    stock_prices_data[1][:close_price] = 10004
-    stock_prices_data[1][:turnover] = 10005
-    stock_prices_data[1][:adjustment_value] = 10006
-
-    stock_prices_data << {
-      date: Date.parse("2001-01-04"),
-      opening_price: 3100,
-      high_price: 3200,
-      low_price: 3300,
-      close_price: 3400,
-      turnover: 3500,
-      adjustment_value: 3600
-    }
-
-    stock_price_ids = StockPrice.import("1301", stock_prices_data)
-    assert_equal 4, stock_price_ids.length
-
-    stock_price_ids.each do |stock_price_id|
-      assert StockPrice.find(stock_price_id)
-    end
-
-    stock_prices = StockPrice.all
-    assert_equal 4, stock_prices.length
-
-    stock_prices_data.each do |d|
-      stock_price = StockPrice.find_by(date: d[:date])
-
-      assert_equal stock_price.opening_price, d[:opening_price]
-      assert_equal stock_price.high_price, d[:high_price]
-      assert_equal stock_price.low_price, d[:low_price]
-      assert_equal stock_price.close_price, d[:close_price]
-      assert_equal stock_price.turnover, d[:turnover]
-      assert_equal stock_price.adjustment_value, d[:adjustment_value]
-    end
-  end
-
-  test "download csv and import" do
-    transaction_id = Stock._generate_transaction_id
-
-    page_links = Stock.download_page_links(transaction_id)
     sleep(1)
-    stocks_data = Stock.download_stocks(page_links[0], transaction_id)
-    stocks = Stock.import(stocks_data)
-    sleep(1)
-
-    assert Stock.all.length > 0
-
-    stock = Stock.first
-    ticker_symbol = stock.ticker_symbol
-    year = 2018
-
-    stock_prices_data = StockPrice.download_stock_prices(ticker_symbol, year, transaction_id)
-    stock_price_ids = StockPrice.import(ticker_symbol, stock_prices_data)
-
-    assert stock_price_ids.length > 0
-
-    stock_prices = StockPrice.where("stock_id = :stock_id", stock_id: stock.id)
+    stock_price_csv_object_key = StockPrice.download_stock_price_csv(transaction_id, ticker_symbol, year)
+    stock_prices = StockPrice.get_stock_prices(ticker_symbol, stock_price_csv_object_key)
 
     assert stock_prices.length > 0
+    stock_prices.each do |stock_price|
+      assert stock_price.valid?
+    end
+
+    assert_equal 1, Stock.all.length
+    assert_equal 0, StockPrice.all.length
+
+    bucket = Stock._get_s3_bucket
+    assert bucket.object(stock_price_csv_object_key).exists?
+  end
+
+  test "import stock_prices and overwrite" do
+    stock = Stock.new(ticker_symbol: "1301", company_name: "foo", market: "hoge")
+    stock.save!
+
+    stock_prices = [
+      StockPrice.new(date: Date.parse("2001-01-01"), opening_price: 100, high_price: 200, low_price: 300, close_price: 400, turnover: 500, adjustment_value: 600, stock: stock),
+      StockPrice.new(date: Date.parse("2001-01-02"), opening_price: 1100, high_price: 1200, low_price: 1300, close_price: 1400, turnover: 1500, adjustment_value: 1600, stock: stock),
+      StockPrice.new(date: Date.parse("2001-01-03"), opening_price: 2100, high_price: 2200, low_price: 2300, close_price: 2400, turnover: 2500, adjustment_value: 2600, stock: stock)
+    ]
+
+    stock_price_ids = StockPrice.import(stock_prices)
+
+    assert_equal 3, stock_price_ids.length
+    stock_price_ids.each do |stock_price_id|
+      assert StockPrice.find(stock_price_id)
+    end
+
+    assert_equal 3, StockPrice.all.length
+    stock_prices.each do |stock_price|
+      stock_price_actual = StockPrice.find_by(date: stock_price.date, stock_id: stock.id)
+
+      assert_equal stock_price.opening_price, stock_price_actual.opening_price
+      assert_equal stock_price.high_price, stock_price_actual.high_price
+      assert_equal stock_price.low_price, stock_price_actual.low_price
+      assert_equal stock_price.close_price, stock_price_actual.close_price
+      assert_equal stock_price.turnover, stock_price_actual.turnover
+      assert_equal stock_price.adjustment_value, stock_price_actual.adjustment_value
+    end
+
+    stock_prices[1].opening_price = 10001
+    stock_prices[1].high_price = 10002
+    stock_prices[1].low_price = 10003
+    stock_prices[1].close_price = 10004
+    stock_prices[1].turnover = 10005
+    stock_prices[1].adjustment_value = 10006
+
+    stock_prices << StockPrice.new(date: Date.parse("2001-01-04"), opening_price: 3100, high_price: 3200, low_price: 3300, close_price: 3400, turnover: 3500, adjustment_value: 3600, stock: stock)
+
+    stock_price_ids = StockPrice.import(stock_prices)
+
+    assert_equal 4, stock_price_ids.length
+    stock_price_ids.each do |stock_price_id|
+      assert StockPrice.find(stock_price_id)
+    end
+
+    assert_equal 4, StockPrice.all.length
+    stock_prices.each do |stock_price|
+      stock_price_actual = StockPrice.find_by(date: stock_price.date, stock_id: stock.id)
+
+      assert_equal stock_price.opening_price, stock_price_actual.opening_price
+      assert_equal stock_price.high_price, stock_price_actual.high_price
+      assert_equal stock_price.low_price, stock_price_actual.low_price
+      assert_equal stock_price.close_price, stock_price_actual.close_price
+      assert_equal stock_price.turnover, stock_price_actual.turnover
+      assert_equal stock_price.adjustment_value, stock_price_actual.adjustment_value
+    end
+  end
+
+  test "download page 1 and get stocks and get stock_prices and import" do
+    transaction_id = Stock._generate_transaction_id
+
+    sleep(1)
+    index_page_object_key = Stock.download_index_page(transaction_id)
+    page_links = Stock.get_page_links(index_page_object_key)
+
+    sleep(1)
+    stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
+    stocks = Stock.get_stocks(stock_list_page_object_key)
+    Stock.import(stocks)
+
+    sleep(1)
+    stock_detail_page_object_key = Stock.download_stock_detail_page(transaction_id, stocks[0].ticker_symbol)
+    years = Stock.get_years(stock_detail_page_object_key)
+
+    sleep(1)
+    stock_price_csv_object_key = StockPrice.download_stock_price_csv(transaction_id, stocks[0].ticker_symbol, 2018)
+    stock_prices = StockPrice.get_stock_prices(stocks[0].ticker_symbol, stock_price_csv_object_key)
+
+    assert_equal 0, StockPrice.all.length
+
+    stock_price_ids = StockPrice.import(stock_prices)
+
+    assert_equal stock_price_ids.length, StockPrice.all.length
+
+    stock_prices.each do |stock_price|
+      stock_price_actual = StockPrice.find_by(date: stock_price.date, stock_id: stock_price.stock.id)
+
+      assert_equal stock_price.opening_price, stock_price_actual.opening_price
+      assert_equal stock_price.high_price, stock_price_actual.high_price
+      assert_equal stock_price.low_price, stock_price_actual.low_price
+      assert_equal stock_price.close_price, stock_price_actual.close_price
+      assert_equal stock_price.turnover, stock_price_actual.turnover
+      assert_equal stock_price.adjustment_value, stock_price_actual.adjustment_value
+    end
   end
 
 end

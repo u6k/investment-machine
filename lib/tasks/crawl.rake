@@ -13,18 +13,19 @@ namespace :crawl do
     transaction_id = Stock._generate_transaction_id
     Rails.logger.info "transaction_id=#{transaction_id}"
 
-    Rails.logger.info "download_page_links: start"
-    page_links = Stock.download_page_links(transaction_id)
+    Rails.logger.info "download_index_page and get_page_links: start"
     sleep(1)
-    Rails.logger.info "download_page_links: end: length=#{page_links.length}"
+    index_page_object_key = Stock.download_index_page(transaction_id)
+    page_links = Stock.get_page_links(index_page_object_key)
+    Rails.logger.info "download_index_page and get_page_links: end: page_links.length=#{page_links.length}"
 
     page_links.each do |page_link|
-      Rails.logger.info "download_stocks: start: #{page_link}"
-      stocks_data = Stock.download_stocks(page_link, transaction_id)
+      Rails.logger.info "download_stock_list_page and import: start: page_link=#{page_link}"
       sleep(1)
-      Rails.logger.info "import: start"
-      stocks = Stock.import(stocks_data)
-      Rails.logger.info "import: end: length=#{stocks.length}"
+      stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_link)
+      stocks = Stock.get_stocks(stock_list_page_object_key)
+      Stock.import(stocks)
+      Rails.logger.info "download_stock_list_page and import: end: stocks.length=#{stocks.length}"
     end
 
     Rails.logger.info "stocks: end: Stock.all.length=#{Stock.all.length}"
