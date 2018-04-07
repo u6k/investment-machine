@@ -49,6 +49,10 @@ class StockTest < ActiveSupport::TestCase
     stock_ids = Stock.import(stocks)
 
     assert_equal 3, stock_ids.length
+    stock_ids.each do |stock_id|
+      assert Stock.find(stock_id)
+    end
+
     assert_equal 3, Stock.all.length
     stocks.each do |stock|
       stock_actual = Stock.find_by(ticker_symbol: stock.ticker_symbol)
@@ -58,7 +62,7 @@ class StockTest < ActiveSupport::TestCase
     end
   end
 
-  test "overwrite import stocks" do
+  test "import stocks and overwrite" do
     stocks = [
       Stock.new(ticker_symbol: "1001", company_name: "foo", market: "hoge"),
       Stock.new(ticker_symbol: "1002", company_name: "bar", market: "hoge"),
