@@ -4,6 +4,10 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :stocks
+
+    resources :stocks do
+      resources :stock_prices
+    end
   end
 
 end
