@@ -22,8 +22,6 @@ class StockPricesControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal 3, stock_prices.length
 
-    p stock_prices
-
     stock_prices.each do |stock_price|
       assert_equal 7, stock_price.length
       assert_match /^\d{4}-\d{2}-\d{2}$/, stock_price["date"]
