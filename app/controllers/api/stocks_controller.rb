@@ -7,4 +7,10 @@ class Api::StocksController < ActionController::Base
     render json: @stocks, except: [:id, :created_at, :updated_at]
   end
 
+  def show
+    @stock = Stock.find_by(ticker_symbol: params[:id])
+
+    render json: @stock, except: [:id, :created_at, :updated_at]
+  end
+
 end

@@ -24,4 +24,16 @@ class StocksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "get stock" do
+    get api_stock_url(id: "1002")
+    assert_response :success
+
+    stock = JSON.parse(response.body)
+
+    assert_equal 3, stock.length
+    assert_match /^\d{4}$/, stock["ticker_symbol"]
+    assert stock["company_name"].length > 0
+    assert stock["market"].length > 0
+  end
+
 end
