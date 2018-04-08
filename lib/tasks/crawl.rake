@@ -5,6 +5,13 @@ require "aws-sdk-s3"
 namespace :crawl do
   desc "Crawler"
 
+  # TODO
+  task :hello, [:ticker_symbol, :year] => :environment do |task, args|
+    p "hello"
+    p task
+    p args
+  end
+
   task stocks: :environment do
     Rails.logger = Logger.new(STDOUT)
     Rails.logger.level = Logger::INFO
