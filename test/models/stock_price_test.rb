@@ -9,7 +9,6 @@ class StockPriceTest < ActiveSupport::TestCase
     ticker_symbol = "1301"
     year = 2001
 
-    sleep(1)
     stock_price_csv_object_key = StockPrice.download_stock_price_csv(transaction_id, ticker_symbol, year)
     stock_prices = StockPrice.get_stock_prices(ticker_symbol, stock_price_csv_object_key)
 
@@ -86,20 +85,16 @@ class StockPriceTest < ActiveSupport::TestCase
   test "download page 1 and get stocks and get stock_prices and import" do
     transaction_id = Stock._generate_transaction_id
 
-    sleep(1)
     index_page_object_key = Stock.download_index_page(transaction_id)
     page_links = Stock.get_page_links(index_page_object_key)
 
-    sleep(1)
     stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
     stocks = Stock.get_stocks(stock_list_page_object_key)
     Stock.import(stocks)
 
-    sleep(1)
     stock_detail_page_object_key = Stock.download_stock_detail_page(transaction_id, stocks[0].ticker_symbol)
     years = Stock.get_years(stock_detail_page_object_key)
 
-    sleep(1)
     stock_price_csv_object_key = StockPrice.download_stock_price_csv(transaction_id, stocks[0].ticker_symbol, 2018)
     stock_prices = StockPrice.get_stock_prices(stocks[0].ticker_symbol, stock_price_csv_object_key)
 

@@ -142,6 +142,8 @@ class Stock < ApplicationRecord
       http.request(req)
     end
 
+    sleep(1)
+
     bucket = Stock._get_s3_bucket
     object = bucket.object(object_key)
     object.put(body: res.body)
@@ -158,6 +160,8 @@ class Stock < ApplicationRecord
     res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
       http.request(req)
     end
+
+    sleep(1)
 
     bucket = Stock._get_s3_bucket
     obj = bucket.object(object_key)

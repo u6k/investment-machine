@@ -5,7 +5,6 @@ class StockTest < ActiveSupport::TestCase
   test "download index page and get page links" do
     transaction_id = Stock._generate_transaction_id
 
-    sleep(1)
     index_page_object_key = Stock.download_index_page(transaction_id)
     page_links = Stock.get_page_links(index_page_object_key)
 
@@ -23,11 +22,9 @@ class StockTest < ActiveSupport::TestCase
   test "download page 1 and get stocks" do
     transaction_id = Stock._generate_transaction_id
 
-    sleep(1)
     index_page_object_key = Stock.download_index_page(transaction_id)
     page_links = Stock.get_page_links(index_page_object_key)
 
-    sleep(1)
     stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
     stocks = Stock.get_stocks(stock_list_page_object_key)
 
@@ -99,11 +96,9 @@ class StockTest < ActiveSupport::TestCase
   test "download page 1 and get stocks and import stocks" do
     transaction_id = Stock._generate_transaction_id
 
-    sleep(1)
     index_page_object_key = Stock.download_index_page(transaction_id)
     page_links = Stock.get_page_links(index_page_object_key)
 
-    sleep(1)
     stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
     stocks = Stock.get_stocks(stock_list_page_object_key)
 
@@ -124,7 +119,6 @@ class StockTest < ActiveSupport::TestCase
   test "download stock detail page and get years" do
     transaction_id = Stock._generate_transaction_id
 
-    sleep(1)
     stock_detail_page_object_key = Stock.download_stock_detail_page(transaction_id, "1301")
     years = Stock.get_years(stock_detail_page_object_key)
 
