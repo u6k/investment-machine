@@ -19,3 +19,12 @@ script:
   - docker-compose -f docker-compose.production.yml exec s3 mkdir /export/investment
   - docker-compose -f docker-compose.production.yml exec app rails test
   - docker-compose -f docker-compose.production.yml down -v
+
+after_success:
+  - if [ -n "$TRAVIS_TAG" ]; then
+      docker login -u "$DOCKER_USER" -p "$DOCKER_PASS";
+      docker tag u6kapps/investment-machine u6kapps/investment-machine:$TRAVIS_TAG;
+      docker push u6kapps/investment-machine;
+    else
+      echo skip docker push;
+    fi
