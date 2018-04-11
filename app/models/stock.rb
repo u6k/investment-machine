@@ -14,9 +14,9 @@ class Stock < ApplicationRecord
     keys = self._download_with_get(url, file_name)
   end
 
-  def self.get_page_links
+  def self.get_page_links(object_key)
     bucket = self._get_s3_bucket
-    html = bucket.object("stock_list_index.html").get.body
+    html = bucket.object(object_key).get.body
 
     doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
@@ -30,18 +30,16 @@ class Stock < ApplicationRecord
     page_links
   end
 
-  def self.download_stock_list_page(transaction_id, page_link)
+  def self.download_stock_list_page(page_link)
     url = "https://kabuoji3.com/stock/" + page_link
-    object_key = "#{transaction_id}/stock_list_#{page_link}.html"
+    file_name = "stock_list_#{page_link}.html"
 
-    self._download_with_get(url, object_key)
-
-    object_key
+    keys = self._download_with_get(url, file_name)
   end
 
-  def self.get_stocks(stock_list_page_object_key)
+  def self.get_stocks(object_key)
     bucket = self._get_s3_bucket
-    html = bucket.object(stock_list_page_object_key).get.body
+    html = bucket.object(object_key).get.body
 
     doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
@@ -86,18 +84,16 @@ class Stock < ApplicationRecord
     stock_ids
   end
 
-  def self.download_stock_detail_page(transaction_id, ticker_symbol)
+  def self.download_stock_detail_page(ticker_symbol)
     url = "https://kabuoji3.com/stock/#{ticker_symbol}/"
-    object_key = "#{transaction_id}/stock_detail_#{ticker_symbol}.html"
+    file_name = "stock_detail_#{ticker_symbol}.html"
 
-    self._download_with_get(url, object_key)
-
-    object_key
+    keys = self._download_with_get(url, file_name)
   end
  
-  def self.get_years(stock_detail_page_object_key)
+  def self.get_years(object_key)
     bucket = self._get_s3_bucket
-    html = bucket.object(stock_detail_page_object_key).get.body
+    html = bucket.object(object_key).get.body
 
     doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
