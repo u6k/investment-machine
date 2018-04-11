@@ -2,21 +2,28 @@ require 'test_helper'
 
 class StockTest < ActiveSupport::TestCase
 
-  test "download index page and get page links" do
-    transaction_id = Stock._generate_transaction_id
+  def setup
+    bucket = Stock._get_s3_bucket
+    bucket.objects.batch_delete!
+  end
 
-    index_page_object_key = Stock.download_index_page(transaction_id)
-    page_links = Stock.get_page_links(index_page_object_key)
+  test "download index page and get page links" do
+    bucket = Stock._get_s3_bucket
+
+    keys = Stock.download_index_page
+    assert_equal "stock_list_index.html", keys[:original]
+    assert_match /^stock_list_index\.html\.bak_[0-9]{14}/, keys[:backup]
+    assert bucket.object(keys[:original]).exists?
+    assert bucket.object(keys[:backup]).exists?
+
+    page_links = Stock.get_page_links
 
     assert page_links.length > 0
     page_links.each do |l|
-      assert l.match(/^\?page=/)
+      assert_match /^\?page=/, l
     end
 
     assert_equal 0, Stock.all.length
-
-    bucket = Stock._get_s3_bucket
-    assert bucket.object(index_page_object_key).exists?
   end
 
   test "download page 1 and get stocks" do

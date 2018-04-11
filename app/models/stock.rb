@@ -7,18 +7,16 @@ class Stock < ApplicationRecord
   validates :company_name, presence: true, format: { with: /.+/i }
   validates :market, presence: true, format: { with: /.+/i }
 
-  def self.download_index_page(transaction_id)
+  def self.download_index_page
     url = "https://kabuoji3.com/stock/"
-    object_key = "#{transaction_id}/index.html"
+    file_name = "stock_list_index.html"
 
-    self._download_with_get(url, object_key)
-
-    object_key
+    keys = self._download_with_get(url, file_name)
   end
 
-  def self.get_page_links(index_page_object_key)
+  def self.get_page_links
     bucket = self._get_s3_bucket
-    html = bucket.object(index_page_object_key).get.body
+    html = bucket.object("stock_list_index.html").get.body
 
     doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
@@ -113,14 +111,6 @@ class Stock < ApplicationRecord
     years.sort
   end
 
-  def self._generate_transaction_id
-    DateTime.now.strftime("%Y%m%d%H%M%S_#{SecureRandom.uuid}")
-  end
-
-  def self._validate_transaction_id(transaction_id)
-    raise ArgumentError, "transaction_id invalid (#{transaction_id}" if not transaction_id.match(/^[0-9a-zA-Z\-_]+$/)
-  end
-
   def self._get_s3_bucket
     Aws.config.update({
       region: Rails.application.secrets.s3_region,
@@ -131,7 +121,7 @@ class Stock < ApplicationRecord
     bucket = s3.bucket(Rails.application.secrets.s3_bucket)
   end
 
-  def self._download_with_get(url, object_key)
+  def self._download_with_get(url, file_name)
     uri = URI(url)
 
     req = Net::HTTP::Get.new(uri)
@@ -145,8 +135,12 @@ class Stock < ApplicationRecord
     sleep(1)
 
     bucket = Stock._get_s3_bucket
-    object = bucket.object(object_key)
-    object.put(body: res.body)
+    obj_original = bucket.object(file_name)
+    obj_original.put(body: res.body)
+    obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
+    obj_backup.put(body: res.body)
+
+    keys = {original: obj_original.key, backup: obj_backup.key}
   end
 
   def self._download_with_post(url, data, object_key)
