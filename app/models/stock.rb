@@ -139,7 +139,7 @@ class Stock < ApplicationRecord
     keys = {original: obj_original.key, backup: obj_backup.key}
   end
 
-  def self._download_with_post(url, data, object_key)
+  def self._download_with_post(url, data, file_name)
     uri = URI(url)
 
     req = Net::HTTP::Post.new(uri)
@@ -154,8 +154,12 @@ class Stock < ApplicationRecord
     sleep(1)
 
     bucket = Stock._get_s3_bucket
-    obj = bucket.object(object_key)
-    obj.put(body: res.body)
+    obj_original = bucket.object(file_name)
+    obj_original.put(body: res.body)
+    obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
+    obj_backup.put(body: res.body)
+
+    keys = {original: obj_original.key, backup: obj_backup.key}
   end
 
 end

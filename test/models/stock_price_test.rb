@@ -2,15 +2,26 @@ require 'test_helper'
 
 class StockPriceTest < ActiveSupport::TestCase
 
+  def setup
+    bucket = Stock._get_s3_bucket
+    bucket.objects.batch_delete!
+  end
+
   test "download csv and get stock prices" do
+    bucket = Stock._get_s3_bucket
+
     Stock.new(ticker_symbol: "1301", company_name: "foo", market: "hoge").save!
 
-    transaction_id = Stock._generate_transaction_id
     ticker_symbol = "1301"
     year = 2001
 
-    stock_price_csv_object_key = StockPrice.download_stock_price_csv(transaction_id, ticker_symbol, year)
-    stock_prices = StockPrice.get_stock_prices(ticker_symbol, stock_price_csv_object_key)
+    keys = StockPrice.download_stock_price_csv(ticker_symbol, year)
+    assert_equal "stock_price_1301_2001.csv", keys[:original]
+    assert_match /^stock_price_1301_2001\.csv\.bak_[0-9]{14}$/, keys[:backup]
+    assert bucket.object(keys[:original]).exists?
+    assert bucket.object(keys[:backup]).exists?
+
+    stock_prices = StockPrice.get_stock_prices(keys[:original], ticker_symbol)
 
     assert stock_prices.length > 0
     stock_prices.each do |stock_price|
@@ -19,9 +30,6 @@ class StockPriceTest < ActiveSupport::TestCase
 
     assert_equal 1, Stock.all.length
     assert_equal 0, StockPrice.all.length
-
-    bucket = Stock._get_s3_bucket
-    assert bucket.object(stock_price_csv_object_key).exists?
   end
 
   test "import stock_prices and overwrite" do
@@ -83,20 +91,18 @@ class StockPriceTest < ActiveSupport::TestCase
   end
 
   test "download page 1 and get stocks and get stock_prices and import" do
-    transaction_id = Stock._generate_transaction_id
+    keys = Stock.download_index_page
+    page_links = Stock.get_page_links(keys[:original])
 
-    index_page_object_key = Stock.download_index_page(transaction_id)
-    page_links = Stock.get_page_links(index_page_object_key)
-
-    stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
-    stocks = Stock.get_stocks(stock_list_page_object_key)
+    keys = Stock.download_stock_list_page(page_links[0])
+    stocks = Stock.get_stocks(keys[:original])
     Stock.import(stocks)
 
-    stock_detail_page_object_key = Stock.download_stock_detail_page(transaction_id, stocks[0].ticker_symbol)
-    years = Stock.get_years(stock_detail_page_object_key)
+    keys = Stock.download_stock_detail_page(stocks[0].ticker_symbol)
+    years = Stock.get_years(keys[:original])
 
-    stock_price_csv_object_key = StockPrice.download_stock_price_csv(transaction_id, stocks[0].ticker_symbol, 2018)
-    stock_prices = StockPrice.get_stock_prices(stocks[0].ticker_symbol, stock_price_csv_object_key)
+    keys = StockPrice.download_stock_price_csv(stocks[0].ticker_symbol, 2018)
+    stock_prices = StockPrice.get_stock_prices(keys[:original], stocks[0].ticker_symbol)
 
     assert_equal 0, StockPrice.all.length
 
