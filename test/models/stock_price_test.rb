@@ -32,6 +32,21 @@ class StockPriceTest < ActiveSupport::TestCase
     assert_equal 0, StockPrice.all.length
   end
 
+  test "download csv, missing only" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+
+    StockPrice.download_stock_price_csv("1301", 2001)
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+
+    StockPrice.download_stock_price_csv("1301", 2001)
+    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
+
+    StockPrice.download_stock_price_csv("1301", 2001, true)
+    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
+  end
+
   test "import stock_prices and overwrite" do
     stock = Stock.new(ticker_symbol: "1301", company_name: "foo", market: "hoge")
     stock.save!

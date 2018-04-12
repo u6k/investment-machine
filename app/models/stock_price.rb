@@ -11,12 +11,12 @@ class StockPrice < ApplicationRecord
   validates :turnover, presence: true
   validates :adjustment_value, presence: true
 
-  def self.download_stock_price_csv(ticker_symbol, year)
+  def self.download_stock_price_csv(ticker_symbol, year, missing_only = false)
     url = "https://kabuoji3.com/stock/file.php"
     file_name = "stock_price_#{ticker_symbol}_#{year}.csv"
     form_data = { "code" => ticker_symbol, "year" => year }
 
-    keys = Stock._download_with_post(url, form_data, file_name)
+    keys = Stock._download_with_post(url, form_data, file_name, missing_only)
   end
 
   def self.get_stock_prices(object_key, ticker_symbol)
