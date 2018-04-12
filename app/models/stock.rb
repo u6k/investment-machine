@@ -7,11 +7,11 @@ class Stock < ApplicationRecord
   validates :company_name, presence: true, format: { with: /.+/i }
   validates :market, presence: true, format: { with: /.+/i }
 
-  def self.download_index_page
+  def self.download_index_page(missing_only = false)
     url = "https://kabuoji3.com/stock/"
     file_name = "stock_list_index.html"
 
-    keys = self._download_with_get(url, file_name)
+    keys = self._download_with_get(url, file_name, missing_only)
   end
 
   def self.get_page_links(object_key)
@@ -30,11 +30,11 @@ class Stock < ApplicationRecord
     page_links
   end
 
-  def self.download_stock_list_page(page_link)
+  def self.download_stock_list_page(page_link, missing_only = false)
     url = "https://kabuoji3.com/stock/" + page_link
     file_name = "stock_list_#{page_link}.html"
 
-    keys = self._download_with_get(url, file_name)
+    keys = self._download_with_get(url, file_name, missing_only)
   end
 
   def self.get_stocks(object_key)
@@ -86,11 +86,11 @@ class Stock < ApplicationRecord
     stock_ids
   end
 
-  def self.download_stock_detail_page(ticker_symbol)
+  def self.download_stock_detail_page(ticker_symbol, missing_only = false)
     url = "https://kabuoji3.com/stock/#{ticker_symbol}/"
     file_name = "stock_detail_#{ticker_symbol}.html"
 
-    keys = self._download_with_get(url, file_name)
+    keys = self._download_with_get(url, file_name, missing_only)
   end
  
   def self.get_years(object_key)
@@ -119,49 +119,68 @@ class Stock < ApplicationRecord
     bucket = s3.bucket(Rails.application.secrets.s3_bucket)
   end
 
-  def self._download_with_get(url, file_name)
-    uri = URI(url)
+  def self._get_s3_objects_size(objects)
+    count = 0
+    objects.each { |obj| count += 1 }
 
-    req = Net::HTTP::Get.new(uri)
-    req["User-Agent"] = "curl/7.54.0"
-    req["Accept"] = "*/*"
- 
-    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
-      http.request(req)
-    end
-
-    sleep(1)
-
-    bucket = Stock._get_s3_bucket
-    obj_original = bucket.object(file_name)
-    obj_original.put(body: res.body)
-    obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
-    obj_backup.put(body: res.body)
-
-    keys = {original: obj_original.key, backup: obj_backup.key}
+    count
   end
 
-  def self._download_with_post(url, data, file_name)
-    uri = URI(url)
-
-    req = Net::HTTP::Post.new(uri)
-    req["User-Agent"] = "curl/7.54.0"
-    req["Accept"] = "*/*"
-    req.set_form_data(data)
-
-    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
-      http.request(req)
-    end
-
-    sleep(1)
-
+  def self._download_with_get(url, file_name, missing_only)
     bucket = Stock._get_s3_bucket
-    obj_original = bucket.object(file_name)
-    obj_original.put(body: res.body)
-    obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
-    obj_backup.put(body: res.body)
 
-    keys = {original: obj_original.key, backup: obj_backup.key}
+    obj_original = bucket.object(file_name)
+    if obj_original.exists? && missing_only
+      keys = { original: obj_original.key }
+    else
+      uri = URI(url)
+
+      req = Net::HTTP::Get.new(uri)
+      req["User-Agent"] = "curl/7.54.0"
+      req["Accept"] = "*/*"
+
+      res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
+        http.request(req)
+      end
+
+      sleep(1)
+
+      obj_original = bucket.object(file_name)
+      obj_original.put(body: res.body)
+      obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
+      obj_backup.put(body: res.body)
+
+      keys = {original: obj_original.key, backup: obj_backup.key}
+    end
+  end
+
+  def self._download_with_post(url, data, file_name, missing_only)
+    bucket = Stock._get_s3_bucket
+
+    obj_original = bucket.object(file_name)
+    if obj_original.exists? && missing_only
+      keys = { original: obj_original.key }
+    else
+      uri = URI(url)
+
+      req = Net::HTTP::Post.new(uri)
+      req["User-Agent"] = "curl/7.54.0"
+      req["Accept"] = "*/*"
+      req.set_form_data(data)
+
+      res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
+        http.request(req)
+      end
+
+      sleep(1)
+
+      obj_original = bucket.object(file_name)
+      obj_original.put(body: res.body)
+      obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
+      obj_backup.put(body: res.body)
+
+      keys = {original: obj_original.key, backup: obj_backup.key}
+    end
   end
 
 end

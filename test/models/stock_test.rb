@@ -26,6 +26,21 @@ class StockTest < ActiveSupport::TestCase
     assert_equal 0, Stock.all.length
   end
 
+  test "download index page, missing only" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_index_page
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_index_page
+    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_index_page(true)
+    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
+  end
+
   test "download page 1 and get stocks" do
     bucket = Stock._get_s3_bucket
 
@@ -46,6 +61,24 @@ class StockTest < ActiveSupport::TestCase
     end
 
     assert_equal 0, Stock.all.length
+  end
+
+  test "download page 1, missing only" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+
+    keys = Stock.download_index_page
+    page_links = Stock.get_page_links(keys[:original])
+
+    Stock.download_stock_list_page(page_links[0])
+    assert_equal 4, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_stock_list_page(page_links[0])
+    assert_equal 5, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_stock_list_page(page_links[0], true)
+    assert_equal 5, Stock._get_s3_objects_size(bucket.objects)
   end
 
   test "import stocks" do
@@ -141,6 +174,21 @@ class StockTest < ActiveSupport::TestCase
     (1983..2018).each do |year|
       assert_includes years, year
     end
+  end
+
+  test "download stock detail page, missing only" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_stock_detail_page("1301")
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_stock_detail_page("1301")
+    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
+
+    Stock.download_stock_detail_page("1301", true)
+    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
   end
 
 end
