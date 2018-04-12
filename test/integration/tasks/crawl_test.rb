@@ -10,10 +10,14 @@ class CrawlTest < ActionDispatch::IntegrationTest
     bucket.objects.batch_delete!
 
     Stock.all.delete_all
+    StockPrice.all.delete_all
   end
 
   def teardown
     Rake::Task["crawl:download_stocks"].clear
+    Rake::Task["crawl:import_stocks"].clear
+    Rake::Task["crawl:download_stock_prices"].clear
+    Rake::Task["crawl:import_stock_prices"].clear
   end
 
   def _get_objects_size(objects)
@@ -45,7 +49,22 @@ class CrawlTest < ActionDispatch::IntegrationTest
   end
 
   test "stock_prices download and import" do
-    # TODO
+    bucket = Stock._get_s3_bucket
+
+    Stock.new(ticker_symbol: "1301", company_name: "foo", market: "hoge").save!
+
+    assert_equal 0, _get_objects_size(bucket.objects)
+    assert_equal 0, StockPrice.all.length
+
+    Rake::Task["crawl:download_stock_prices"].invoke("1301", "all")
+
+    assert _get_objects_size(bucket.objects) > 30
+    assert_equal 0, StockPrice.all.length
+
+    Rake::Task["crawl:import_stock_prices"].invoke("all", "all")
+
+    assert _get_objects_size(bucket.objects) > 30
+    assert StockPrice.all.length > 6000
   end
 
   test "stock_prices download and import missing only" do
