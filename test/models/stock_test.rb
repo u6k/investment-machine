@@ -2,31 +2,43 @@ require 'test_helper'
 
 class StockTest < ActiveSupport::TestCase
 
-  test "download index page and get page links" do
-    transaction_id = Stock._generate_transaction_id
+  def setup
+    bucket = Stock._get_s3_bucket
+    bucket.objects.batch_delete!
+  end
 
-    index_page_object_key = Stock.download_index_page(transaction_id)
-    page_links = Stock.get_page_links(index_page_object_key)
+  test "download index page and get page links" do
+    bucket = Stock._get_s3_bucket
+
+    keys = Stock.download_index_page
+    assert_equal "stock_list_index.html", keys[:original]
+    assert_match /^stock_list_index\.html\.bak_[0-9]{14}/, keys[:backup]
+    assert bucket.object(keys[:original]).exists?
+    assert bucket.object(keys[:backup]).exists?
+
+    page_links = Stock.get_page_links(keys[:original])
 
     assert page_links.length > 0
     page_links.each do |l|
-      assert l.match(/^\?page=/)
+      assert_match /^\?page=/, l
     end
 
     assert_equal 0, Stock.all.length
-
-    bucket = Stock._get_s3_bucket
-    assert bucket.object(index_page_object_key).exists?
   end
 
   test "download page 1 and get stocks" do
-    transaction_id = Stock._generate_transaction_id
+    bucket = Stock._get_s3_bucket
 
-    index_page_object_key = Stock.download_index_page(transaction_id)
-    page_links = Stock.get_page_links(index_page_object_key)
+    keys = Stock.download_index_page
+    page_links = Stock.get_page_links(keys[:original])
 
-    stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
-    stocks = Stock.get_stocks(stock_list_page_object_key)
+    keys = Stock.download_stock_list_page(page_links[0])
+    assert_equal "stock_list_?page=1.html", keys[:original]
+    assert_match /^stock_list_\?page=1\.html\.bak_[0-9]{14}/, keys[:backup]
+    assert bucket.object(keys[:original]).exists?
+    assert bucket.object(keys[:backup]).exists?
+
+    stocks = Stock.get_stocks(keys[:original])
 
     assert stocks.length > 0
     stocks.each do |stock|
@@ -94,13 +106,11 @@ class StockTest < ActiveSupport::TestCase
   end
 
   test "download page 1 and get stocks and import stocks" do
-    transaction_id = Stock._generate_transaction_id
+    keys = Stock.download_index_page
+    page_links = Stock.get_page_links(keys[:original])
 
-    index_page_object_key = Stock.download_index_page(transaction_id)
-    page_links = Stock.get_page_links(index_page_object_key)
-
-    stock_list_page_object_key = Stock.download_stock_list_page(transaction_id, page_links[0])
-    stocks = Stock.get_stocks(stock_list_page_object_key)
+    keys = Stock.download_stock_list_page(page_links[0])
+    stocks = Stock.get_stocks(keys[:original])
 
     assert_equal 0, Stock.all.length
 
@@ -117,10 +127,15 @@ class StockTest < ActiveSupport::TestCase
   end
 
   test "download stock detail page and get years" do
-    transaction_id = Stock._generate_transaction_id
+    bucket = Stock._get_s3_bucket
 
-    stock_detail_page_object_key = Stock.download_stock_detail_page(transaction_id, "1301")
-    years = Stock.get_years(stock_detail_page_object_key)
+    keys = Stock.download_stock_detail_page("1301")
+    assert_equal "stock_detail_1301.html", keys[:original]
+    assert_match /^stock_detail_1301\.html\.bak_[0-9]{14}/, keys[:backup]
+    assert bucket.object(keys[:original]).exists?
+    assert bucket.object(keys[:backup]).exists?
+
+    years = Stock.get_years(keys[:original])
 
     assert_equal 36, years.length
     (1983..2018).each do |year|
