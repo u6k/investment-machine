@@ -63,22 +63,24 @@ class Stock < ApplicationRecord
   def self.import(stocks)
     stock_ids = []
 
-    stocks.each do |stock|
-      s = Stock.find_by(ticker_symbol: stock.ticker_symbol)
+    Stock.transaction do
+      stocks.each do |stock|
+        s = Stock.find_by(ticker_symbol: stock.ticker_symbol)
 
-      if s.nil?
-        s = Stock.new(
-          ticker_symbol: stock.ticker_symbol,
-          company_name: stock.company_name,
-          market: stock.market
-        )
-      else
-        s.company_name = stock.company_name
-        s.market = stock.market
+        if s.nil?
+          s = Stock.new(
+            ticker_symbol: stock.ticker_symbol,
+            company_name: stock.company_name,
+            market: stock.market
+          )
+        else
+          s.company_name = stock.company_name
+          s.market = stock.market
+        end
+
+        s.save!
+        stock_ids << s.id
       end
-
-      s.save!
-      stock_ids << s.id
     end
 
     stock_ids

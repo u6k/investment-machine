@@ -52,31 +52,33 @@ class StockPrice < ApplicationRecord
   def self.import(stock_prices)
     stock_price_ids = []
 
-    stock_prices.each do |stock_price|
-      ps = StockPrice.where("stock_id = :stock_id and date = :date", stock_id: stock_price.stock.id, date: stock_price.date)
-      if ps.empty?
-        p = StockPrice.new(
-          date: stock_price.date,
-          opening_price: stock_price.opening_price,
-          high_price: stock_price.high_price,
-          low_price: stock_price.low_price,
-          close_price: stock_price.close_price,
-          turnover: stock_price.turnover,
-          adjustment_value: stock_price.adjustment_value,
-          stock: stock_price.stock
-        )
-      else
-        p = ps[0]
-        p.opening_price = stock_price.opening_price
-        p.high_price = stock_price.high_price
-        p.low_price = stock_price.low_price
-        p.close_price = stock_price.close_price
-        p.turnover = stock_price.turnover
-        p.adjustment_value = stock_price.adjustment_value
-      end
+    StockPrice.transaction do
+      stock_prices.each do |stock_price|
+        ps = StockPrice.where("stock_id = :stock_id and date = :date", stock_id: stock_price.stock.id, date: stock_price.date)
+        if ps.empty?
+          p = StockPrice.new(
+            date: stock_price.date,
+            opening_price: stock_price.opening_price,
+            high_price: stock_price.high_price,
+            low_price: stock_price.low_price,
+            close_price: stock_price.close_price,
+            turnover: stock_price.turnover,
+            adjustment_value: stock_price.adjustment_value,
+            stock: stock_price.stock
+          )
+        else
+          p = ps[0]
+          p.opening_price = stock_price.opening_price
+          p.high_price = stock_price.high_price
+          p.low_price = stock_price.low_price
+          p.close_price = stock_price.close_price
+          p.turnover = stock_price.turnover
+          p.adjustment_value = stock_price.adjustment_value
+        end
 
-      p.save!
-      stock_price_ids << p.id
+        p.save!
+        stock_price_ids << p.id
+      end
     end
 
     stock_price_ids
