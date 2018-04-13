@@ -6,9 +6,6 @@ namespace :crawl do
   desc "Crawler"
 
   task :download_stocks, [:missing_only] => :environment do |task, args|
-    Rails.logger = Logger.new(STDOUT)
-    Rails.logger.level = Logger::INFO
-
     missing_only = (args.missing_only == "true")
     Rails.logger.info "download_stocks: start: missing_only=#{missing_only}"
 
@@ -27,8 +24,6 @@ namespace :crawl do
   end
 
   task import_stocks: :environment do
-    Rails.logger = Logger.new(STDOUT)
-    Rails.logger.level = Logger::INFO
     Rails.logger.info "import_stocks: start"
 
     Rails.logger.info "get_page_links: start"
@@ -46,9 +41,6 @@ namespace :crawl do
   end
 
   task :download_stock_prices, [:ticker_symbol, :year, :missing_only] => :environment do |task, args|
-    Rails.logger = Logger.new(STDOUT)
-    Rails.logger.level = Logger::INFO
-
     missing_only = (args.missing_only == "true")
     Rails.logger.info "download_stock_prices: start: ticker_symbol=#{args.ticker_symbol}, year=#{args.year}, missing_only=#{missing_only}"
 
@@ -87,8 +79,6 @@ namespace :crawl do
   end
 
   task :import_stock_prices, [:ticker_symbol, :year] => :environment do |task, args|
-    Rails.logger = Logger.new(STDOUT)
-    Rails.logger.level = Logger::INFO
     Rails.logger.info "import_stock_prices: start: ticker_symbol=#{args.ticker_symbol}, year=#{args.year}"
 
     if args.ticker_symbol == "all"
