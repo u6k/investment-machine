@@ -11,21 +11,19 @@ class StockPrice < ApplicationRecord
   validates :turnover, presence: true
   validates :adjustment_value, presence: true
 
-  def self.download_stock_price_csv(transaction_id, ticker_symbol, year)
+  def self.download_stock_price_csv(ticker_symbol, year, missing_only = false)
     url = "https://kabuoji3.com/stock/file.php"
-    object_key = "#{transaction_id}/stock_price_#{ticker_symbol}_#{year}.csv"
+    file_name = "stock_price_#{ticker_symbol}_#{year}.csv"
     form_data = { "code" => ticker_symbol, "year" => year }
 
-    Stock._download_with_post(url, form_data, object_key)
-
-    object_key
+    keys = Stock._download_with_post(url, form_data, file_name, missing_only)
   end
 
-  def self.get_stock_prices(ticker_symbol, stock_price_csv_object_key)
+  def self.get_stock_prices(object_key, ticker_symbol)
     stock = Stock.find_by(ticker_symbol: ticker_symbol)
 
     bucket = Stock._get_s3_bucket
-    csv = bucket.object(stock_price_csv_object_key).get.body
+    csv = bucket.object(object_key).get.body
 
     csv = csv.string.encode("UTF-8", "Shift_JIS")
 
@@ -54,31 +52,33 @@ class StockPrice < ApplicationRecord
   def self.import(stock_prices)
     stock_price_ids = []
 
-    stock_prices.each do |stock_price|
-      ps = StockPrice.where("stock_id = :stock_id and date = :date", stock_id: stock_price.stock.id, date: stock_price.date)
-      if ps.empty?
-        p = StockPrice.new(
-          date: stock_price.date,
-          opening_price: stock_price.opening_price,
-          high_price: stock_price.high_price,
-          low_price: stock_price.low_price,
-          close_price: stock_price.close_price,
-          turnover: stock_price.turnover,
-          adjustment_value: stock_price.adjustment_value,
-          stock: stock_price.stock
-        )
-      else
-        p = ps[0]
-        p.opening_price = stock_price.opening_price
-        p.high_price = stock_price.high_price
-        p.low_price = stock_price.low_price
-        p.close_price = stock_price.close_price
-        p.turnover = stock_price.turnover
-        p.adjustment_value = stock_price.adjustment_value
-      end
+    StockPrice.transaction do
+      stock_prices.each do |stock_price|
+        ps = StockPrice.where("stock_id = :stock_id and date = :date", stock_id: stock_price.stock.id, date: stock_price.date)
+        if ps.empty?
+          p = StockPrice.new(
+            date: stock_price.date,
+            opening_price: stock_price.opening_price,
+            high_price: stock_price.high_price,
+            low_price: stock_price.low_price,
+            close_price: stock_price.close_price,
+            turnover: stock_price.turnover,
+            adjustment_value: stock_price.adjustment_value,
+            stock: stock_price.stock
+          )
+        else
+          p = ps[0]
+          p.opening_price = stock_price.opening_price
+          p.high_price = stock_price.high_price
+          p.low_price = stock_price.low_price
+          p.close_price = stock_price.close_price
+          p.turnover = stock_price.turnover
+          p.adjustment_value = stock_price.adjustment_value
+        end
 
-      p.save!
-      stock_price_ids << p.id
+        p.save!
+        stock_price_ids << p.id
+      end
     end
 
     stock_price_ids
