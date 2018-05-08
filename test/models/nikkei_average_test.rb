@@ -14,17 +14,23 @@ class NikkeiAverageTest < ActiveSupport::TestCase
     month = 9
 
     keys = NikkeiAverage.download_nikkei_average_html(year, month)
-    assert_equal "nikkei_average_2017_11.html", keys[:original]
-    assert_match /^nikkei_average_2017_11\.html\.bak_[0-9]{14}$/, keys[:baxkup]
+    assert_equal "nikkei_average_2017_09.html", keys[:original]
+    assert_match /^nikkei_average_2017_09\.html\.bak_[0-9]{14}$/, keys[:backup]
     assert bucket.object(keys[:original]).exists?
     assert bucket.object(keys[:backup]).exists?
 
-    nikkei_averages = NikkeiAverage.get_nikkei_average(keys[:original])
+    nikkei_averages = NikkeiAverage.get_nikkei_averages(keys[:original])
 
-    assert nikkei_averages.length > 0
+    assert_equal 20, nikkei_averages.length
     nikkei_averages.each do |nikkei_average|
       assert nikkei_average.valid?
     end
+
+    assert_equal Date.parse('2017-09-01'), nikkei_averages[0].date
+    assert_equal "19733.57".to_d, nikkei_averages[0].opening_price
+    assert_equal "19735.96".to_d, nikkei_averages[0].high_price
+    assert_equal "19620.07".to_d, nikkei_averages[0].low_price
+    assert_equal "19691.47".to_d, nikkei_averages[0].close_price
 
     assert_equal 0, NikkeiAverage.all.length
   end
