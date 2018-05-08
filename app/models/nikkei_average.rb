@@ -1,0 +1,2 @@
+class NikkeiAverage < ApplicationRecord
+end
