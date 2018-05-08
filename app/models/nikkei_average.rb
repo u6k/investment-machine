@@ -38,7 +38,33 @@ class NikkeiAverage < ApplicationRecord
   end
 
   def self.import(nikkei_averages)
-    raise "not implemented"
+    nikkei_average_ids = []
+
+    NikkeiAverage.transaction do
+      nikkei_averages.each do |nikkei_average|
+        n = NikkeiAverage.find_by(date: nikkei_average.date)
+
+        if n.nil?
+          n = NikkeiAverage.new(
+            date: nikkei_average.date,
+            opening_price: nikkei_average.opening_price,
+            high_price: nikkei_average.high_price,
+            low_price: nikkei_average.low_price,
+            close_price: nikkei_average.close_price
+          )
+        else
+          n.opening_price = nikkei_average.opening_price
+          n.high_price = nikkei_average.high_price
+          n.low_price = nikkei_average.low_price
+          n.close_price = nikkei_average.close_price
+        end
+
+        n.save!
+        nikkei_average_ids << n.id
+      end
+    end
+
+    nikkei_average_ids
   end
 
 end
