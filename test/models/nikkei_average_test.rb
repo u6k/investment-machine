@@ -54,7 +54,7 @@ class NikkeiAverageTest < ActiveSupport::TestCase
     nikkei_averages = [
       NikkeiAverage.new(date: Date.parse("2017-09-01"), opening_price: "100.01".to_d, high_price: "200.02".to_d, low_price: "300.03".to_d, close_price: "400.04".to_d),
       NikkeiAverage.new(date: Date.parse("2017-09-02"), opening_price: "1100.11".to_d, high_price: "1200.12".to_d, low_price: "1300.13".to_d, close_price: "1400.14".to_d),
-      NikkeiAverage.new(date: Date.parse("2017-09-01"), opening_price: "2100.21".to_d, high_price: "2200.22".to_d, low_price: "2300.23".to_d, close_price: "2400.24".to_d)
+      NikkeiAverage.new(date: Date.parse("2017-09-03"), opening_price: "2100.21".to_d, high_price: "2200.22".to_d, low_price: "2300.23".to_d, close_price: "2400.24".to_d)
     ]
 
     nikkei_average_ids = NikkeiAverage.import(nikkei_averages)
