@@ -1,0 +1,2 @@
+class DowJonesIndustrialAverage < ApplicationRecord
+end
