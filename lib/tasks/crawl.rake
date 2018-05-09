@@ -133,4 +133,22 @@ namespace :crawl do
     end
   end
 
+  task :import_nikkei_averages, [:year] => :environment do |task, args|
+    Rails.logger.info "import_nikkei_averages: start: year=#{args.year}"
+
+    if args.year == "all"
+      target_dates = (Date.new(1949, 5, 1) .. Date.today).select { |d| d.day == 1 }
+    elsif args.year.to_i == Date.today.year
+      target_dates = (Date.new(Date.today.year, 1, 1) .. Date.today).select { |d| d.day == 1 }
+    else
+      target_dates = (Date.new(args.year.to_i, 1, 1) .. Date.new(args.year.to_i, 12, 31)).select { |d| d.day == 1 }
+    end
+
+    target_dates.each.with_index(1) do |target_date, target_date_index|
+      Rails.logger.info "import nikkei average: foreach date: #{target_date_index}/#{target_dates.length}: date=#{target_date}"
+      nikkei_averages = NikkeiAverage.get_nikkei_averages("nikkei_average_#{target_date.year}_#{format("%02d", target_date.month)}.html")
+      NikkeiAverage.import(nikkei_averages)
+    end
+  end
+
 end
