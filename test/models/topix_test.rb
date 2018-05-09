@@ -26,11 +26,11 @@ class TopixTest < ActiveSupport::TestCase
       assert topix.valid?
     end
 
-    assert_equal Date.new(2018, 2, 1), topixes[0].date
-    assert_equal "1849.53".to_d, topixes[0].opening_price
-    assert_equal "1870.94".to_d, topixes[0].high_price
-    assert_equal "1847.01".to_d, topixes[0].low_price
-    assert_equal "1870.44".to_d, topixes[0].close_price
+    assert_equal Date.new(2018, 2, 1), topixes[18].date
+    assert_equal "1849.53".to_d, topixes[18].opening_price
+    assert_equal "1870.94".to_d, topixes[18].high_price
+    assert_equal "1847.01".to_d, topixes[18].low_price
+    assert_equal "1870.44".to_d, topixes[18].close_price
 
     assert_equal 0, Topix.all.length
   end
