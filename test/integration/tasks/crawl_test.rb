@@ -21,6 +21,8 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Rake::Task["crawl:import_stock_prices"].clear
     Rake::Task["crawl:download_nikkei_averages"].clear
     Rake::Task["crawl:import_nikkei_averages"].clear
+    Rake::Task["crawl:download_topixes"].clear
+    Rake::Task["crawl:import_topixes"].clear
   end
 
   test "stocks download and import" do
@@ -88,6 +90,23 @@ class CrawlTest < ActionDispatch::IntegrationTest
 
     assert_equal 24, Stock._get_s3_objects_size(bucket.objects)
     assert_equal 247, NikkeiAverage.all.length
+  end
+
+  test "topixes download and import" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 0, Topix.all.length
+
+    Rake::Task["crawl:download_topixes"].invoke(2017)
+
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 0, Topix.all.length
+
+    Rake::Task["crawl:import_topixes"].invoke(2017)
+
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 247, Topix.all.length
   end
 
 end

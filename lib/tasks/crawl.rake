@@ -151,4 +151,35 @@ namespace :crawl do
     end
   end
 
+  task :download_topixes, [:year] => :environment do |task, args|
+    Rails.logger.info "download_topixes: start: year=#{args.year}"
+
+    if args.year == "all"
+      date_from = Date.new(1980, 1, 1)
+      date_to = Date.today  
+    else
+      date_from = Date.new(args.year.to_i, 1, 1)
+      date_to = Date.new(args.year.to_i + 1, 1, 1)
+    end
+
+    Topix.download_topix_csv(date_from, date_to)
+  end
+
+  task :import_topixes, [:year] => :environment do |task, args|
+    Rails.logger.info "import_topixes: start: year=#{args.year}"
+
+    if args.year == "all"
+      date_from = Date.new(1980, 1, 1)
+      date_to = Date.today  
+    else
+      date_from = Date.new(args.year.to_i, 1, 1)
+      date_to = Date.new(args.year.to_i + 1, 1, 1)
+    end
+
+    Rails.logger.info "import topix: start: date: from #{date_from.strftime('%Y%m%d')} to_#{date_to.strftime('%Y%m%d')}"
+    topixes = Topix.get_topixes("topix_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv")
+    topix_ids = Topix.import(topixes)
+    Rails.logger.info "import topix: end: result=#{topix_ids.length}"
+  end
+
 end
