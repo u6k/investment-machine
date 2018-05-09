@@ -11,6 +11,7 @@ class CrawlTest < ActionDispatch::IntegrationTest
 
     Stock.all.delete_all
     StockPrice.all.delete_all
+    NikkeiAverage.all.delete_all
   end
 
   def teardown
@@ -18,6 +19,8 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Rake::Task["crawl:import_stocks"].clear
     Rake::Task["crawl:download_stock_prices"].clear
     Rake::Task["crawl:import_stock_prices"].clear
+    Rake::Task["crawl:download_nikkei_averages"].clear
+    Rake::Task["crawl:import_nikkei_averages"].clear
   end
 
   test "stocks download and import" do
@@ -68,6 +71,23 @@ class CrawlTest < ActionDispatch::IntegrationTest
 
     assert Stock._get_s3_objects_size(bucket.objects) > 30
     assert StockPrice.all.length > 6000
- end
+  end
+
+  test "nikkei averages download and import" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 0, NikkeiAverage.all.length
+
+    Rake::Task["crawl:download_nikkei_averages"].invoke(2017)
+
+    assert_equal 24, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 0, NikkeiAverage.all.length
+
+    Rake::Task["crawl:import_nikkei_averages"].invoke(2017)
+
+    assert_equal 24, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 247, NikkeiAverage.all.length
+  end
 
 end
