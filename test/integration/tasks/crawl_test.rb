@@ -21,6 +21,8 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Rake::Task["crawl:import_stock_prices"].clear
     Rake::Task["crawl:download_nikkei_averages"].clear
     Rake::Task["crawl:import_nikkei_averages"].clear
+    Rake::Task["crawl:download_topixes"].clear
+    Rake::Task["crawl:import_topixes"].clear
   end
 
   test "stocks download and import" do
