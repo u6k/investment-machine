@@ -12,6 +12,7 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Stock.all.delete_all
     StockPrice.all.delete_all
     NikkeiAverage.all.delete_all
+    DowJonesIndustrialAverage.all.delete_all
   end
 
   def teardown
@@ -23,6 +24,8 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Rake::Task["crawl:import_nikkei_averages"].clear
     Rake::Task["crawl:download_topixes"].clear
     Rake::Task["crawl:import_topixes"].clear
+    Rake::Task["crawl:download_dow_jones_industrial_averages"].clear
+    Rake::Task["crawl:import_dow_jones_industrial_averages"].clear
   end
 
   test "stocks download and import" do
@@ -107,6 +110,23 @@ class CrawlTest < ActionDispatch::IntegrationTest
 
     assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
     assert_equal 247, Topix.all.length
+  end
+
+  test "dow jones industrial averages download and import" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 0, DowJonesIndustrialAverage.all.length
+
+    Rake::Task["crawl:download_dow_jones_industrial_averages"].invoke(2017)
+
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 0, DowJonesIndustrialAverage.all.length
+
+    Rake::Task["crawl:import_dow_jones_industrial_averages"].invoke(2017)
+
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 251, DowJonesIndustrialAverage.all.length
   end
 
 end
