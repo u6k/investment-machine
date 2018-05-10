@@ -182,4 +182,35 @@ namespace :crawl do
     Rails.logger.info "import topix: end: result=#{topix_ids.length}"
   end
 
+  task :download_dow_jones_industrial_averages, [:year] => :environment do |task, args|
+    Rails.logger.info "download_dow jones industrial averages: start: year=#{args.year}"
+
+    if args.year == "all"
+      date_from = Date.new(1987, 2, 1)
+      date_to = Date.today  
+    else
+      date_from = Date.new(args.year.to_i, 1, 1)
+      date_to = Date.new(args.year.to_i + 1, 1, 1)
+    end
+
+    DowJonesIndustrialAverage.download_djia_csv(date_from, date_to)
+  end
+
+  task :import_dow_jones_industrial_averages, [:year] => :environment do |task, args|
+    Rails.logger.info "import dow jones industrial averages: start: year=#{args.year}"
+
+    if args.year == "all"
+      date_from = Date.new(1987, 2, 1)
+      date_to = Date.today  
+    else
+      date_from = Date.new(args.year.to_i, 1, 1)
+      date_to = Date.new(args.year.to_i + 1, 1, 1)
+    end
+
+    Rails.logger.info "import dow jones industrial averages: start: date: from #{date_from.strftime('%Y%m%d')} to_#{date_to.strftime('%Y%m%d')}"
+    djias = DowJonesIndustrialAverage.get_djias("djia_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv")
+    djia_ids = DowJonesIndustrialAverage.import(djias)
+    Rails.logger.info "import dow jones industrial averages: end: result=#{djia_ids.length}"
+  end
+
 end
