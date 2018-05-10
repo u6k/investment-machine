@@ -186,7 +186,7 @@ namespace :crawl do
     Rails.logger.info "download_dow jones industrial averages: start: year=#{args.year}"
 
     if args.year == "all"
-      date_from = Date.new(1980, 1, 1)
+      date_from = Date.new(1987, 2, 1)
       date_to = Date.today  
     else
       date_from = Date.new(args.year.to_i, 1, 1)
