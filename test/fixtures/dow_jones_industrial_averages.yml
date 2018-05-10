@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+#one:
+#  date: 2018-05-09
+#  opening_price: 9.99
+#  high_price: 9.99
+#  low_price: 9.99
+#  close_price: 9.99
+
+#two:
+#  date: 2018-05-09
+#  opening_price: 9.99
+#  high_price: 9.99
+#  low_price: 9.99
+#  close_price: 9.99

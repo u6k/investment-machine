@@ -10,10 +10,30 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180404112625) do
+ActiveRecord::Schema.define(version: 20180509135859) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "dow_jones_industrial_averages", force: :cascade do |t|
+    t.date "date"
+    t.decimal "opening_price", precision: 10, scale: 2
+    t.decimal "high_price", precision: 10, scale: 2
+    t.decimal "low_price", precision: 10, scale: 2
+    t.decimal "close_price", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "nikkei_averages", force: :cascade do |t|
+    t.date "date"
+    t.decimal "opening_price", precision: 10, scale: 2
+    t.decimal "high_price", precision: 10, scale: 2
+    t.decimal "low_price", precision: 10, scale: 2
+    t.decimal "close_price", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "stock_prices", force: :cascade do |t|
     t.date "date"
@@ -33,6 +53,16 @@ ActiveRecord::Schema.define(version: 20180404112625) do
     t.string "ticker_symbol"
     t.string "company_name"
     t.string "market"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "topixes", force: :cascade do |t|
+    t.date "date"
+    t.decimal "opening_price", precision: 10, scale: 2
+    t.decimal "high_price", precision: 10, scale: 2
+    t.decimal "low_price", precision: 10, scale: 2
+    t.decimal "close_price", precision: 10, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
