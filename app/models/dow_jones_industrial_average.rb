@@ -1,3 +1,5 @@
+require "csv"
+
 class DowJonesIndustrialAverage < ApplicationRecord
   validates :date, presence: true
   validates :opening_price, presence: true
