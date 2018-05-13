@@ -45,4 +45,24 @@ class WertpapierReportTest < ActiveSupport::TestCase
     # TODO: assert db data
   end
 
+  test "download wertpapier zip" do
+    bucket = Stock._get_s3_bucket
+
+    keys = WertpapierReport.download_feed("1301")
+    wertpapier_reports = WertpapierReport.get_feed("1301", keys[:original])
+    WertpapierReport.import_feed(wertpapier_reports)
+
+    entry_id = wertpapier_reports[0].entry_id
+
+    keys = WertpapierReport.download_wertpapier_zip("1301", entry_id)
+
+    assert_equal "wertpapier_zip_1301_#{entry_id}.zip", keys[:original]
+    assert_match /^wertpapier_zip_1301_#{entry_id}\.zip\.bak_[0-9]{14}/, keys[:backup]
+    assert bucket.object(keys[:original]).exists?
+    assert bucket.object(keys[:backup]).exists?
+    assert_equal 4, Stock._get_s3_objects_size(bucket.objects)
+
+    # TODO: assert valid zip
+  end
+
 end

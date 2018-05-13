@@ -71,4 +71,8 @@ class WertpapierReport < ApplicationRecord
     wertpapier_report_ids
   end
 
+  def self.download_wertpapier_zip(ticker_symbol, entry_id)
+    raise "TODO" # TODO
+  end
+
 end
