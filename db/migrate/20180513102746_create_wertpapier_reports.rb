@@ -5,6 +5,7 @@ class CreateWertpapierReports < ActiveRecord::Migration[5.1]
       t.string :entry_id
       t.string :title
       t.string :content_type
+      t.string :url
       t.datetime :entry_updated
       t.timestamps
     end

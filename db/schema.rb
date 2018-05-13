@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(version: 20180513102746) do
     t.string "entry_id"
     t.string "title"
     t.string "content_type"
+    t.string "url"
     t.datetime "entry_updated"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

@@ -7,7 +7,7 @@ class WertpapierReportTest < ActiveSupport::TestCase
     bucket.objects.batch_delete!
   end
 
-  test "download and import feed" do
+  test "download feed" do
     bucket = Stock._get_s3_bucket
 
     keys = WertpapierReport.download_feed("1301")
@@ -20,18 +20,30 @@ class WertpapierReportTest < ActiveSupport::TestCase
 
     assert_equal 0, WertpapierReport.all.length
 
-    wertpapier_reports = WertpapierReport.get_feed(keys[:original])
+    wertpapier_reports = WertpapierReport.get_feed("1301", keys[:original])
 
     assert wertpapier_reports.length > 0
+    assert_equal 0, WertpapierReport.all.length
+  end
+
+  test "get and import feed" do
+    bucket = Stock._get_s3_bucket
+    atom_file_path = Rails.root.join("test", "fixtures", "files", "wertpapier_report", "wertpapier_feed_1301.atom")
+    object = bucket.object("wertpapier_feed_1301.atom")
+    object.upload_file(atom_file_path)
+
+    wertpapier_reports = WertpapierReport.get_feed("1301", "wertpapier_feed_1301.atom")
+
+    assert_equal 58, wertpapier_reports.length
+    # TODO: assert model instances
     assert_equal 0, WertpapierReport.all.length
 
     wertpapier_report_ids = WertpapierReport.import_feed(wertpapier_reports)
 
-    assert_equal wertpapier_reports.length, wertpapier_report_ids.length
-    assert_equal wertpapier_reports.length, WertpapierReport.all.length
-    wertpapier_report_ids.each do |wertpapier_report_id|
-      assert WertpapierReport.find(wertpapier_report_id)
-    end
+    assert_equal 58, wertpapier_reports.length
+    assert_equal 58, WertpapierReport.all.length
+    # TODO: assert db data
+    WertpapierReport.all.each { |wr| puts wr.inspect } # TODO: debug print
   end
 
 end
