@@ -1,0 +1,2 @@
+class WertpapierReport < ApplicationRecord
+end

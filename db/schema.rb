@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180509135859) do
+ActiveRecord::Schema.define(version: 20180513102746) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -63,6 +63,15 @@ ActiveRecord::Schema.define(version: 20180509135859) do
     t.decimal "high_price", precision: 10, scale: 2
     t.decimal "low_price", precision: 10, scale: 2
     t.decimal "close_price", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "wertpapier_reports", force: :cascade do |t|
+    t.string "ticker_symbol"
+    t.string "report_id"
+    t.date "date_from"
+    t.date "date_to"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
