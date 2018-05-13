@@ -69,10 +69,10 @@ ActiveRecord::Schema.define(version: 20180513102746) do
 
   create_table "wertpapier_reports", force: :cascade do |t|
     t.string "ticker_symbol"
-    t.string "doc_id"
+    t.string "entry_id"
     t.string "title"
-    t.date "date_from"
-    t.date "date_to"
+    t.string "content_type"
+    t.datetime "entry_updated"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
