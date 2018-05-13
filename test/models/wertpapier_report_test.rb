@@ -7,7 +7,7 @@ class WertpapierReportTest < ActiveSupport::TestCase
     bucket.objects.batch_delete!
   end
 
-  test "download feed and xbrl" do
+  test "download and import feed" do
     bucket = Stock._get_s3_bucket
 
     keys = WertpapierReport.download_feed("1301")
@@ -16,8 +16,22 @@ class WertpapierReportTest < ActiveSupport::TestCase
     assert_match /^wertpapier_feed_1301\.atom\.bak_[0-9]{14}/, keys[:backup]
     assert bucket.object(keys[:original]).exists?
     assert bucket.object(keys[:backup]).exists?
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
 
     assert_equal 0, WertpapierReport.all.length
+
+    wertpapier_reports = WertpapierReport.get_feed(keys[:original])
+
+    assert wertpapier_reports.length > 0
+    assert_equal 0, WertpapierReport.all.length
+
+    wertpapier_report_ids = WertpapierReport.import_feed(wertpapier_reports)
+
+    assert_equal wertpapier_reports.length, wertpapier_report_ids.length
+    assert_equal wertpapier_reports.length, WertpapierReport.all.length
+    wertpapier_report_ids.each do |wertpapier_report_id|
+      assert WertpapierReport.find(wertpapier_report_id)
+    end
   end
 
 end

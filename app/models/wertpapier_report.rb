@@ -13,4 +13,12 @@ class WertpapierReport < ApplicationRecord
     keys = Stock._download_with_get(url, file_name, false)
   end
 
+  def self.get_feed(object_key)
+    raise "TODO" # TODO
+  end
+
+  def self.import_feed(wertpapier_reports)
+    raise "TODO" # TODO
+  end
+
 end
