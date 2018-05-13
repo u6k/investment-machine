@@ -71,8 +71,13 @@ class WertpapierReport < ApplicationRecord
     wertpapier_report_ids
   end
 
-  def self.download_wertpapier_zip(ticker_symbol, entry_id)
-    raise "TODO" # TODO
+  def self.download_wertpapier_zip(ticker_symbol, entry_id, missing_only = false)
+    wertpapier_report = WertpapierReport.where("ticker_symbol = :ticker_symbol and entry_id = :entry_id", ticker_symbol: ticker_symbol, entry_id: entry_id).first
+
+    url = wertpapier_report.url
+    file_name = "wertpapier_zip_#{ticker_symbol}_#{wertpapier_report.entry_id}.zip"
+
+    keys = Stock._download_with_get(url, file_name, missing_only)
   end
 
 end
