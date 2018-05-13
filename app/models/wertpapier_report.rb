@@ -7,7 +7,10 @@ class WertpapierReport < ApplicationRecord
   validates :entry_updated, presence: true
 
   def self.download_feed(ticker_symbol)
-    raise "TODO" # TODO
+    url = "http://resource.ufocatch.com/atom/edinetx/query/#{ticker_symbol}"
+    file_name = "wertpapier_feed_#{ticker_symbol}.atom"
+
+    keys = Stock._download_with_get(url, file_name, false)
   end
 
 end
