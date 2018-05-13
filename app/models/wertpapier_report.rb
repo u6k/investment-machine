@@ -41,7 +41,34 @@ class WertpapierReport < ApplicationRecord
   end
 
   def self.import_feed(wertpapier_reports)
-    raise "TODO" # TODO
+    wertpapier_report_ids = nil
+
+    WertpapierReport.transaction do
+      wertpapier_report_ids = wertpapier_reports.map do |wertpapier_report|
+        wrs = WertpapierReport.where("ticker_symbol = :ticker_symbol and entry_id = :entry_id", ticker_symbol: wertpapier_report.ticker_symbol, entry_id: wertpapier_report.entry_id)
+        if wrs.empty?
+          wr = WertpapierReport.new(
+            ticker_symbol: wertpapier_report.ticker_symbol,
+            entry_id: wertpapier_report.entry_id,
+            title: wertpapier_report.title,
+            content_type: wertpapier_report.content_type,
+            url: wertpapier_report.url,
+            entry_updated: wertpapier_report.entry_updated
+          )
+        else
+          wr = wrs[0]
+          wr.title = wertpapier_report.title
+          wr.content_type = wertpapier_report.content_type
+          wr.url = wertpapier_report.url
+          wr.entry_updated = wertpapier_report.entry_updated
+        end
+
+        wr.save!
+        wr.id
+      end
+    end
+
+    wertpapier_report_ids
   end
 
 end

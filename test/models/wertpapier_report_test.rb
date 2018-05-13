@@ -43,7 +43,6 @@ class WertpapierReportTest < ActiveSupport::TestCase
     assert_equal 58, wertpapier_reports.length
     assert_equal 58, WertpapierReport.all.length
     # TODO: assert db data
-    WertpapierReport.all.each { |wr| puts wr.inspect } # TODO: debug print
   end
 
 end
