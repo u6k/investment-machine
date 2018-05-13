@@ -1,11 +1,11 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  report_id: MyString
-  date_from: 2018-05-13
-  date_to: 2018-05-13
+#one:
+#  report_id: MyString
+#  date_from: 2018-05-13
+#  date_to: 2018-05-13
 
-two:
-  report_id: MyString
-  date_from: 2018-05-13
-  date_to: 2018-05-13
+#two:
+#  report_id: MyString
+#  date_from: 2018-05-13
+#  date_to: 2018-05-13
