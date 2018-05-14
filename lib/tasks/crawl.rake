@@ -241,7 +241,7 @@ namespace :crawl do
   end
 
   task :import_wertpapier_report_feeds, [:ticker_symbol] => :environment do |task, args|
-    Rails.logger.info "import wertpapier_reports: start: ticker_symbol=#{args.ticker_symbol}"
+    Rails.logger.info "import_wertpapier_report_feeds: start: ticker_symbol=#{args.ticker_symbol}"
 
     # search stocks
     Rails.logger.info "select stocks: start"
@@ -263,11 +263,47 @@ namespace :crawl do
       Rails.logger.info "import wertpapier report feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}, result=#{wertpapier_reports.length}"
     end
 
-    Rails.logger.info "import wertpapier report feed: end"
+    Rails.logger.info "import_wertpapier_report_feeds: end"
   end
 
   task :download_wertpapier_report_zips, [:ticker_symbol, :missing_only] => :environment do |task, args|
-    raise "TODO" # TODO
+    Rails.logger.info "download_wertpapier_report_zips: start: ticker_symbol=#{args.ticker_symbol}, missing_only=#{args.missing_only}"
+
+    missing_only = (args.missing_only == "true")
+
+    # search stocks
+    Rails.logger.info "select stocks: start"
+
+    if args.ticker_symbol == "all"
+      ticker_symbols = Stock.all.map { |stock| stock.ticker_symbol }
+    else
+      ticker_symbols = [ args.ticker_symbol ]
+    end
+
+    Rails.logger.info "select stocks: end: length=#{ticker_symbols.length}"
+
+    # search wertpapier reports
+    Rails.logger.info "select wertpapier reports: start"
+
+    wertpapier_reports = []
+    ticker_symbols.each.with_index(1) do |ticker_symbol, index|
+      WertpapierReport.where("ticker_symbol = :ticker_symbol", ticker_symbol: ticker_symbol).each do |wr|
+        wertpapier_reports << wr
+      end
+      Rails.logger.info "select wertpapier reports: #{index}/#{wertpapier_reports}"
+    end
+
+    Rails.logger.info "select wertpapier reports: end: length=#{wertpapier_reports.length}"
+
+    # download zip
+    Rails.logger.info "download wertpapier report zip: start"
+
+    wertpapier_reports.each.with_index(1) do |wertpapier_report, index|
+      WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id)
+      Rails.logger.info "download wertpapier report zip: #{index}/#{wertpapier_reports.length}"
+    end
+
+    Rails.logger.info "download wertpapier report zip: start"
   end
 
 end
