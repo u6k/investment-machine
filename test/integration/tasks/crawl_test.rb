@@ -13,6 +13,7 @@ class CrawlTest < ActionDispatch::IntegrationTest
     StockPrice.all.delete_all
     NikkeiAverage.all.delete_all
     DowJonesIndustrialAverage.all.delete_all
+    WertpapierReport.all.delete_all
   end
 
   def teardown
@@ -26,6 +27,9 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Rake::Task["crawl:import_topixes"].clear
     Rake::Task["crawl:download_dow_jones_industrial_averages"].clear
     Rake::Task["crawl:import_dow_jones_industrial_averages"].clear
+    Rake::Task["crawl:download_wertpapier_report_feeds"].clear
+    Rake::Task["crawl:import_wertpapier_report_feeds"].clear
+    Rake::Task["crawl:download_wertpapier_report_zips"].clear
   end
 
   test "stocks download and import" do
@@ -129,4 +133,31 @@ class CrawlTest < ActionDispatch::IntegrationTest
     assert_equal 251, DowJonesIndustrialAverage.all.length
   end
 
+  test "download and import wertpapier reports - single" do
+    bucket = Stock._get_s3_bucket
+
+    assert_equal 0, WertpapierReport.all.length
+
+    Rake::Task["crawl:download_wertpapier_report_feeds"].invoke("1301")
+
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 0, WertpapierReport.all.length
+
+    Rake::Task["crawl:import_wertpapier_report_feeds"].invoke("1301")
+
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 58, WertpapierReport.all.length
+
+    Rake::Task["crawl:download_wertpapier_report_zips"].invoke("1301")
+
+    assert_equal 118, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 58, WertpapierReport.all.length
+
+    Rake::Task["crawl:download_wertpapier_report_zips"].invoke("1301", true)
+
+    assert_equal 118, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 58, WertpapierReport.all.length
+  end
+
 end
+
