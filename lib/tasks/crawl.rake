@@ -213,4 +213,8 @@ namespace :crawl do
     Rails.logger.info "import dow jones industrial averages: end: result=#{djia_ids.length}"
   end
 
+  task :download_wertpapier_reports, [:ticker_symbol, :missing_only] => :environment do |task, args|
+    raise "TODO" # TODO
+  end
+
 end
