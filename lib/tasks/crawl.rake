@@ -230,15 +230,40 @@ namespace :crawl do
     # download feed
     Rails.logger.info "download feed: start"
 
-    object_keys = ticker_symbols.map.with_index(1) do |ticker_symbol, index|
-      object_key = WertpapierReport.download_feed(ticker_symbol)
+    ticker_symbols.each.with_index(1) do |ticker_symbol, index|
+      WertpapierReport.download_feed(ticker_symbol)
       Rails.logger.info "download feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}"
-      object_key
     end
 
     Rails.logger.info "download feed: end"
 
     # download zip
+  end
+
+  task :import_wertpapier_report_feeds, [:ticker_symbol] => :environment do |task, args|
+    Rails.logger.info "import wertpapier_reports: start: ticker_symbol=#{args.ticker_symbol}"
+
+    # search stocks
+    Rails.logger.info "select stocks: start"
+
+    if args.ticker_symbol == "all"
+      ticker_symbols = Stock.all.map { |stock| stock.ticker_symbol }
+    else
+      ticker_symbols = [ args.ticker_symbol ]
+    end
+
+    Rails.logger.info "select stocks: end: length=#{ticker_symbols.length}"
+
+    # get and import wertpapier report feeds
+    Rails.logger.info "import wertpapier report feed: start"
+
+    ticker_symbols.each.with_index(1) do |ticker_symbol, index|
+      wertpapier_reports = WertpapierReport.get_feed(ticker_symbol, "wertpapier_feed_#{ticker_symbol}.atom")
+      WertpapierReport.import_feed(wertpapier_reports)
+      Rails.logger.info "import wertpapier report feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}, result=#{wertpapier_reports.length}"
+    end
+
+    Rails.logger.info "import wertpapier report feed: end"
   end
 
 end

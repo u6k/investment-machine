@@ -28,6 +28,7 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Rake::Task["crawl:download_dow_jones_industrial_averages"].clear
     Rake::Task["crawl:import_dow_jones_industrial_averages"].clear
     Rake::Task["crawl:download_wertpapier_report_feeds"].clear
+    Rake::Task["crawl:import_wertpapier_report_feeds"].clear
   end
 
   test "stocks download and import" do
@@ -131,31 +132,20 @@ class CrawlTest < ActionDispatch::IntegrationTest
     assert_equal 251, DowJonesIndustrialAverage.all.length
   end
 
-  test "download wertpapier report feeds - single" do
+  test "download and import wertpapier reports - single" do
     bucket = Stock._get_s3_bucket
 
-    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
     assert_equal 0, WertpapierReport.all.length
 
     Rake::Task["crawl:download_wertpapier_report_feeds"].invoke("1301")
 
     assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
     assert_equal 0, WertpapierReport.all.length
-  end
 
-  test "download wertpapier report feeds - all" do
-    bucket = Stock._get_s3_bucket
+    Rake::Task["crawl:import_wertpapier_report_feeds"].invoke("1301")
 
-    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
-    assert_equal 0, WertpapierReport.all.length
-
-    Stock.create(ticker_symbol: "1301", company_name: "aaa", market: "AAA")
-    Stock.create(ticker_symbol: "1305", company_name: "bbb", market: "BBB")
-
-    Rake::Task["crawl:download_wertpapier_report_feeds"].invoke("all", false)
-
-    assert_equal 4, Stock._get_s3_objects_size(bucket.objects)
-    assert_equal 0, WertpapierReport.all.length
+    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 58, WertpapierReport.all.length
   end
 
 end
