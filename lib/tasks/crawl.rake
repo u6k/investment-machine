@@ -266,4 +266,8 @@ namespace :crawl do
     Rails.logger.info "import wertpapier report feed: end"
   end
 
+  task :download_wertpapier_report_zips, [:ticker_symbol, :missing_only] => :environment do |task, args|
+    raise "TODO" # TODO
+  end
+
 end
