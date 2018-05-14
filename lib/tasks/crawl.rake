@@ -213,8 +213,32 @@ namespace :crawl do
     Rails.logger.info "import dow jones industrial averages: end: result=#{djia_ids.length}"
   end
 
-  task :download_wertpapier_reports, [:ticker_symbol, :missing_only] => :environment do |task, args|
-    raise "TODO" # TODO
+  task :download_wertpapier_report_feeds, [:ticker_symbol] => :environment do |task, args|
+    Rails.logger.info "download wertpapier_reports: start: ticker_symbol=#{args.ticker_symbol}"
+
+    # search stocks
+    Rails.logger.info "select stocks: start"
+
+    if args.ticker_symbol == "all"
+      ticker_symbols = Stock.all.map { |stock| stock.ticker_symbol }
+    else
+      ticker_symbols = [ args.ticker_symbol ]
+    end
+
+    Rails.logger.info "select stocks: end: length=#{ticker_symbols.length}"
+
+    # download feed
+    Rails.logger.info "download feed: start"
+
+    object_keys = ticker_symbols.map.with_index(1) do |ticker_symbol, index|
+      object_key = WertpapierReport.download_feed(ticker_symbol)
+      Rails.logger.info "download feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}"
+      object_key
+    end
+
+    Rails.logger.info "download feed: end"
+
+    # download zip
   end
 
 end
