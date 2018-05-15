@@ -150,12 +150,12 @@ class CrawlTest < ActionDispatch::IntegrationTest
 
     Rake::Task["crawl:download_wertpapier_report_zips"].invoke("1301")
 
-    assert_equal 118, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 122, Stock._get_s3_objects_size(bucket.objects)
     assert_equal 60, WertpapierReport.all.length
 
     Rake::Task["crawl:download_wertpapier_report_zips"].invoke("1301", true)
 
-    assert_equal 118, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 122, Stock._get_s3_objects_size(bucket.objects)
     assert_equal 60, WertpapierReport.all.length
   end
 
