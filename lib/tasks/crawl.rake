@@ -290,7 +290,7 @@ namespace :crawl do
       WertpapierReport.where("ticker_symbol = :ticker_symbol", ticker_symbol: ticker_symbol).each do |wr|
         wertpapier_reports << wr
       end
-      Rails.logger.info "select wertpapier reports: #{index}/#{wertpapier_reports}"
+      Rails.logger.info "select wertpapier reports: #{index}/#{wertpapier_reports.length}"
     end
 
     Rails.logger.info "select wertpapier reports: end: length=#{wertpapier_reports.length}"
