@@ -290,7 +290,7 @@ namespace :crawl do
       WertpapierReport.where("ticker_symbol = :ticker_symbol", ticker_symbol: ticker_symbol).each do |wr|
         wertpapier_reports << wr
       end
-      Rails.logger.info "select wertpapier reports: #{index}/#{wertpapier_reports.length}"
+      Rails.logger.info "select wertpapier reports: #{index}/#{ticker_symbols.length}"
     end
 
     Rails.logger.info "select wertpapier reports: end: length=#{wertpapier_reports.length}"
@@ -299,11 +299,11 @@ namespace :crawl do
     Rails.logger.info "download wertpapier report zip: start"
 
     wertpapier_reports.each.with_index(1) do |wertpapier_report, index|
-      WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id)
+      WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, missing_only)
       Rails.logger.info "download wertpapier report zip: #{index}/#{wertpapier_reports.length}"
     end
 
-    Rails.logger.info "download wertpapier report zip: start"
+    Rails.logger.info "download wertpapier report zip: end"
   end
 
 end
