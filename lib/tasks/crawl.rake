@@ -299,7 +299,7 @@ namespace :crawl do
     Rails.logger.info "download wertpapier report zip: start"
 
     wertpapier_reports.each.with_index(1) do |wertpapier_report, index|
-      WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id)
+      WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, missing_only)
       Rails.logger.info "download wertpapier report zip: #{index}/#{wertpapier_reports.length}"
     end
 
