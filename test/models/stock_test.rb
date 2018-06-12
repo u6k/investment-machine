@@ -39,34 +39,15 @@ class StockTest < ActiveSupport::TestCase
     assert bucket.object(object_keys[:backup]).exists?
   end
 
-  test "download index page, missing only" do
-    bucket = Stock._get_s3_bucket
-
-    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
-
-    Stock.download_index_page
-    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
-
-    Stock.download_index_page
-    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
-
-    Stock.download_index_page(true)
-    assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
-  end
-
   test "download page 1 and get stocks" do
-    bucket = Stock._get_s3_bucket
+    # execute 1
+    result = Stock.download_stock_list_page("?page=1")
 
-    keys = Stock.download_index_page
-    page_links = Stock.get_page_links(keys[:original])
+    # postcondition 1
+    data = result[:data]
+    stocks = result[:stocks]
 
-    keys = Stock.download_stock_list_page(page_links[0])
-    assert_equal "stock_list_?page=1.html", keys[:original]
-    assert_match /^stock_list_\?page=1\.html\.bak_[0-9]{14}/, keys[:backup]
-    assert bucket.object(keys[:original]).exists?
-    assert bucket.object(keys[:backup]).exists?
-
-    stocks = Stock.get_stocks(keys[:original])
+    assert data.length > 0
 
     assert stocks.length > 0
     stocks.each do |stock|
@@ -74,24 +55,20 @@ class StockTest < ActiveSupport::TestCase
     end
 
     assert_equal 0, Stock.all.length
-  end
 
-  test "download page 1, missing only" do
     bucket = Stock._get_s3_bucket
+    assert_not bucket.object("stock_list_?page=1.html").exists?
 
-    assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
+    # execute 2
+    object_keys = Stock.put_stock_list_page(bucket, "?page=1", result[:data])
 
-    keys = Stock.download_index_page
-    page_links = Stock.get_page_links(keys[:original])
+    # postcondition 2
+    assert_equal 0, Stock.all.length
 
-    Stock.download_stock_list_page(page_links[0])
-    assert_equal 4, Stock._get_s3_objects_size(bucket.objects)
-
-    Stock.download_stock_list_page(page_links[0])
-    assert_equal 5, Stock._get_s3_objects_size(bucket.objects)
-
-    Stock.download_stock_list_page(page_links[0], true)
-    assert_equal 5, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal "stock_list_?page=1.html", object_keys[:original]
+    assert_match /^stock_list_\?page=1\.html\.bak_[0-9]{8}-[0-9]{6}/, object_keys[:backup]
+    assert bucket.object(object_keys[:original]).exists?
+    assert bucket.object(object_keys[:backup]).exists?
   end
 
   test "import stocks" do

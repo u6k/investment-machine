@@ -43,11 +43,23 @@ class Stock < ApplicationRecord
 
   def self.download_stock_list_page(page_link)
     url = "https://kabuoji3.com/stock/" + page_link
-    file_name = "stock_list_#{page_link}.html"
 
     stock_list_page_data = self._download_with_get(url)
+    stocks = get_stocks(stock_list_page_data)
 
-    get_stocks(stock_list_page_data)
+    { data: stock_list_page_data, stocks: stocks }
+  end
+
+  def self.put_stock_list_page(bucket, page_link, stock_list_page_data)
+    file_name = "stock_list_#{page_link}.html"
+
+    object_original = bucket.object(file_name)
+    object_original.put(body: stock_list_page_data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: stock_list_page_data)
+
+    { original: object_original.key, backup: object_backup.key }
   end
 
   def self.get_stocks(stock_list_page_data)
