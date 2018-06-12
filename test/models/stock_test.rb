@@ -8,15 +8,14 @@ class StockTest < ActiveSupport::TestCase
   end
 
   test "download index page and get page links" do
-    bucket = Stock._get_s3_bucket
+    # execute 1
+    result = Stock.download_index_page
 
-    keys = Stock.download_index_page
-    assert_equal "stock_list_index.html", keys[:original]
-    assert_match /^stock_list_index\.html\.bak_[0-9]{14}/, keys[:backup]
-    assert bucket.object(keys[:original]).exists?
-    assert bucket.object(keys[:backup]).exists?
+    # postcondition 1
+    data = result[:data]
+    page_links = result[:page_links]
 
-    page_links = Stock.get_page_links(keys[:original])
+    assert data.length > 0
 
     assert page_links.length > 0
     page_links.each do |l|
@@ -24,6 +23,20 @@ class StockTest < ActiveSupport::TestCase
     end
 
     assert_equal 0, Stock.all.length
+
+    bucket = Stock._get_s3_bucket
+    assert_not bucket.object("stock_list_index.html").exists?
+
+    # execute 2
+    object_keys = Stock.put_index_page(bucket, result[:data])
+
+    # postcondition 2
+    assert_equal 0, Stock.all.length
+
+    assert_equal "stock_list_index.html", object_keys[:original]
+    assert_match /^stock_list_index\.html\.bak_[0-9]{8}-[0-9]{6}/, object_keys[:backup]
+    assert bucket.object(object_keys[:original]).exists?
+    assert bucket.object(object_keys[:backup]).exists?
   end
 
   test "download index page, missing only" do

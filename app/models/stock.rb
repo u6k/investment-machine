@@ -7,18 +7,29 @@ class Stock < ApplicationRecord
   validates :company_name, presence: true, format: { with: /.+/i }
   validates :market, presence: true, format: { with: /.+/i }
 
-  def self.download_index_page(missing_only = false)
+  def self.download_index_page
     url = "https://kabuoji3.com/stock/"
-    file_name = "stock_list_index.html"
 
-    keys = self._download_with_get(url, file_name, missing_only)
+    index_page_data = self._download_with_get(url)
+    page_links = get_page_links(index_page_data)
+
+    { data: index_page_data, page_links: page_links }
   end
 
-  def self.get_page_links(object_key)
-    bucket = self._get_s3_bucket
-    html = bucket.object(object_key).get.body
+  def self.put_index_page(bucket, index_page_data)
+    file_name = "stock_list_index.html"
 
-    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
+    object_original = bucket.object(file_name)
+    object_original.put(body: index_page_data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: index_page_data)
+
+    { original: object_original.key, backup: object_backup.key }
+  end
+
+  def self.get_page_links(index_page_data)
+    doc = Nokogiri::HTML.parse(index_page_data, nil, "UTF-8")
 
     pager_lines = doc.xpath("//ul[@class='pager']/li/a")
 
@@ -30,18 +41,17 @@ class Stock < ApplicationRecord
     page_links
   end
 
-  def self.download_stock_list_page(page_link, missing_only = false)
+  def self.download_stock_list_page(page_link)
     url = "https://kabuoji3.com/stock/" + page_link
     file_name = "stock_list_#{page_link}.html"
 
-    keys = self._download_with_get(url, file_name, missing_only)
+    stock_list_page_data = self._download_with_get(url)
+
+    get_stocks(stock_list_page_data)
   end
 
-  def self.get_stocks(object_key)
-    bucket = self._get_s3_bucket
-    html = bucket.object(object_key).get.body
-
-    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
+  def self.get_stocks(stock_list_page_data)
+    doc = Nokogiri::HTML.parse(stock_list_page_data, nil, "UTF-8")
 
     stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr")
 
@@ -90,14 +100,18 @@ class Stock < ApplicationRecord
     url = "https://kabuoji3.com/stock/#{ticker_symbol}/"
     file_name = "stock_detail_#{ticker_symbol}.html"
 
-    keys = self._download_with_get(url, file_name, missing_only)
+    object = Stock._get_s3_bucket.object(file_name)
+    if object.exists? && missing_only
+      []
+    else
+      stock_detail_page_data = _download_with_get(url)
+
+      get_years(stock_detail_page_data)
+    end
   end
  
-  def self.get_years(object_key)
-    bucket = self._get_s3_bucket
-    html = bucket.object(object_key).get.body
-
-    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
+  def self.get_years(stock_detail_page_data)
+    doc = Nokogiri::HTML.parse(stock_detail_page_data, nil, "UTF-8")
 
     year_nodes = doc.xpath("//ul[@class='stock_yselect mt_10']/li/a")
 
@@ -126,61 +140,45 @@ class Stock < ApplicationRecord
     count
   end
 
-  def self._download_with_get(url, file_name, missing_only)
-    bucket = Stock._get_s3_bucket
-
+  def self._put_s3_object(bucket, file_name, data)
     obj_original = bucket.object(file_name)
-    if obj_original.exists? && missing_only
-      keys = { original: obj_original.key }
-    else
-      uri = URI(url)
+    obj_original.put(body: data)
 
-      req = Net::HTTP::Get.new(uri)
-      req["User-Agent"] = "curl/7.54.0"
-      req["Accept"] = "*/*"
-
-      res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
-        http.request(req)
-      end
-
-      sleep(1)
-
-      obj_original = bucket.object(file_name)
-      obj_original.put(body: res.body)
-      obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
-      obj_backup.put(body: res.body)
-
-      keys = {original: obj_original.key, backup: obj_backup.key}
-    end
+    obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
+    obj_backup.put(body: data)
   end
 
-  def self._download_with_post(url, data, file_name, missing_only)
-    bucket = Stock._get_s3_bucket
+  def self._download_with_get(url)
+    uri = URI(url)
 
-    obj_original = bucket.object(file_name)
-    if obj_original.exists? && missing_only
-      keys = { original: obj_original.key }
-    else
-      uri = URI(url)
+    req = Net::HTTP::Get.new(uri)
+    req["User-Agent"] = "curl/7.54.0"
+    req["Accept"] = "*/*"
 
-      req = Net::HTTP::Post.new(uri)
-      req["User-Agent"] = "curl/7.54.0"
-      req["Accept"] = "*/*"
-      req.set_form_data(data)
-
-      res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
-        http.request(req)
-      end
-
-      sleep(1)
-
-      obj_original = bucket.object(file_name)
-      obj_original.put(body: res.body)
-      obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
-      obj_backup.put(body: res.body)
-
-      keys = {original: obj_original.key, backup: obj_backup.key}
+    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
+      http.request(req)
     end
+
+    sleep(1)
+
+    res.body
+  end
+
+  def self._download_with_post(url, data)
+    uri = URI(url)
+
+    req = Net::HTTP::Post.new(uri)
+    req["User-Agent"] = "curl/7.54.0"
+    req["Accept"] = "*/*"
+    req.set_form_data(data)
+
+    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
+      http.request(req)
+    end
+
+    sleep(1)
+
+    res.body
   end
 
 end
