@@ -132,10 +132,17 @@ class StockTest < ActiveSupport::TestCase
     # precondition
     assert_equal 0, Stock.all.length
 
+    bucket = Stock._get_s3_bucket
+    assert_not bucket.object("stock_list_index.html").exists?
+    assert_not bucket.object("stock_list_?page=1.html").exists?
+
     # execute
     download_index_page_result = Stock.download_index_page
+    Stock.put_index_page(bucket, download_index_page_result[:data])
 
     download_stock_list_page_result = Stock.download_stock_list_page(download_index_page_result[:page_links][0])
+    Stock.put_stock_list_page(bucket, download_index_page_result[:page_links][0], download_index_page_result[:data])
+
     stock_ids = Stock.import(download_stock_list_page_result[:stocks])
 
     # postcondition
@@ -147,6 +154,9 @@ class StockTest < ActiveSupport::TestCase
       assert_equal stock.company_name, stock_actual.company_name
       assert_equal stock.market, stock_actual.market
     end
+
+    assert bucket.object("stock_list_index.html").exists?
+    assert bucket.object("stock_list_?page=1.html").exists?
   end
 
   test "download stock detail page and get years" do
