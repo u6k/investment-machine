@@ -114,12 +114,25 @@ class Stock < ApplicationRecord
 
     object = Stock._get_s3_bucket.object(file_name)
     if object.exists? && missing_only
-      []
+      nil
     else
       stock_detail_page_data = _download_with_get(url)
+      years = get_years(stock_detail_page_data)
 
-      get_years(stock_detail_page_data)
+      { data: stock_detail_page_data, years: years }
     end
+  end
+
+  def self.put_stock_detail_page(bucket, ticker_symbol, stock_detail_page_data)
+    file_name = "stock_detail_#{ticker_symbol}.html"
+
+    object_original = bucket.object(file_name)
+    object_original.put(body: stock_detail_page_data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: stock_detail_page_data)
+
+    { original: object_original.key, backup: object_backup.key }
   end
  
   def self.get_years(stock_detail_page_data)

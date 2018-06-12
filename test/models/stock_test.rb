@@ -160,34 +160,57 @@ class StockTest < ActiveSupport::TestCase
   end
 
   test "download stock detail page and get years" do
-    bucket = Stock._get_s3_bucket
+    # execute 1
+    result = Stock.download_stock_detail_page("1301")
 
-    keys = Stock.download_stock_detail_page("1301")
-    assert_equal "stock_detail_1301.html", keys[:original]
-    assert_match /^stock_detail_1301\.html\.bak_[0-9]{14}/, keys[:backup]
-    assert bucket.object(keys[:original]).exists?
-    assert bucket.object(keys[:backup]).exists?
+    # postcondition 1
+    data = result[:data]
+    years = result[:years]
 
-    years = Stock.get_years(keys[:original])
+    assert data.length > 0
 
     assert_equal 36, years.length
     (1983..2018).each do |year|
       assert_includes years, year
     end
+
+    bucket = Stock._get_s3_bucket
+    assert_not bucket.object("stock_detail_1301.html").exists?
+
+    # execute 2
+    object_keys = Stock.put_stock_detail_page(bucket, "1301", result[:data])
+
+    # postcondition 2
+    assert_equal "stock_detail_1301.html", object_keys[:original]
+    assert_match /^stock_detail_1301\.html\.bak_[0-9]{8}-[0-9]{6}/, object_keys[:backup]
+    assert bucket.object(object_keys[:original]).exists?
+    assert bucket.object(object_keys[:backup]).exists?
   end
 
   test "download stock detail page, missing only" do
+    # precondition
     bucket = Stock._get_s3_bucket
-
     assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
 
-    Stock.download_stock_detail_page("1301")
+    # execute 1
+    result = Stock.download_stock_detail_page("1301")
+    Stock.put_stock_detail_page(bucket, "1301", result[:data])
+
+    # postcondition 1
     assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
 
-    Stock.download_stock_detail_page("1301")
+    # execute 2
+    result = Stock.download_stock_detail_page("1301")
+    Stock.put_stock_detail_page(bucket, "1301", result[:data])
+
+    # postcondition 2
     assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
 
-    Stock.download_stock_detail_page("1301", true)
+    # execute 3
+    result = Stock.download_stock_detail_page("1301", true)
+
+    # postcondition 3
+    assert_nil result
     assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
   end
 
