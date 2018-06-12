@@ -129,16 +129,16 @@ class StockTest < ActiveSupport::TestCase
   end
 
   test "download page 1 and get stocks and import stocks" do
-    keys = Stock.download_index_page
-    page_links = Stock.get_page_links(keys[:original])
-
-    keys = Stock.download_stock_list_page(page_links[0])
-    stocks = Stock.get_stocks(keys[:original])
-
+    # precondition
     assert_equal 0, Stock.all.length
 
-    stock_ids = Stock.import(stocks)
+    # execute
+    download_index_page_result = Stock.download_index_page
 
+    download_stock_list_page_result = Stock.download_stock_list_page(download_index_page_result[:page_links][0])
+    stock_ids = Stock.import(download_stock_list_page_result[:stocks])
+
+    # postcondition
     assert_equal stock_ids.length, Stock.all.length
 
     stocks.each do |stock|
