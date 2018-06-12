@@ -16,16 +16,33 @@ class StockPrice < ApplicationRecord
     file_name = "stock_price_#{ticker_symbol}_#{year}.csv"
     form_data = { "code" => ticker_symbol, "year" => year }
 
-    keys = Stock._download_with_post(url, form_data, file_name, missing_only)
+    bucket = Stock._get_s3_bucket
+    if bucket.object(file_name).exists? && missing_only
+      nil
+    else
+      data = Stock._download_with_post(url, form_data)
+      stock_prices = get_stock_prices(data, ticker_symbol)
+
+      { data: data, stock_prices: stock_prices }
+    end
   end
 
-  def self.get_stock_prices(object_key, ticker_symbol)
+  def self.put_stock_price_csv(bucket, ticker_symbol, year, data)
+    file_name = "stock_price_#{ticker_symbol}_#{year}.csv"
+
+    object_original = bucket.object(file_name)
+    object_original.put(body: data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: data)
+
+    { original: object_original.key, backup: object_backup.key }
+  end
+
+  def self.get_stock_prices(csv, ticker_symbol)
     stock = Stock.find_by(ticker_symbol: ticker_symbol)
 
-    bucket = Stock._get_s3_bucket
-    csv = bucket.object(object_key).get.body
-
-    csv = csv.string.encode("UTF-8", "Shift_JIS")
+    csv = csv.encode("UTF-8", "Shift_JIS")
 
     stock_prices = []
     CSV.parse(csv) do |line|
