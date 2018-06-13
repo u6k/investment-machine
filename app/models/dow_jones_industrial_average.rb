@@ -7,6 +7,10 @@ class DowJonesIndustrialAverage < ApplicationRecord
   validates :low_price, presence: true
   validates :close_price, presence: true
 
+  def self.build_djia_csv_file_name(date_from, date_to)
+    "djia_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv"
+  end
+
   def self.download_djia_csv(date_from, date_to)
     interval_day = ((date_to - 1) - date_from).to_i
     url = "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=#{interval_day}&range_days=#{interval_day}&startDate=#{date_from.strftime('%m/%d/%Y')}&endDate=#{(date_to - 1).strftime('%m/%d/%Y')}"
@@ -17,16 +21,18 @@ class DowJonesIndustrialAverage < ApplicationRecord
     { data: data, djias: djias }
   end
 
-  def self.put_djia_csv(bucket, date_from, date_to, data)
-    file_name = "djia_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv"
+  def self.put_djia_csv(date_from, date_to, data)
+    file_name = build_djia_csv_file_name(date_from, date_to)
 
-    object_original = bucket.object(file_name)
-    object_original.put(body: data)
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
+  end
 
-    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
-    object_backup.put(body: data)
+  def self.get_djia_csv(date_from, date_to)
+    file_name = build_djia_csv_file_name(date_from, date_to)
 
-    { original: object_original.key, backup: object_backup.key }
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
   end
 
   def self.get_djias(csv)
