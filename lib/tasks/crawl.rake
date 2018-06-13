@@ -5,36 +5,43 @@ require "aws-sdk-s3"
 namespace :crawl do
   desc "Crawler"
 
-  task :download_stocks, [:missing_only] => :environment do |task, args|
-    missing_only = (args.missing_only == "true")
-    Rails.logger.info "download_stocks: start: missing_only=#{missing_only}"
+  task :download_stocks, [] => :environment do |task, args|
+    Rails.logger.info "download_stocks: start"
 
-    Rails.logger.info "download_index_page and get_page_links: start"
-    keys = Stock.download_index_page(missing_only)
-    page_links = Stock.get_page_links(keys[:original])
-    Rails.logger.info "download_index_page and get_page_links: end: page_links.length=#{page_links.length}"
+    bucket = Stock._get_s3_bucket
 
-    page_links.each.with_index(1) do |page_link, page_link_index|
-      Rails.logger.info "download_stock_list_page: start: #{page_link_index}/#{page_links.length}, page_link=#{page_link}"
-      Stock.download_stock_list_page(page_link, missing_only)
-      Rails.logger.info "download_stock_list_page: end"
+    Rails.logger.info "download_stocks: download_index_page: start"
+    result = Stock.download_index_page
+    Stock.put_index_page(bucket, result[:data])
+
+    page_links = result[:page_links]
+    Rails.logger.info "download_stocks: download_index_page: end: length=#{page_links.length}"
+
+    page_links.each.with_index(1) do |page_link, index|
+      Rails.logger.info "download_stocks: download_stock_list_page: #{index}/#{page_links.length}, page_link=#{page_link}"
+      result = Stock.download_stock_list_page(page_link)
+      Stock.put_stock_list_page(bucket, page_link, result[:data])
     end
 
     Rails.logger.info "download_stocks: end"
   end
 
-  task import_stocks: :environment do
+  task :import_stocks, [] => :environment do |task, args|
     Rails.logger.info "import_stocks: start"
 
-    Rails.logger.info "get_page_links: start"
-    page_links = Stock.get_page_links("stock_list_index.html")
-    Rails.logger.info "get_page_links: end: page_links.length=#{page_links.length}"
+    bucket = Stock._get_s3_bucket
 
-    page_links.each.with_index(1) do |page_link, page_link_index|
-      Rails.logger.info "get_stocks and import: start: #{page_link_index}/#{page_links.length}: page_link=#{page_link}"
-      stocks = Stock.get_stocks("stock_list_#{page_link}.html")
+    Rails.logger.info "import_stocks: get_page_links: start"
+    data = bucket.object("stock_list_index.html").get.body.read
+    page_links = Stock.get_page_links(data)
+    Rails.logger.info "import_stocks: get_page_links: end: length=#{page_links.length}"
+
+    page_links.each.with_index(1) do |page_link, index|
+      Rails.logger.info "import_stocks: import: start: #{index}/#{page_links.length}: page_link=#{page_link}"
+      data = bucket.object("stock_list_#{page_link}.html").get.body.read
+      stocks = Stock.get_stocks(data)
       Stock.import(stocks)
-      Rails.logger.info "get_stocks and import: end: stocks.length=#{stocks.length}"
+      Rails.logger.info "import_stocks: import: end: stocks.length=#{stocks.length}"
     end
 
     Rails.logger.info "import_stocks: end: Stock.all.length=#{Stock.all.length}"
