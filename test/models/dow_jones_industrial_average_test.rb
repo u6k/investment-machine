@@ -8,18 +8,21 @@ class DowJonesIndustrialAverageTest < ActiveSupport::TestCase
   end
 
   test "download csv and get djia" do
+    # precondition
     bucket = Stock._get_s3_bucket
+    assert_not bucket.object("djia_20180201_20180301.csv").exists?
 
     date_from = Date.new(2018, 2, 1)
     date_to = Date.new(2018, 3, 1)
 
-    keys = DowJonesIndustrialAverage.download_djia_csv(date_from, date_to)
-    assert_equal "djia_20180201_20180301.csv", keys[:original]
-    assert_match /^djia_20180201_20180301\.csv\.bak_[0-9]{14}$/, keys[:backup]
-    assert bucket.object(keys[:original]).exists?
-    assert bucket.object(keys[:backup]).exists?
+    # execute 1
+    result = DowJonesIndustrialAverage.download_djia_csv(date_from, date_to)
 
-    djias = DowJonesIndustrialAverage.get_djias(keys[:original])
+    # postcondition 1
+    data = result[:data]
+    djias = result[:djias]
+
+    assert data.length > 0
 
     assert_equal 19, djias.length
     djias.each do |djia|
@@ -33,17 +36,28 @@ class DowJonesIndustrialAverageTest < ActiveSupport::TestCase
     assert_equal "26186.71".to_d, djias[18].close_price
 
     assert_equal 0, DowJonesIndustrialAverage.all.length
+
+    # execute 2
+    object_keys = DowJonesIndustrialAverage.put_djia_csv(bucket, date_from, date_to, data)
+
+    assert_equal "djia_20180201_20180301.csv", object_keys[:original]
+    assert_match /^djia_20180201_20180301\.csv\.bak_[0-9]{8}-[0-9]{6}$/, object_keys[:backup]
+    assert bucket.object(object_keys[:original]).exists?
+    assert bucket.object(object_keys[:backup]).exists?
   end
 
   test"import djias and overwrite" do
+    # precondition 1
     djias = [
       DowJonesIndustrialAverage.new(date: Date.parse("2017-09-01"), opening_price: "100.01".to_d, high_price: "200.02".to_d, low_price: "300.03".to_d, close_price: "400.04".to_d),
       DowJonesIndustrialAverage.new(date: Date.parse("2017-09-02"), opening_price: "1100.11".to_d, high_price: "1200.12".to_d, low_price: "1300.13".to_d, close_price: "1400.14".to_d),
       DowJonesIndustrialAverage.new(date: Date.parse("2017-09-03"), opening_price: "2100.21".to_d, high_price: "2200.22".to_d, low_price: "2300.23".to_d, close_price: "2400.24".to_d)
     ]
 
+    # execute 1
     djia_ids = DowJonesIndustrialAverage.import(djias)
 
+    # postcondition 1
     assert_equal 3, djia_ids.length
     djia_ids.each do |djia_id|
       assert DowJonesIndustrialAverage.find(djia_id)
@@ -59,6 +73,7 @@ class DowJonesIndustrialAverageTest < ActiveSupport::TestCase
       assert_equal djia.close_price, djia_actual.close_price
     end
 
+    # precondition 2
     djias[1].opening_price = 10001.01
     djias[1].high_price = 10002.02
     djias[1].low_price = 10003.03
@@ -66,8 +81,10 @@ class DowJonesIndustrialAverageTest < ActiveSupport::TestCase
 
     djias << DowJonesIndustrialAverage.new(date: Date.parse("2017-09-04"), opening_price: "3100.31".to_d, high_price: "3200.32".to_d, low_price: "3300.33".to_d, close_price: "3400.34".to_d)
 
+    # execute 2
     djia_ids = DowJonesIndustrialAverage.import(djias)
 
+    # postcondition 2
     assert_equal 4, djia_ids.length
     djia_ids.each do |djia_id|
       assert DowJonesIndustrialAverage.find(djia_id)

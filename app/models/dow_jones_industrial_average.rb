@@ -10,15 +10,26 @@ class DowJonesIndustrialAverage < ApplicationRecord
   def self.download_djia_csv(date_from, date_to)
     interval_day = ((date_to - 1) - date_from).to_i
     url = "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=#{interval_day}&range_days=#{interval_day}&startDate=#{date_from.strftime('%m/%d/%Y')}&endDate=#{(date_to - 1).strftime('%m/%d/%Y')}"
-    file_name = "djia_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv"
 
-    keys = Stock._download_with_get(url, file_name, false)
+    data = Stock._download_with_get(url)
+    djias = get_djias(data)
+
+    { data: data, djias: djias }
   end
 
-  def self.get_djias(object_key)
-    bucket = Stock._get_s3_bucket
-    csv = bucket.object(object_key).get.body
+  def self.put_djia_csv(bucket, date_from, date_to, data)
+    file_name = "djia_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv"
 
+    object_original = bucket.object(file_name)
+    object_original.put(body: data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: data)
+
+    { original: object_original.key, backup: object_backup.key }
+  end
+
+  def self.get_djias(csv)
     djias = []
     CSV.parse(csv) do |line|
       if line[0].match(/^[0-9]{2}\/[0-9]{2}\/[0-9]{2}$/)
