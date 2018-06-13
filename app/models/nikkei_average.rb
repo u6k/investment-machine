@@ -9,13 +9,30 @@ class NikkeiAverage < ApplicationRecord
     url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=#{year}&month=#{month}"
     file_name = "nikkei_average_#{year}_#{format("%02d", month)}.html"
 
-    keys = Stock._download_with_get(url, file_name, missing_only)
+    bucket = Stock._get_s3_bucket
+    if missing_only && bucket.object(file_name).exists?
+      nil
+    else
+      data = Stock._download_with_get(url)
+      nikkei_averages = get_nikkei_averages(data)
+
+      { data: data, nikkei_averages: nikkei_averages }
+    end
   end
 
-  def self.get_nikkei_averages(object_key)
-    bucket = Stock._get_s3_bucket
-    html = bucket.object(object_key).get.body
+  def self.put_nikkei_average_html(bucket, year, month, data)
+    file_name = "nikkei_average_#{year}_#{format("%02d", month)}.html"
 
+    object_original = bucket.object(file_name)
+    object_original.put(body: data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: data)
+
+    { original: object_original.key, backup: object_backup.key }
+  end
+
+  def self.get_nikkei_averages(html)
     doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
     price_lines = doc.xpath("//tr[not(contains(@class, 'list-header'))]")
