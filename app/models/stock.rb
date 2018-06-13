@@ -7,29 +7,35 @@ class Stock < ApplicationRecord
   validates :company_name, presence: true, format: { with: /.+/i }
   validates :market, presence: true, format: { with: /.+/i }
 
+  def self.build_index_page_file_name
+    "stock_list_index.html"
+  end
+
   def self.download_index_page
     url = "https://kabuoji3.com/stock/"
 
-    index_page_data = self._download_with_get(url)
-    page_links = get_page_links(index_page_data)
+    data = Stock._download_with_get(url)
+    page_links = parse_index_page(data)
 
-    { data: index_page_data, page_links: page_links }
+    { data: data, page_links: page_links }
   end
 
-  def self.put_index_page(bucket, index_page_data)
-    file_name = "stock_list_index.html"
+  def self.put_index_page(data)
+    file_name = build_index_page_file_name
 
-    object_original = bucket.object(file_name)
-    object_original.put(body: index_page_data)
-
-    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
-    object_backup.put(body: index_page_data)
-
-    { original: object_original.key, backup: object_backup.key }
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
   end
 
-  def self.get_page_links(index_page_data)
-    doc = Nokogiri::HTML.parse(index_page_data, nil, "UTF-8")
+  def self.get_index_page
+    file_name = build_index_page_file_name
+
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
+  end
+
+  def self.parse_index_page(html)
+    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
     pager_lines = doc.xpath("//ul[@class='pager']/li/a")
 
@@ -41,29 +47,35 @@ class Stock < ApplicationRecord
     page_links
   end
 
+  def self.build_stock_list_page_file_name(page_link)
+    "stock_list_#{page_link}.html"
+  end
+
   def self.download_stock_list_page(page_link)
     url = "https://kabuoji3.com/stock/" + page_link
 
-    stock_list_page_data = self._download_with_get(url)
-    stocks = get_stocks(stock_list_page_data)
+    data = self._download_with_get(url)
+    stocks = parse_stocks(data)
 
-    { data: stock_list_page_data, stocks: stocks }
+    { data: data, stocks: stocks }
   end
 
-  def self.put_stock_list_page(bucket, page_link, stock_list_page_data)
-    file_name = "stock_list_#{page_link}.html"
+  def self.put_stock_list_page(page_link, data)
+    file_name = build_stock_list_page_file_name(page_link)
 
-    object_original = bucket.object(file_name)
-    object_original.put(body: stock_list_page_data)
-
-    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
-    object_backup.put(body: stock_list_page_data)
-
-    { original: object_original.key, backup: object_backup.key }
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
   end
 
-  def self.get_stocks(stock_list_page_data)
-    doc = Nokogiri::HTML.parse(stock_list_page_data, nil, "UTF-8")
+  def self.get_stock_list_page(page_link)
+    file_name = build_stock_list_page_file_name(page_link)
+
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
+  end
+
+  def self.parse_stocks(html)
+    doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
     stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr")
 
@@ -108,35 +120,41 @@ class Stock < ApplicationRecord
     stock_ids
   end
 
+  def self.build_stock_detail_page_file_name(ticker_symbol)
+    "stock_detail_#{ticker_symbol}.html"
+  end
+
   def self.download_stock_detail_page(ticker_symbol, missing_only = false)
     url = "https://kabuoji3.com/stock/#{ticker_symbol}/"
-    file_name = "stock_detail_#{ticker_symbol}.html"
+    file_name = build_stock_detail_page_file_name(ticker_symbol)
 
     object = Stock._get_s3_bucket.object(file_name)
     if object.exists? && missing_only
       nil
     else
-      stock_detail_page_data = _download_with_get(url)
-      years = get_years(stock_detail_page_data)
+      data = _download_with_get(url)
+      years = parse_stock_detail_page(data)
 
-      { data: stock_detail_page_data, years: years }
+      { data: data, years: years }
     end
   end
 
-  def self.put_stock_detail_page(bucket, ticker_symbol, stock_detail_page_data)
-    file_name = "stock_detail_#{ticker_symbol}.html"
+  def self.put_stock_detail_page(ticker_symbol, data)
+    file_name = build_stock_detail_page_file_name(ticker_symbol)
 
-    object_original = bucket.object(file_name)
-    object_original.put(body: stock_detail_page_data)
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
+  end
 
-    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
-    object_backup.put(body: stock_detail_page_data)
+  def self.get_stock_detail_page(ticker_symbol)
+    file_name = build_stock_detail_page_file_name(ticker_symbol)
 
-    { original: object_original.key, backup: object_backup.key }
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
   end
  
-  def self.get_years(stock_detail_page_data)
-    doc = Nokogiri::HTML.parse(stock_detail_page_data, nil, "UTF-8")
+  def self.parse_stock_detail_page(data)
+    doc = Nokogiri::HTML.parse(data, nil, "UTF-8")
 
     year_nodes = doc.xpath("//ul[@class='stock_yselect mt_10']/li/a")
 
@@ -169,8 +187,15 @@ class Stock < ApplicationRecord
     obj_original = bucket.object(file_name)
     obj_original.put(body: data)
 
-    obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d%H%M%S"))
+    obj_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
     obj_backup.put(body: data)
+
+    { original: obj_original.key, backup: obj_backup.key }
+  end
+
+  def self._get_s3_object(bucket, file_name)
+    object = bucket.object(file_name)
+    data = object.get.body.read(object.size)
   end
 
   def self._download_with_get(url)
