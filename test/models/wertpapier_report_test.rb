@@ -8,60 +8,87 @@ class WertpapierReportTest < ActiveSupport::TestCase
   end
 
   test "download feed" do
+    # precondition
     bucket = Stock._get_s3_bucket
 
-    keys = WertpapierReport.download_feed("1301")
+    # execute 1
+    result = WertpapierReport.download_feed("1301")
 
-    assert_equal "wertpapier_feed_1301.atom", keys[:original]
-    assert_match /^wertpapier_feed_1301\.atom\.bak_[0-9]{14}/, keys[:backup]
-    assert bucket.object(keys[:original]).exists?
-    assert bucket.object(keys[:backup]).exists?
-    assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
-
-    assert_equal 0, WertpapierReport.all.length
-
-    wertpapier_reports = WertpapierReport.get_feed("1301", keys[:original])
+    # postcondition 1
+    data = result[:data]
+    wertpapier_reports = result[:wertpapier_reports]
 
     assert wertpapier_reports.length > 0
+
     assert_equal 0, WertpapierReport.all.length
+
+    # execute 2
+    object_keys = WertpapierReport.put_feed(bucket, "1301", data)
+
+    # postcondition 2
+    assert_equal "wertpapier_feed_1301.atom", object_keys[:original]
+    assert_match /^wertpapier_feed_1301\.atom\.bak_[0-9]{8}-[0-9]{6}/, object_keys[:backup]
+    assert bucket.object(object_keys[:original]).exists?
+    assert bucket.object(object_keys[:backup]).exists?
   end
 
   test "get and import feed" do
-    bucket = Stock._get_s3_bucket
+    # precondition
     atom_file_path = Rails.root.join("test", "fixtures", "files", "wertpapier_report", "wertpapier_feed_1301.atom")
-    object = bucket.object("wertpapier_feed_1301.atom")
-    object.upload_file(atom_file_path)
+    data = File.open(atom_file_path).read
 
-    wertpapier_reports = WertpapierReport.get_feed("1301", "wertpapier_feed_1301.atom")
+    # execute 1
+    wertpapier_reports = WertpapierReport.get_feed("1301", data)
 
+    # postcondition 1
     assert_equal 58, wertpapier_reports.length
-    # TODO: assert model instances
+    wertpapier_reports.each do |wertpapier_report|
+      assert wertpapier_report.valid?
+    end
+
     assert_equal 0, WertpapierReport.all.length
 
+    # execute 2
     wertpapier_report_ids = WertpapierReport.import_feed(wertpapier_reports)
 
-    assert_equal 58, wertpapier_reports.length
+    # postcondition 2
+    assert_equal 58, wertpapier_report_ids.length
     assert_equal 58, WertpapierReport.all.length
-    # TODO: assert db data
+
+    wertpapier_reports.each do |wertpapier_report|
+      wr = WertpapierReport.find_by(ticker_symbol: wertpapier_report.ticker_symbol, entry_id: wertpapier_report.entry_id)
+
+      assert_equal wertpapier_report.title, wr.title
+      assert_equal wertpapier_report.content_type, wr.content_type
+      assert_equal wertpapier_report.entry_updated, wr.entry_updated
+    end
   end
 
   test "download wertpapier zip" do
+    # precondition
     bucket = Stock._get_s3_bucket
 
-    keys = WertpapierReport.download_feed("1301")
-    wertpapier_reports = WertpapierReport.get_feed("1301", keys[:original])
+    wertpapier_reports = WertpapierReport.download_feed("1301")[:wertpapier_reports]
     WertpapierReport.import_feed(wertpapier_reports)
 
     entry_id = wertpapier_reports[0].entry_id
 
-    keys = WertpapierReport.download_wertpapier_zip("1301", entry_id)
+    # execute 1
+    result = WertpapierReport.download_wertpapier_zip("1301", entry_id)
 
-    assert_equal "wertpapier_zip_1301_#{entry_id}.zip", keys[:original]
-    assert_match /^wertpapier_zip_1301_#{entry_id}\.zip\.bak_[0-9]{14}/, keys[:backup]
-    assert bucket.object(keys[:original]).exists?
-    assert bucket.object(keys[:backup]).exists?
-    assert_equal 4, Stock._get_s3_objects_size(bucket.objects)
+    # postcondition 1
+    data = result[:data]
 
+    assert data.length > 0
+
+    # execute 2
+    object_keys = WertpapierReport.put_wertpapier_zip(bucket, "1301", entry_id, data)
+
+    # postcondition 2
+    assert_equal "wertpapier_zip_1301_#{entry_id}.zip", object_keys[:original]
+    assert_match /^wertpapier_zip_1301_#{entry_id}\.zip\.bak_[0-9]{8}-[0-9]{6}/, object_keys[:backup]
+    assert bucket.object(object_keys[:original]).exists?
+    assert bucket.object(object_keys[:backup]).exists?
     # TODO: assert valid zip
   end
 

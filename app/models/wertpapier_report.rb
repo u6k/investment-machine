@@ -8,15 +8,26 @@ class WertpapierReport < ApplicationRecord
 
   def self.download_feed(ticker_symbol)
     url = "http://resource.ufocatch.com/atom/edinetx/query/#{ticker_symbol}"
-    file_name = "wertpapier_feed_#{ticker_symbol}.atom"
 
-    keys = Stock._download_with_get(url, file_name, false)
+    data = Stock._download_with_get(url)
+    wertpapier_reports = get_feed(ticker_symbol, data)
+
+    { data: data, wertpapier_reports: wertpapier_reports }
   end
 
-  def self.get_feed(ticker_symbol, object_key)
-    bucket = Stock._get_s3_bucket
-    feed = bucket.object(object_key).get.body
+  def self.put_feed(bucket, ticker_symbol, data)
+    file_name = "wertpapier_feed_#{ticker_symbol}.atom"
 
+    object_original = bucket.object(file_name)
+    object_original.put(body: data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: data)
+
+    { original: object_original.key, backup: object_backup.key }
+  end
+
+  def self.get_feed(ticker_symbol, feed)
     doc = Nokogiri::XML.parse(feed, nil, "UTF-8")
     doc.remove_namespaces!
 
@@ -73,11 +84,28 @@ class WertpapierReport < ApplicationRecord
 
   def self.download_wertpapier_zip(ticker_symbol, entry_id, missing_only = false)
     wertpapier_report = WertpapierReport.where("ticker_symbol = :ticker_symbol and entry_id = :entry_id", ticker_symbol: ticker_symbol, entry_id: entry_id).first
-
     url = wertpapier_report.url
     file_name = "wertpapier_zip_#{ticker_symbol}_#{wertpapier_report.entry_id}.zip"
 
-    keys = Stock._download_with_get(url, file_name, missing_only)
+    bucket = Stock._get_s3_bucket
+    if bucket.object(file_name) && missing_only
+      nil
+    else
+      data = Stock._download_with_get(url)
+      { data: data }
+    end
+  end
+
+  def self.put_wertpapier_zip(bucket, ticker_symbol, entry_id, data)
+    file_name = "wertpapier_zip_#{ticker_symbol}_#{entry_id}.zip"
+
+    object_original = bucket.object(file_name)
+    object_original.put(body: data)
+
+    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
+    object_backup.put(body: data)
+
+    { original: object_original.key, backup: object_backup.key }
   end
 
 end
