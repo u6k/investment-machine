@@ -37,13 +37,19 @@ class NikkeiAverageTest < ActiveSupport::TestCase
     assert_equal 0, NikkeiAverage.all.length
 
     # execute 2
-    object_keys = NikkeiAverage.put_nikkei_average_html(bucket, year, month, data)
+    object_keys = NikkeiAverage.put_nikkei_average_html(year, month, data)
+
+    nikkei_average_html_data = NikkeiAverage.get_nikkei_average_html(year, month)
 
     # postcondition 2
+    assert_equal 0, NikkeiAverage.all.length
+
     assert_equal "nikkei_average_2017_09.html", object_keys[:original]
     assert_match /^nikkei_average_2017_09\.html\.bak_[0-9]{8}-[0-9]{6}$/, object_keys[:backup]
     assert bucket.object(object_keys[:original]).exists?
     assert bucket.object(object_keys[:backup]).exists?
+
+    assert_equal data, nikkei_average_html_data
   end
 
   test "download html, missing only" do
@@ -53,14 +59,14 @@ class NikkeiAverageTest < ActiveSupport::TestCase
 
     # execute 1
     result = NikkeiAverage.download_nikkei_average_html(2017, 9)
-    NikkeiAverage.put_nikkei_average_html(bucket, 2017, 9, result[:data])
+    NikkeiAverage.put_nikkei_average_html(2017, 9, result[:data])
 
     # postcondition 1
     assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
 
     # execute 2
     result = NikkeiAverage.download_nikkei_average_html(2017, 9)
-    NikkeiAverage.put_nikkei_average_html(bucket, 2017, 9, result[:data])
+    NikkeiAverage.put_nikkei_average_html(2017, 9, result[:data])
 
     # postcondition 2
     assert_equal 3, Stock._get_s3_objects_size(bucket.objects)

@@ -5,34 +5,40 @@ class NikkeiAverage < ApplicationRecord
   validates :low_price, presence: true
   validates :close_price, presence: true
 
+  def self.build_nikkei_average_html_file_name(year, month)
+    file_name = "nikkei_average_#{year}_#{format("%02d", month)}.html"
+  end
+
   def self.download_nikkei_average_html(year, month, missing_only = false)
     url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=#{year}&month=#{month}"
-    file_name = "nikkei_average_#{year}_#{format("%02d", month)}.html"
+    file_name = build_nikkei_average_html_file_name(year, month)
 
     bucket = Stock._get_s3_bucket
     if missing_only && bucket.object(file_name).exists?
       nil
     else
       data = Stock._download_with_get(url)
-      nikkei_averages = get_nikkei_averages(data)
+      nikkei_averages = parse_nikkei_average_html(data)
 
       { data: data, nikkei_averages: nikkei_averages }
     end
   end
 
-  def self.put_nikkei_average_html(bucket, year, month, data)
-    file_name = "nikkei_average_#{year}_#{format("%02d", month)}.html"
+  def self.put_nikkei_average_html(year, month, data)
+    file_name = build_nikkei_average_html_file_name(year, month)
 
-    object_original = bucket.object(file_name)
-    object_original.put(body: data)
-
-    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
-    object_backup.put(body: data)
-
-    { original: object_original.key, backup: object_backup.key }
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
   end
 
-  def self.get_nikkei_averages(html)
+  def self.get_nikkei_average_html(year, month)
+    file_name = build_nikkei_average_html_file_name(year, month)
+
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
+  end
+
+  def self.parse_nikkei_average_html(html)
     doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
     price_lines = doc.xpath("//tr[not(contains(@class, 'list-header'))]")
