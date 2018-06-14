@@ -23,7 +23,7 @@ class StockPriceTest < ActiveSupport::TestCase
     data = result[:data]
     stock_prices = result[:stock_prices]
 
-    assert data.length
+    assert data.length > 0
 
     assert stock_prices.length > 0
     stock_prices.each do |stock_price|
@@ -34,12 +34,20 @@ class StockPriceTest < ActiveSupport::TestCase
     assert_equal 0, StockPrice.all.length
 
     # execute 2
-    object_keys = StockPrice.put_stock_price_csv(bucket, ticker_symbol, year, data)
+    object_keys = StockPrice.put_stock_price_csv(ticker_symbol, year, data)
+
+    stock_price_csv_data = StockPrice.get_stock_price_csv(ticker_symbol, year)
+
+    # postconditions 2
+    assert_equal 1, Stock.all.length
+    assert_equal 0, StockPrice.all.length
 
     assert_equal "stock_price_1301_2001.csv", object_keys[:original]
     assert_match /^stock_price_1301_2001\.csv\.bak_[0-9]{8}-[0-9]{6}$/, object_keys[:backup]
     assert bucket.object(object_keys[:original]).exists?
     assert bucket.object(object_keys[:backup]).exists?
+
+    assert_equal data, stock_price_csv_data
   end
 
   test "download csv, missing only" do
@@ -51,14 +59,14 @@ class StockPriceTest < ActiveSupport::TestCase
 
     # execute 1
     result = StockPrice.download_stock_price_csv("1301", 2001)
-    StockPrice.put_stock_price_csv(bucket, "1301", 2001, result[:data])
+    StockPrice.put_stock_price_csv("1301", 2001, result[:data])
 
     # postcondition 1
     assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
 
     # execute 2
     result = StockPrice.download_stock_price_csv("1301", 2001)
-    StockPrice.put_stock_price_csv(bucket, "1301", 2001, result[:data])
+    StockPrice.put_stock_price_csv("1301", 2001, result[:data])
 
     # postcondition 2
     assert_equal 3, Stock._get_s3_objects_size(bucket.objects)
