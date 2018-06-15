@@ -38,19 +38,12 @@ class CrawlTest < ActionDispatch::IntegrationTest
     assert_equal 0, Stock._get_s3_objects_size(bucket.objects)
     assert_equal 0, Stock.all.length
 
-    Rake::Task["crawl:download_stocks"].invoke(false)
+    Rake::Task["crawl:download_stocks"].invoke
 
     assert Stock._get_s3_objects_size(bucket.objects) > 30
     assert_equal 0, Stock.all.length
 
     Rake::Task["crawl:import_stocks"].invoke
-
-    assert Stock._get_s3_objects_size(bucket.objects) > 30
-    assert Stock.all.length > 3800
-
-    # missing only
-    # TODO: not working
-    Rake::Task["crawl:download_stocks"].invoke(true)
 
     assert Stock._get_s3_objects_size(bucket.objects) > 30
     assert Stock.all.length > 3800
