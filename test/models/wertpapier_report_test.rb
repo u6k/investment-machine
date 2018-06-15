@@ -23,13 +23,19 @@ class WertpapierReportTest < ActiveSupport::TestCase
     assert_equal 0, WertpapierReport.all.length
 
     # execute 2
-    object_keys = WertpapierReport.put_feed(bucket, "1301", data)
+    object_keys = WertpapierReport.put_feed("1301", data)
+
+    feed_csv_data = WertpapierReport.get_feed("1301")
 
     # postcondition 2
+    assert_equal 0, WertpapierReport.all.length
+
     assert_equal "wertpapier_feed_1301.atom", object_keys[:original]
     assert_match /^wertpapier_feed_1301\.atom\.bak_[0-9]{8}-[0-9]{6}/, object_keys[:backup]
     assert bucket.object(object_keys[:original]).exists?
     assert bucket.object(object_keys[:backup]).exists?
+
+    assert_equal data, feed_csv_data
   end
 
   test "get and import feed" do
@@ -38,7 +44,7 @@ class WertpapierReportTest < ActiveSupport::TestCase
     data = File.open(atom_file_path).read
 
     # execute 1
-    wertpapier_reports = WertpapierReport.get_feed("1301", data)
+    wertpapier_reports = WertpapierReport.parse_feed("1301", data)
 
     # postcondition 1
     assert_equal 58, wertpapier_reports.length
@@ -82,7 +88,9 @@ class WertpapierReportTest < ActiveSupport::TestCase
     assert data.length > 0
 
     # execute 2
-    object_keys = WertpapierReport.put_wertpapier_zip(bucket, "1301", entry_id, data)
+    object_keys = WertpapierReport.put_wertpapier_zip("1301", entry_id, data)
+
+    wertpapier_zip_data = WertpapierReport.get_wertpapier_zip("1301", entry_id)
 
     # postcondition 2
     assert_equal "wertpapier_zip_1301_#{entry_id}.zip", object_keys[:original]
@@ -90,6 +98,8 @@ class WertpapierReportTest < ActiveSupport::TestCase
     assert bucket.object(object_keys[:original]).exists?
     assert bucket.object(object_keys[:backup]).exists?
     # TODO: assert valid zip
+
+    assert_equal data, wertpapier_zip_data
   end
 
 end

@@ -35,13 +35,19 @@ class TopixTest < ActiveSupport::TestCase
     assert_equal 0, Topix.all.length
 
     # execute 2
-    object_keys = Topix.put_topix_csv(bucket, date_from, date_to, data)
+    object_keys = Topix.put_topix_csv(date_from, date_to, data)
+
+    topix_csv_data = Topix.get_topix_csv(date_from, date_to)
 
     # postcondition 2
+    assert_equal 0, Topix.all.length
+
     assert_equal "topix_20180201_20180301.csv", object_keys[:original]
     assert_match /^topix_20180201_20180301\.csv\.bak_[0-9]{8}-[0-9]{6}$/, object_keys[:backup]
     assert bucket.object(object_keys[:original]).exists?
     assert bucket.object(object_keys[:backup]).exists?
+
+    assert_equal data, topix_csv_data
   end
 
   test"import topixes and overwrite" do

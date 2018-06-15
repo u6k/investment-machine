@@ -16,7 +16,7 @@ class DowJonesIndustrialAverage < ApplicationRecord
     url = "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=#{interval_day}&range_days=#{interval_day}&startDate=#{date_from.strftime('%m/%d/%Y')}&endDate=#{(date_to - 1).strftime('%m/%d/%Y')}"
 
     data = Stock._download_with_get(url)
-    djias = get_djias(data)
+    djias = parse_djia_csv(data)
 
     { data: data, djias: djias }
   end
@@ -35,7 +35,7 @@ class DowJonesIndustrialAverage < ApplicationRecord
     Stock._get_s3_object(bucket, file_name)
   end
 
-  def self.get_djias(csv)
+  def self.parse_djia_csv(csv)
     djias = []
     CSV.parse(csv) do |line|
       if line[0].match(/^[0-9]{2}\/[0-9]{2}\/[0-9]{2}$/)

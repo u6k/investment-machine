@@ -11,9 +11,13 @@ class StockPrice < ApplicationRecord
   validates :turnover, presence: true
   validates :adjustment_value, presence: true
 
+  def self.build_stock_price_csv_file_name(ticker_symbol, year)
+    "stock_price_#{ticker_symbol}_#{year}.csv"
+  end
+
   def self.download_stock_price_csv(ticker_symbol, year, missing_only = false)
     url = "https://kabuoji3.com/stock/file.php"
-    file_name = "stock_price_#{ticker_symbol}_#{year}.csv"
+    file_name = build_stock_price_csv_file_name(ticker_symbol, year)
     form_data = { "code" => ticker_symbol, "year" => year }
 
     bucket = Stock._get_s3_bucket
@@ -21,25 +25,27 @@ class StockPrice < ApplicationRecord
       nil
     else
       data = Stock._download_with_post(url, form_data)
-      stock_prices = get_stock_prices(data, ticker_symbol)
+      stock_prices = parse_stock_price_csv(data, ticker_symbol)
 
       { data: data, stock_prices: stock_prices }
     end
   end
 
-  def self.put_stock_price_csv(bucket, ticker_symbol, year, data)
-    file_name = "stock_price_#{ticker_symbol}_#{year}.csv"
+  def self.put_stock_price_csv(ticker_symbol, year, data)
+    file_name = build_stock_price_csv_file_name(ticker_symbol, year)
 
-    object_original = bucket.object(file_name)
-    object_original.put(body: data)
-
-    object_backup = bucket.object(file_name + ".bak_" + DateTime.now.strftime("%Y%m%d-%H%M%S"))
-    object_backup.put(body: data)
-
-    { original: object_original.key, backup: object_backup.key }
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
   end
 
-  def self.get_stock_prices(csv, ticker_symbol)
+  def self.get_stock_price_csv(ticker_symbol, year)
+    file_name = build_stock_price_csv_file_name(ticker_symbol, year)
+
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
+  end
+
+  def self.parse_stock_price_csv(csv, ticker_symbol)
     stock = Stock.find_by(ticker_symbol: ticker_symbol)
 
     csv = csv.encode("UTF-8", "Shift_JIS")

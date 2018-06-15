@@ -55,7 +55,7 @@ class Stock < ApplicationRecord
     url = "https://kabuoji3.com/stock/" + page_link
 
     data = self._download_with_get(url)
-    stocks = parse_stocks(data)
+    stocks = parse_stock_list_page(data)
 
     { data: data, stocks: stocks }
   end
@@ -74,7 +74,7 @@ class Stock < ApplicationRecord
     Stock._get_s3_object(bucket, file_name)
   end
 
-  def self.parse_stocks(html)
+  def self.parse_stock_list_page(html)
     doc = Nokogiri::HTML.parse(html, nil, "UTF-8")
 
     stock_table_lines = doc.xpath("//table[@class='stock_table']/tbody/tr")
