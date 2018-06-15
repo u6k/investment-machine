@@ -5,36 +5,42 @@ require "aws-sdk-s3"
 namespace :crawl do
   desc "Crawler"
 
-  task :download_stocks, [:missing_only] => :environment do |task, args|
-    missing_only = (args.missing_only == "true")
-    Rails.logger.info "download_stocks: start: missing_only=#{missing_only}"
+  task :download_stocks, [] => :environment do |task, args|
+    Rails.logger.info "download_stocks: start"
 
-    Rails.logger.info "download_index_page and get_page_links: start"
-    keys = Stock.download_index_page(missing_only)
-    page_links = Stock.get_page_links(keys[:original])
-    Rails.logger.info "download_index_page and get_page_links: end: page_links.length=#{page_links.length}"
+    bucket = Stock._get_s3_bucket
 
-    page_links.each.with_index(1) do |page_link, page_link_index|
-      Rails.logger.info "download_stock_list_page: start: #{page_link_index}/#{page_links.length}, page_link=#{page_link}"
-      Stock.download_stock_list_page(page_link, missing_only)
-      Rails.logger.info "download_stock_list_page: end"
+    Rails.logger.info "download_stocks: download_index_page: start"
+    result = Stock.download_index_page
+    data, page_links = result[:data], result[:page_links]
+    Stock.put_index_page(data)
+    Rails.logger.info "download_stocks: download_index_page: end: length=#{page_links.length}"
+
+    page_links.each.with_index(1) do |page_link, index|
+      Rails.logger.info "download_stocks: download_stock_list_page: #{index}/#{page_links.length}, page_link=#{page_link}"
+      result = Stock.download_stock_list_page(page_link)
+      Stock.put_stock_list_page(page_link, result[:data])
     end
 
     Rails.logger.info "download_stocks: end"
   end
 
-  task import_stocks: :environment do
+  task :import_stocks, [] => :environment do |task, args|
     Rails.logger.info "import_stocks: start"
 
-    Rails.logger.info "get_page_links: start"
-    page_links = Stock.get_page_links("stock_list_index.html")
-    Rails.logger.info "get_page_links: end: page_links.length=#{page_links.length}"
+    bucket = Stock._get_s3_bucket
 
-    page_links.each.with_index(1) do |page_link, page_link_index|
-      Rails.logger.info "get_stocks and import: start: #{page_link_index}/#{page_links.length}: page_link=#{page_link}"
-      stocks = Stock.get_stocks("stock_list_#{page_link}.html")
+    Rails.logger.info "import_stocks: get_page_links: start"
+    data = Stock.get_index_page
+    page_links = Stock.parse_index_page(data)
+    Rails.logger.info "import_stocks: get_page_links: end: length=#{page_links.length}"
+
+    page_links.each.with_index(1) do |page_link, index|
+      Rails.logger.info "import_stocks: import: start: #{index}/#{page_links.length}: page_link=#{page_link}"
+      data = Stock.get_stock_list_page(page_link)
+      stocks = Stock.parse_stock_list_page(data)
       Stock.import(stocks)
-      Rails.logger.info "get_stocks and import: end: stocks.length=#{stocks.length}"
+      Rails.logger.info "import_stocks: import: end: stocks.length=#{stocks.length}"
     end
 
     Rails.logger.info "import_stocks: end: Stock.all.length=#{Stock.all.length}"
@@ -44,20 +50,27 @@ namespace :crawl do
     missing_only = (args.missing_only == "true")
     Rails.logger.info "download_stock_prices: start: ticker_symbol=#{args.ticker_symbol}, year=#{args.year}, missing_only=#{missing_only}"
 
+    bucket = Stock._get_s3_bucket
+
     if args.ticker_symbol == "all"
       stocks = Stock.all
     else
       stocks = Stock.where("ticker_symbol = :ticker_symbol", ticker_symbol: args.ticker_symbol)
     end
-    Rails.logger.info "target stocks.length=#{stocks.length}"
+    Rails.logger.info "download_stock_prices: stocks.length=#{stocks.length}"
 
     ticker_symbol_years = []
     stocks.each.with_index(1) do |stock, stock_index|
-      Rails.logger.info "foreach stock: start: #{stock_index}/#{stocks.length}: ticker_symbol=#{stock.ticker_symbol}"
+      Rails.logger.info "download_stock_prices: get_years: start: #{stock_index}/#{stocks.length}: ticker_symbol=#{stock.ticker_symbol}"
 
       if args.year == "all"
-        keys = Stock.download_stock_detail_page(stock.ticker_symbol, missing_only)
-        years = Stock.get_years(keys[:original])
+        result = Stock.download_stock_detail_page(stock.ticker_symbol, missing_only)
+        if result == nil
+          years = Stock.parse_stock_detail_page(Stock.get_stock_detail_page(stock.ticker_symbol))
+        else
+          Stock.put_stock_detail_page(stock.ticker_symbol, result[:data])
+          years = result[:years]
+        end
       else
         years = [args.year.to_i]
       end
@@ -66,15 +79,15 @@ namespace :crawl do
         ticker_symbol_years << { ticker_symbol: stock.ticker_symbol, year: year }
       end
 
-      Rails.logger.info "ticker_symbol=#{stock.ticker_symbol}, years=#{years}"
-
-      Rails.logger.info "foreach stock: end"
+      Rails.logger.info "download_stock_prices: get_years: end: #{stock_index}/#{stocks.length}: ticker_symbol=#{stock.ticker_symbol}, years=#{years}"
     end
 
     ticker_symbol_years.each.with_index(1) do |record, index|
-      Rails.logger.info "download_stock_price_csv: start: #{index}/#{ticker_symbol_years.length}: ticker_symbol=#{record[:ticker_symbol]}, year=#{record[:year]}"
-      StockPrice.download_stock_price_csv(record[:ticker_symbol], record[:year], missing_only)
-      Rails.logger.info "download_stock_price_csv: end"
+      Rails.logger.info "download_stock_prices: csv: start: #{index}/#{ticker_symbol_years.length}: ticker_symbol=#{record[:ticker_symbol]}, year=#{record[:year]}"
+      result = StockPrice.download_stock_price_csv(record[:ticker_symbol], record[:year], missing_only)
+      if result != nil
+        StockPrice.put_stock_price_csv(record[:ticker_symbol], record[:year], result[:data])
+      end
     end
   end
 
@@ -86,14 +99,14 @@ namespace :crawl do
     else
       stocks = Stock.where("ticker_symbol = :ticker_symbol", ticker_symbol: args.ticker_symbol)
     end
-    Rails.logger.info "target stocks.length=#{stocks.length}"
+    Rails.logger.info "import_stock_prices: stocks.length=#{stocks.length}"
 
     ticker_symbol_years = []
     stocks.each.with_index(1) do |stock, stock_index|
-      Rails.logger.info "foreach stock: start: #{stock_index}/#{stocks.length}: ticker_symbol=#{stock.ticker_symbol}"
+      Rails.logger.info "import_stock_prices: get_years: start: #{stock_index}/#{stocks.length}: ticker_symbol=#{stock.ticker_symbol}"
 
       if args.year == "all"
-        years = Stock.get_years("stock_detail_#{stock.ticker_symbol}.html")
+        years = Stock.parse_stock_detail_page(Stock.get_stock_detail_page(stock.ticker_symbol))
       else
         years = [args.year.to_i]
       end
@@ -102,16 +115,14 @@ namespace :crawl do
         ticker_symbol_years << { ticker_symbol: stock.ticker_symbol, year: year }
       end
 
-      Rails.logger.info "ticker_symbol=#{stock.ticker_symbol}, years=#{years}"
-
-      Rails.logger.info "foreach stock: end"
+      Rails.logger.info "import_stock_prices: get_years: end: ticker_symbol=#{stock.ticker_symbol}, years=#{years}"
     end
 
     ticker_symbol_years.each.with_index(1) do |record, index|
-      Rails.logger.info "import_stock_price_csv: start: #{index}/#{ticker_symbol_years.length}: ticker_symbol=#{record[:ticker_symbol]}, year=#{record[:year]}"
-      stock_prices = StockPrice.get_stock_prices("stock_price_#{record[:ticker_symbol]}_#{record[:year]}.csv", record[:ticker_symbol])
+      Rails.logger.info "import_stock_prices: import: start: #{index}/#{ticker_symbol_years.length}: ticker_symbol=#{record[:ticker_symbol]}, year=#{record[:year]}"
+      stock_prices = StockPrice.parse_stock_price_csv(StockPrice.get_stock_price_csv(record[:ticker_symbol], record[:year]), record[:ticker_symbol])
       StockPrice.import(stock_prices)
-      Rails.logger.info "import_stock_price_csv: end"
+      Rails.logger.info "import_stock_prices: import: length=#{stock_prices.length}"
     end
   end
 
@@ -128,9 +139,12 @@ namespace :crawl do
     end
 
     target_dates.each.with_index(1) do |target_date, target_date_index|
-      Rails.logger.info "download nikkei average: foreach date: #{target_date_index}/#{target_dates.length}: date=#{target_date}"
-      NikkeiAverage.download_nikkei_average_html(target_date.year, target_date.month, missing_only)
+      Rails.logger.info "download nikkei average: download: #{target_date_index}/#{target_dates.length}: date=#{target_date}"
+      result = NikkeiAverage.download_nikkei_average_html(target_date.year, target_date.month, missing_only)
+      NikkeiAverage.put_nikkei_average_html(target_date.year, target_date.month, result[:data])
     end
+
+    Rails.logger.info "download_nikkei_averages: end"
   end
 
   task :import_nikkei_averages, [:year] => :environment do |task, args|
@@ -145,10 +159,14 @@ namespace :crawl do
     end
 
     target_dates.each.with_index(1) do |target_date, target_date_index|
-      Rails.logger.info "import nikkei average: foreach date: #{target_date_index}/#{target_dates.length}: date=#{target_date}"
-      nikkei_averages = NikkeiAverage.get_nikkei_averages("nikkei_average_#{target_date.year}_#{format("%02d", target_date.month)}.html")
+      Rails.logger.info "import nikkei average: import: start: #{target_date_index}/#{target_dates.length}: date=#{target_date}"
+      data = NikkeiAverage.get_nikkei_average_html(target_date.year, target_date.month)
+      nikkei_averages = NikkeiAverage.parse_nikkei_average_html(data)
       NikkeiAverage.import(nikkei_averages)
+      Rails.logger.info "import nikkei average: import: end: #{nikkei_averages.length}"
     end
+
+    Rails.logger.info "import_nikkei_averages: end"
   end
 
   task :download_topixes, [:year] => :environment do |task, args|
@@ -162,7 +180,10 @@ namespace :crawl do
       date_to = Date.new(args.year.to_i + 1, 1, 1)
     end
 
-    Topix.download_topix_csv(date_from, date_to)
+    result = Topix.download_topix_csv(date_from, date_to)
+    Topix.put_topix_csv(date_from, date_to, result[:data])
+
+    Rails.logger.info "download_topixes: end"
   end
 
   task :import_topixes, [:year] => :environment do |task, args|
@@ -176,14 +197,15 @@ namespace :crawl do
       date_to = Date.new(args.year.to_i + 1, 1, 1)
     end
 
-    Rails.logger.info "import topix: start: date: from #{date_from.strftime('%Y%m%d')} to_#{date_to.strftime('%Y%m%d')}"
-    topixes = Topix.get_topixes("topix_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv")
+    Rails.logger.info "import_topixes: import: start: date_from #{date_from.strftime('%Y%m%d')} to_#{date_to.strftime('%Y%m%d')}"
+    data = Topix.get_topix_csv(date_from, date_to)
+    topixes = Topix.parse_topix_csv(data)
     topix_ids = Topix.import(topixes)
-    Rails.logger.info "import topix: end: result=#{topix_ids.length}"
+    Rails.logger.info "import_topixes: import: end: result=#{topix_ids.length}"
   end
 
   task :download_dow_jones_industrial_averages, [:year] => :environment do |task, args|
-    Rails.logger.info "download_dow jones industrial averages: start: year=#{args.year}"
+    Rails.logger.info "download_dow_jones_industrial_averages: start: year=#{args.year}"
 
     if args.year == "all"
       date_from = Date.new(1987, 2, 1)
@@ -193,11 +215,14 @@ namespace :crawl do
       date_to = Date.new(args.year.to_i + 1, 1, 1)
     end
 
-    DowJonesIndustrialAverage.download_djia_csv(date_from, date_to)
+    result = DowJonesIndustrialAverage.download_djia_csv(date_from, date_to)
+    DowJonesIndustrialAverage.put_djia_csv(date_from, date_to, result[:data])
+
+    Rails.logger.info "download_dow_jones_industrial_averages: end"
   end
 
   task :import_dow_jones_industrial_averages, [:year] => :environment do |task, args|
-    Rails.logger.info "import dow jones industrial averages: start: year=#{args.year}"
+    Rails.logger.info "import_dow_jones_industrial_averages: start: year=#{args.year}"
 
     if args.year == "all"
       date_from = Date.new(1987, 2, 1)
@@ -207,17 +232,18 @@ namespace :crawl do
       date_to = Date.new(args.year.to_i + 1, 1, 1)
     end
 
-    Rails.logger.info "import dow jones industrial averages: start: date: from #{date_from.strftime('%Y%m%d')} to_#{date_to.strftime('%Y%m%d')}"
-    djias = DowJonesIndustrialAverage.get_djias("djia_#{date_from.strftime('%Y%m%d')}_#{date_to.strftime('%Y%m%d')}.csv")
+    Rails.logger.info "import_dow_jones_industrial_averages: import: start: date_from=#{date_from.strftime('%Y%m%d')}, date_to=#{date_to.strftime('%Y%m%d')}"
+    data = DowJonesIndustrialAverage.get_djia_csv(date_from, date_to)
+    djias = DowJonesIndustrialAverage.parse_djia_csv(data)
     djia_ids = DowJonesIndustrialAverage.import(djias)
-    Rails.logger.info "import dow jones industrial averages: end: result=#{djia_ids.length}"
+    Rails.logger.info "import_dow_jones_industrial_averages: end: result=#{djia_ids.length}"
   end
 
   task :download_wertpapier_report_feeds, [:ticker_symbol] => :environment do |task, args|
-    Rails.logger.info "download wertpapier_reports: start: ticker_symbol=#{args.ticker_symbol}"
+    Rails.logger.info "download_wertpapier_report_feeds: start: ticker_symbol=#{args.ticker_symbol}"
 
     # search stocks
-    Rails.logger.info "select stocks: start"
+    Rails.logger.info "download_wertpapier_report_feeds: search stocks: start"
 
     if args.ticker_symbol == "all"
       ticker_symbols = Stock.all.map { |stock| stock.ticker_symbol }
@@ -225,26 +251,23 @@ namespace :crawl do
       ticker_symbols = [ args.ticker_symbol ]
     end
 
-    Rails.logger.info "select stocks: end: length=#{ticker_symbols.length}"
+    Rails.logger.info "download_wertpapier_report_feeds: search stocks: end: length=#{ticker_symbols.length}"
 
     # download feed
-    Rails.logger.info "download feed: start"
-
     ticker_symbols.each.with_index(1) do |ticker_symbol, index|
-      WertpapierReport.download_feed(ticker_symbol)
-      Rails.logger.info "download feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}"
+      Rails.logger.info "download_wertpapier_report_feeds: download feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}"
+      result = WertpapierReport.download_feed(ticker_symbol)
+      WertpapierReport.put_feed(ticker_symbol, result[:data])
     end
 
-    Rails.logger.info "download feed: end"
-
-    # download zip
+    Rails.logger.info "download_wertpapier_report_feeds: end"
   end
 
   task :import_wertpapier_report_feeds, [:ticker_symbol] => :environment do |task, args|
     Rails.logger.info "import_wertpapier_report_feeds: start: ticker_symbol=#{args.ticker_symbol}"
 
     # search stocks
-    Rails.logger.info "select stocks: start"
+    Rails.logger.info "import_wertpapier_report_feeds: search stocks: start"
 
     if args.ticker_symbol == "all"
       ticker_symbols = Stock.all.map { |stock| stock.ticker_symbol }
@@ -252,15 +275,15 @@ namespace :crawl do
       ticker_symbols = [ args.ticker_symbol ]
     end
 
-    Rails.logger.info "select stocks: end: length=#{ticker_symbols.length}"
+    Rails.logger.info "import_wertpapier_report_feeds: search stocks: end: length=#{ticker_symbols.length}"
 
     # get and import wertpapier report feeds
-    Rails.logger.info "import wertpapier report feed: start"
-
     ticker_symbols.each.with_index(1) do |ticker_symbol, index|
-      wertpapier_reports = WertpapierReport.get_feed(ticker_symbol, "wertpapier_feed_#{ticker_symbol}.atom")
-      WertpapierReport.import_feed(wertpapier_reports)
-      Rails.logger.info "import wertpapier report feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}, result=#{wertpapier_reports.length}"
+      Rails.logger.info "import_wertpapier_report_feeds: import: start: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}"
+      data = WertpapierReport.get_feed(ticker_symbol)
+      wertpapier_reports = WertpapierReport.parse_feed(ticker_symbol, data)
+      wertpapier_report_ids = WertpapierReport.import_feed(wertpapier_reports)
+      Rails.logger.info "import_wertpapier_report_feeds: import: end: result=#{wertpapier_report_ids.length}"
     end
 
     Rails.logger.info "import_wertpapier_report_feeds: end"
@@ -272,7 +295,7 @@ namespace :crawl do
     missing_only = (args.missing_only == "true")
 
     # search stocks
-    Rails.logger.info "select stocks: start"
+    Rails.logger.info "download_wertpapier_report_zips: search stocks: start"
 
     if args.ticker_symbol == "all"
       ticker_symbols = Stock.all.map { |stock| stock.ticker_symbol }
@@ -280,30 +303,27 @@ namespace :crawl do
       ticker_symbols = [ args.ticker_symbol ]
     end
 
-    Rails.logger.info "select stocks: end: length=#{ticker_symbols.length}"
+    Rails.logger.info "download_wertpapier_report_zips: search stocks: end: length=#{ticker_symbols.length}"
 
     # search wertpapier reports
-    Rails.logger.info "select wertpapier reports: start"
-
     wertpapier_reports = []
     ticker_symbols.each.with_index(1) do |ticker_symbol, index|
+      Rails.logger.info "download_wertpapier_report_zips: search wertpapier reports: #{index}/#{ticker_symbols.length}"
       WertpapierReport.where("ticker_symbol = :ticker_symbol", ticker_symbol: ticker_symbol).each do |wr|
         wertpapier_reports << wr
       end
-      Rails.logger.info "select wertpapier reports: #{index}/#{ticker_symbols.length}"
     end
-
-    Rails.logger.info "select wertpapier reports: end: length=#{wertpapier_reports.length}"
 
     # download zip
-    Rails.logger.info "download wertpapier report zip: start"
-
     wertpapier_reports.each.with_index(1) do |wertpapier_report, index|
-      WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, missing_only)
-      Rails.logger.info "download wertpapier report zip: #{index}/#{wertpapier_reports.length}"
+      Rails.logger.info "download_wertpapier_report_zips: #{index}/#{wertpapier_reports.length}"
+      result = WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, missing_only)
+      if result != nil
+        WertpapierReport.put_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, result[:data])
+      end
     end
 
-    Rails.logger.info "download wertpapier report zip: end"
+    Rails.logger.info "download_wertpapier_report_zips: end"
   end
 
 end
