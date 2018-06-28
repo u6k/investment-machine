@@ -87,6 +87,12 @@ $ docker-compose exec app rails test
 $ curl http://localhost:3000
 ```
 
+## API
+
+|API|URL|
+|---|---|
+|ヘルスチェック|/okcomputer/all.json|
+
 ## Maintainer
 
 - [u6k - GitHub](https://github.com/u6k/)
