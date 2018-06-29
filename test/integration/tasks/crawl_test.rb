@@ -139,17 +139,19 @@ class CrawlTest < ActionDispatch::IntegrationTest
     Rake::Task["crawl:import_wertpapier_report_feeds"].invoke("1301")
 
     assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
-    assert_equal 62, WertpapierReport.all.length
+    feed_count = WertpapierReport.all.length
+    assert feed_count > 60
 
     Rake::Task["crawl:download_wertpapier_report_zips"].invoke("1301")
 
-    assert_equal 126, Stock._get_s3_objects_size(bucket.objects)
-    assert_equal 62, WertpapierReport.all.length
+    zip_count = Stock._get_s3_objects_size(bucket.objects)
+    assert_equal 2 + feed_count * 2, zip_count
+    assert_equal feed_count, WertpapierReport.all.length
 
     Rake::Task["crawl:download_wertpapier_report_zips"].invoke("1301", true)
 
-    assert_equal 126, Stock._get_s3_objects_size(bucket.objects)
-    assert_equal 62, WertpapierReport.all.length
+    assert_equal zip_count, Stock._get_s3_objects_size(bucket.objects)
+    assert_equal feed_count, WertpapierReport.all.length
   end
 
 end
