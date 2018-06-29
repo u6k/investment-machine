@@ -15,7 +15,6 @@ script:
   - mv .env.example .env
   - docker build -t u6kapps/investment-machine -f Dockerfile.production .
   - docker-compose -f docker-compose.production.yml up -d
-  - docker-compose -f docker-compose.production.yml exec app rails db:migrate
   - docker-compose -f docker-compose.production.yml exec s3 mkdir /export/investment
   - docker-compose -f docker-compose.production.yml exec app rails test
   - docker-compose -f docker-compose.production.yml down -v
