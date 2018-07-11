@@ -164,7 +164,7 @@ class StockPriceTest < ActiveSupport::TestCase
 
     stock_price_ids = StockPrice.import(stock_prices)
 
-    assert_equal stock_price_ids.length, StockPrice.all.length
+    assert StockPrice.all.length > 120
 
     stock_prices.each do |stock_price|
       stock_price_actual = StockPrice.find_by(date: stock_price.date, stock_id: stock_price.stock.id)

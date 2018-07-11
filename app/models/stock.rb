@@ -205,7 +205,7 @@ class Stock < ApplicationRecord
     req["User-Agent"] = "curl/7.54.0"
     req["Accept"] = "*/*"
 
-    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https") do |http|
+    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == "https", :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
       http.request(req)
     end
 

@@ -1,0 +1,31 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+#one:
+#  edinet_code: MyString
+#  submitter_type: MyString
+#  listed: MyString
+#  consolidated: MyString
+#  capital: 9.99
+#  settlement_date: 2018-07-11
+#  submitter_name: MyString
+#  submitter_name_en: MyString
+#  submitter_name_yomi: MyString
+#  address: MyString
+#  industry: MyString
+#  ticker_symbol: MyString
+#  corporate_number: MyString
+
+#two:
+#  edinet_code: MyString
+#  submitter_type: MyString
+#  listed: MyString
+#  consolidated: MyString
+#  capital: 9.99
+#  settlement_date: 2018-07-11
+#  submitter_name: MyString
+#  submitter_name_en: MyString
+#  submitter_name_yomi: MyString
+#  address: MyString
+#  industry: MyString
+#  ticker_symbol: MyString
+#  corporate_number: MyString
