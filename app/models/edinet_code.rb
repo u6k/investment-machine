@@ -1,0 +1,2 @@
+class EdinetCode < ApplicationRecord
+end
