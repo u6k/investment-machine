@@ -31,37 +31,37 @@ class EdinetCode < ApplicationRecord
     edinet_codes = []
     CSV.parse(edinet_code_list_csv).map.with_index(0) do |line, index|
       if index == 0
-        raise "column value not '$B%@%&%s%m!<%I<B9TF|(B'" if line[0] != "$B%@%&%s%m!<%I<B9TF|(B"
-        raise "column value not '$B7o?t(B'" if line[2] != "$B7o?t(B"
+        raise "column value not 'ダウンロード実行日'" if line[0] != "ダウンロード実行日"
+        raise "column value not '件数'" if line[2] != "件数"
       elsif index == 1
-        raise "column value not '$B#E#D#I#N#E#T%3!<%I(B'" if line[0] != "$B#E#D#I#N#E#T%3!<%I(B"
-        raise "column value not '$BDs=P<T<oJL(B'" if line[1] != "$BDs=P<T<oJL(B"
-        raise "column value not '$B>e>l6hJ,(B'" if line[2] != "$B>e>l6hJ,(B"
-        raise "column value not '$BO"7k$NM-L5(B'" if line[3] != "$BO"7k$NM-L5(B"
-        raise "column value not '$B;qK\6b(B'" if line[4] != "$B;qK\6b(B"
-        raise "column value not '$B7h;;F|(B'" if line[5] != "$B7h;;F|(B"
-        raise "column value not '$BDs=P<TL>(B'" if line[6] != "$BDs=P<TL>(B"
-        raise "column value not '$BDs=P<TL>!J1Q;z!K(B'" if line[7] != "$BDs=P<TL>!J1Q;z!K(B"
-        raise "column value not '$BDs=P<TL>!J%h%_!K(B'" if line[8] != "$BDs=P<TL>!J%h%_!K(B"
-        raise "column value not '$B=j:_CO(B'" if line[9] != "$B=j:_CO(B"
-        raise "column value not '$BDs=P<T6H<o(B'" if line[10] != "$BDs=P<T6H<o(B"
-        raise "column value not '$B>Z7t%3!<%I(B'" if line[11] != "$B>Z7t%3!<%I(B"
-        raise "column value not '$BDs=P<TK!?MHV9f(B'" if line[12] != "$BDs=P<TK!?MHV9f(B"
+        raise "column value not 'ＥＤＩＮＥＴコード'" if line[0] != "ＥＤＩＮＥＴコード"
+        raise "column value not '提出者種別'" if line[1] != "提出者種別"
+        raise "column value not '上場区分'" if line[2] != "上場区分"
+        raise "column value not '連結の有無'" if line[3] != "連結の有無"
+        raise "column value not '資本金'" if line[4] != "資本金"
+        raise "column value not '決算日'" if line[5] != "決算日"
+        raise "column value not '提出者名'" if line[6] != "提出者名"
+        raise "column value not '提出者名（英字）'" if line[7] != "提出者名（英字）"
+        raise "column value not '提出者名（ヨミ）'" if line[8] != "提出者名（ヨミ）"
+        raise "column value not '所在地'" if line[9] != "所在地"
+        raise "column value not '提出者業種'" if line[10] != "提出者業種"
+        raise "column value not '証券コード'" if line[11] != "証券コード"
+        raise "column value not '提出者法人番号'" if line[12] != "提出者法人番号"
       else
         edinet_code = EdinetCode.new(
-          edinet_code: line[0],
-          submitter_type: line[1],
-          listed: line[2],
-          consolidated: line[3],
-          capital: line[4].to_i,
-          settlement_date: line[5],
-          submitter_name: line[6],
-          submitter_name_en: line[7],
-          submitter_name_yomi: line[8],
-          address: line[9],
-          industry: line[10],
-          ticker_symbol: line[11],
-          corporate_number: line[12]
+          edinet_code: line[0].presence,
+          submitter_type: line[1].presence,
+          listed: line[2].presence,
+          consolidated: line[3].presence,
+          capital: line[4].empty? ? nil : line[4].to_i,
+          settlement_date: line[5].presence,
+          submitter_name: line[6].presence,
+          submitter_name_en: line[7].presence,
+          submitter_name_yomi: line[8].presence,
+          address: line[9].presence,
+          industry: line[10].presence,
+          ticker_symbol: line[11].presence,
+          corporate_number: line[12].presence
         )
         raise edinet_code.errors.messages.to_s if edinet_code.invalid?
 

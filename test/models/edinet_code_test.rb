@@ -18,6 +18,7 @@ class EdinetCodeTest < ActiveSupport::TestCase
 
     # postcondition
     assert result[:data].length > 0
+    assert result[:edinet_codes].length > 9000
 
     assert_equal 0, EdinetCode.all.length
   end
