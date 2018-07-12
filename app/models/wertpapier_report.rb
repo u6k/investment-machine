@@ -6,17 +6,34 @@ class WertpapierReport < ApplicationRecord
   validates :content_type, presence: true, format: { with: /.+/i }
   validates :entry_updated, presence: true
 
-  def self.download_feed(ticker_symbol)
-    url = "http://resource.ufocatch.com/atom/edinetx/query/#{ticker_symbol}"
-    file_name = "wertpapier_feed_#{ticker_symbol}.atom"
-
-    keys = Stock._download_with_get(url, file_name, false)
+  def self.build_feed_file_name(ticker_symbol)
+    "wertpapier_feed_#{ticker_symbol}.atom"
   end
 
-  def self.get_feed(ticker_symbol, object_key)
-    bucket = Stock._get_s3_bucket
-    feed = bucket.object(object_key).get.body
+  def self.download_feed(ticker_symbol)
+    url = "http://resource.ufocatch.com/atom/edinetx/query/#{ticker_symbol}"
 
+    data = Stock._download_with_get(url)
+    wertpapier_reports = parse_feed(ticker_symbol, data)
+
+    { data: data, wertpapier_reports: wertpapier_reports }
+  end
+
+  def self.put_feed(ticker_symbol, data)
+    file_name = build_feed_file_name(ticker_symbol)
+
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
+  end
+
+  def self.get_feed(ticker_symbol)
+    file_name = build_feed_file_name(ticker_symbol)
+
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
+  end
+
+  def self.parse_feed(ticker_symbol, feed)
     doc = Nokogiri::XML.parse(feed, nil, "UTF-8")
     doc.remove_namespaces!
 
@@ -71,13 +88,36 @@ class WertpapierReport < ApplicationRecord
     wertpapier_report_ids
   end
 
+  def self.build_wertpapier_zip_file_name(ticker_symbol, entry_id)
+    "wertpapier_zip_#{ticker_symbol}_#{entry_id}.zip"
+  end
+
   def self.download_wertpapier_zip(ticker_symbol, entry_id, missing_only = false)
     wertpapier_report = WertpapierReport.where("ticker_symbol = :ticker_symbol and entry_id = :entry_id", ticker_symbol: ticker_symbol, entry_id: entry_id).first
-
     url = wertpapier_report.url
-    file_name = "wertpapier_zip_#{ticker_symbol}_#{wertpapier_report.entry_id}.zip"
+    file_name = build_wertpapier_zip_file_name(ticker_symbol, entry_id)
 
-    keys = Stock._download_with_get(url, file_name, missing_only)
+    bucket = Stock._get_s3_bucket
+    if bucket.object(file_name) && missing_only
+      nil
+    else
+      data = Stock._download_with_get(url)
+      { data: data }
+    end
+  end
+
+  def self.put_wertpapier_zip(ticker_symbol, entry_id, data)
+    file_name = build_wertpapier_zip_file_name(ticker_symbol, entry_id)
+
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
+  end
+
+  def self.get_wertpapier_zip(ticker_symbol, entry_id)
+    file_name = build_wertpapier_zip_file_name(ticker_symbol, entry_id)
+
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
   end
 
 end

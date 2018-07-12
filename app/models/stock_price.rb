@@ -11,21 +11,44 @@ class StockPrice < ApplicationRecord
   validates :turnover, presence: true
   validates :adjustment_value, presence: true
 
-  def self.download_stock_price_csv(ticker_symbol, year, missing_only = false)
-    url = "https://kabuoji3.com/stock/file.php"
-    file_name = "stock_price_#{ticker_symbol}_#{year}.csv"
-    form_data = { "code" => ticker_symbol, "year" => year }
-
-    keys = Stock._download_with_post(url, form_data, file_name, missing_only)
+  def self.build_stock_price_csv_file_name(ticker_symbol, year)
+    "stock_price_#{ticker_symbol}_#{year}.csv"
   end
 
-  def self.get_stock_prices(object_key, ticker_symbol)
-    stock = Stock.find_by(ticker_symbol: ticker_symbol)
+  def self.download_stock_price_csv(ticker_symbol, year, missing_only = false)
+    url = "https://kabuoji3.com/stock/file.php"
+    file_name = build_stock_price_csv_file_name(ticker_symbol, year)
+    form_data = { "code" => ticker_symbol, "year" => year }
 
     bucket = Stock._get_s3_bucket
-    csv = bucket.object(object_key).get.body
+    if bucket.object(file_name).exists? && missing_only
+      nil
+    else
+      data = Stock._download_with_post(url, form_data)
+      stock_prices = parse_stock_price_csv(data, ticker_symbol)
 
-    csv = csv.string.encode("UTF-8", "Shift_JIS")
+      { data: data, stock_prices: stock_prices }
+    end
+  end
+
+  def self.put_stock_price_csv(ticker_symbol, year, data)
+    file_name = build_stock_price_csv_file_name(ticker_symbol, year)
+
+    bucket = Stock._get_s3_bucket
+    Stock._put_s3_object(bucket, file_name, data)
+  end
+
+  def self.get_stock_price_csv(ticker_symbol, year)
+    file_name = build_stock_price_csv_file_name(ticker_symbol, year)
+
+    bucket = Stock._get_s3_bucket
+    Stock._get_s3_object(bucket, file_name)
+  end
+
+  def self.parse_stock_price_csv(csv, ticker_symbol)
+    stock = Stock.find_by(ticker_symbol: ticker_symbol)
+
+    csv = csv.encode("UTF-8", "Shift_JIS")
 
     stock_prices = []
     CSV.parse(csv) do |line|
