@@ -135,4 +135,17 @@ class EdinetCode < ApplicationRecord
       && self.corporate_number == obj.corporate_number)
   end
 
+  def get_stock
+    if self.ticker_symbol.nil?
+      nil
+    else
+      stock = Stock.find_by_ticker_symbol(self.ticker_symbol[0..3])
+      if stock.nil?
+        raise "Stock not found. ticker_symbol=#{self.ticker_symbol[0..3]}"
+      end
+
+      stock
+    end
+  end
+
 end
