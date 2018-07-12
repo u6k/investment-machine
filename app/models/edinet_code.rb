@@ -100,7 +100,7 @@ class EdinetCode < ApplicationRecord
           edinet_code_saved.listed = edinet_code.listed
           edinet_code_saved.consolidated = edinet_code.consolidated
           edinet_code_saved.capital = edinet_code.capital
-          edinet_code_saved.settlement_date = edinet_codeent_date
+          edinet_code_saved.settlement_date = edinet_code.settlement_date
           edinet_code_saved.submitter_name = edinet_code.submitter_name
           edinet_code_saved.submitter_name_en = edinet_code.submitter_name_en
           edinet_code_saved.submitter_name_yomi = edinet_code.submitter_name_yomi

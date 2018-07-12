@@ -47,14 +47,14 @@ class EdinetCodeTest < ActiveSupport::TestCase
 
   test "parse edinet code list" do
     # precondition
-    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711.zip")
+    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711_short.zip")
     zip = File.open(zip_file_path).read
 
     # execute
     edinet_codes = EdinetCode.parse_edinet_code_list(zip)
 
     # postcondition
-    assert_equal 9724, edinet_codes.length
+    assert_equal 10, edinet_codes.length
 
     edinet_code = edinet_codes[0]
     assert_equal "E00004", edinet_code.edinet_code
@@ -71,22 +71,22 @@ class EdinetCodeTest < ActiveSupport::TestCase
     assert_equal "13760", edinet_code.ticker_symbol
     assert_equal "5070001000715", edinet_code.corporate_number
 
-    edinet_code = edinet_codes[4000]
-    assert_equal "E06381", edinet_code.edinet_code
+    edinet_code = edinet_codes[4]
+    assert_equal "E06360", edinet_code.edinet_code
     assert_equal "個人（組合発行者を除く）", edinet_code.submitter_type
     assert_nil edinet_code.listed
     assert_nil edinet_code.consolidated
     assert_nil edinet_code.capital
     assert_nil edinet_code.settlement_date
-    assert_equal "横川　紀夫", edinet_code.submitter_name
+    assert_equal "青景　研治", edinet_code.submitter_name
     assert_nil edinet_code.submitter_name_en
-    assert_equal "ヨコカワ　ノリオ", edinet_code.submitter_name_yomi
+    assert_equal "アオカゲ　ケンジ", edinet_code.submitter_name_yomi
     assert_nil edinet_code.address
     assert_equal "個人（組合発行者を除く）", edinet_code.industry
     assert_nil edinet_code.ticker_symbol
     assert_nil edinet_code.corporate_number
 
-    edinet_code = edinet_codes[9723]
+    edinet_code = edinet_codes[9]
     assert_equal "E34229", edinet_code.edinet_code
     assert_equal "内国法人・組合（有価証券報告書等の提出義務者以外）", edinet_code.submitter_type
     assert_nil edinet_code.listed
@@ -104,7 +104,7 @@ class EdinetCodeTest < ActiveSupport::TestCase
 
   test "put and get edinet code list zip" do
     # precondition
-    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711.zip")
+    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711_short.zip")
     zip = File.open(zip_file_path).read
     zip_hash = Digest::MD5.hexdigest(zip)
 
@@ -127,7 +127,7 @@ class EdinetCodeTest < ActiveSupport::TestCase
 
   test "import edinet code list" do
     # precondition
-    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711.zip")
+    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711_short.zip")
     zip = File.open(zip_file_path).read
 
     edinet_codes = EdinetCode.parse_edinet_code_list(zip)
@@ -136,9 +136,9 @@ class EdinetCodeTest < ActiveSupport::TestCase
     edinet_code_ids = EdinetCode.import(edinet_codes)
 
     # postcondition
-    assert_equal 9724, edinet_codes.length
-    assert_equal 9724, EdinetCode.all.length
-    assert_equal 9724, edinet_code_ids.length
+    assert_equal 10, edinet_codes.length
+    assert_equal 10, EdinetCode.all.length
+    assert_equal 10, edinet_code_ids.length
 
     edinet_code_ids.each do |edinet_code_id|
       assert EdinetCode.exists?(edinet_code_id)
@@ -151,7 +151,7 @@ class EdinetCodeTest < ActiveSupport::TestCase
 
   test "import duplicate edinet code" do
     # precondition 
-    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711.zip")
+    zip_file_path = Rails.root.join("test", "fixtures", "files", "edinet_code", "Edinetcode_20180711_short.zip")
     zip = File.open(zip_file_path).read
 
     edinet_codes = EdinetCode.parse_edinet_code_list(zip)
@@ -165,7 +165,7 @@ class EdinetCodeTest < ActiveSupport::TestCase
     edinet_code_ids_2 = EdinetCode.import(edinet_codes_2)
 
     # postcondition 2
-    assert_equal 9724, EdinetCode.all.length
+    assert_equal 10, EdinetCode.all.length
     assert_equal 1, edinet_code_ids_2.length
 
     edinet_code_ids_2.each do |edinet_code_id|
