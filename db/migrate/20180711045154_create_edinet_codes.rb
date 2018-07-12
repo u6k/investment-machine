@@ -6,7 +6,7 @@ class CreateEdinetCodes < ActiveRecord::Migration[5.1]
       t.string :listed
       t.string :consolidated
       t.decimal :capital
-      t.date :settlement_date
+      t.string :settlement_date
       t.string :submitter_name
       t.string :submitter_name_en
       t.string :submitter_name_yomi
