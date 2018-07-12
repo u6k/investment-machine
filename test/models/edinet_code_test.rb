@@ -62,7 +62,7 @@ class EdinetCodeTest < ActiveSupport::TestCase
     assert_equal "上場", edinet_code.listed
     assert_equal "有", edinet_code.consolidated
     assert_equal 1491, edinet_code.capital
-    # TODO assert_equal "43251", edinet_code.settlement_date
+    assert_equal " 5月31日", edinet_code.settlement_date
     assert_equal "カネコ種苗株式会社", edinet_code.submitter_name
     assert_equal "KANEKO SEEDS CO., LTD.", edinet_code.submitter_name_en
     assert_equal "カネコシュビョウカブシキガイシャ", edinet_code.submitter_name_yomi
