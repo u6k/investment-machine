@@ -93,7 +93,8 @@ class EdinetCode < ApplicationRecord
       edinet_code_ids = edinet_codes.map do |edinet_code|
         edinet_code_saved = EdinetCode.find_by_edinet_code(edinet_code.edinet_code)
         if edinet_code_saved.nil?
-          edinet_code_saved = edinet_code.save
+          edinet_code.save!
+          edinet_code_saved = edinet_code
         else
           edinet_code_saved.submitter_type = edinet_code.submitter_type
           edinet_code_saved.listed = edinet_code.listed
@@ -116,6 +117,22 @@ class EdinetCode < ApplicationRecord
     end
 
     edinet_code_ids
+  end
+
+  def same?(obj)
+    (self.edinet_code == obj.edinet_code \
+      && self.submitter_type == obj.submitter_type \
+      && self.listed == obj.listed \
+      && self.consolidated == obj.consolidated \
+      && self.capital == obj.capital \
+      && self.settlement_date == obj.settlement_date \
+      && self.submitter_name == obj.submitter_name \
+      && self.submitter_name_en == obj.submitter_name_en \
+      && self.submitter_name_yomi == obj.submitter_name_yomi \
+      && self.address == obj.address \
+      && self.industry == obj.industry \
+      && self.ticker_symbol == obj.ticker_symbol \
+      && self.corporate_number == obj.corporate_number)
   end
 
 end

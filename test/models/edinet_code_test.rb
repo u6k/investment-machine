@@ -145,7 +145,7 @@ class EdinetCodeTest < ActiveSupport::TestCase
     end
 
     edinet_codes.each do |edinet_code|
-      assert_same edinet_code, EdinetCode.find_by_edinet_code(edinet_code.edinet_code)
+      assert edinet_code.same?(EdinetCode.find_by_edinet_code(edinet_code.edinet_code))
     end
   end
 
@@ -174,12 +174,12 @@ class EdinetCodeTest < ActiveSupport::TestCase
 
     edinet_codes.each do |edinet_code|
       if edinet_code.edinet_code != "E00004"
-        assert_same edinet_code, EdinetCode.find_by_edinet_code(edinet_code.edinet_code)
+        assert edinet_code.same?(EdinetCode.find_by_edinet_code(edinet_code.edinet_code))
       end
     end
 
     edinet_codes_2.each do |edinet_code|
-      assert_same edinet_code, EdinetCode.find_by_edinet_code(edinet_code.edinet_code)
+      assert edinet_code.same?(EdinetCode.find_by_edinet_code(edinet_code.edinet_code))
     end
   end
 
