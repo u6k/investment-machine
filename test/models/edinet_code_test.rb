@@ -183,4 +183,59 @@ class EdinetCodeTest < ActiveSupport::TestCase
     end
   end
 
+  test "get stock via edinet_code" do
+    # precondition
+    stocks = [
+      Stock.new(ticker_symbol: "1001", company_name: "foo", market: "hoge"),
+      Stock.new(ticker_symbol: "1002", company_name: "bar", market: "hoge"),
+      Stock.new(ticker_symbol: "1003", company_name: "boo", market: "hoge")
+    ]
+    Stock.import(stocks)
+
+    edinet_code = EdinetCode.new(edinet_code: "E00001", submitter_type: "aaa", submitter_name: "AAA", ticker_symbol: "10010")
+
+    # execute
+    stock = edinet_code.get_stock
+
+    # postcondition
+    assert_equal "1001", stock.ticker_symbol
+    assert_equal "foo", stock.company_name
+    assert_equal "hoge", stock.market
+  end
+
+  test "get stock via edinet_code, case nil" do
+    # precondition
+    stocks = [
+      Stock.new(ticker_symbol: "1001", company_name: "foo", market: "hoge"),
+      Stock.new(ticker_symbol: "1002", company_name: "bar", market: "hoge"),
+      Stock.new(ticker_symbol: "1003", company_name: "boo", market: "hoge")
+    ]
+    Stock.import(stocks)
+
+    edinet_code = EdinetCode.new(edinet_code: "E00002", submitter_type: "bbb", submitter_name: "BBB")
+
+    # execute
+    stock = edinet_code.get_stock
+
+    # postcondition
+    assert_nil stock
+  end
+
+  test "get stock via edinet_code, case exception" do
+    # precondition
+    stocks = [
+      Stock.new(ticker_symbol: "1001", company_name: "foo", market: "hoge"),
+      Stock.new(ticker_symbol: "1002", company_name: "bar", market: "hoge"),
+      Stock.new(ticker_symbol: "1003", company_name: "boo", market: "hoge")
+    ]
+    Stock.import(stocks)
+
+    edinet_code = EdinetCode.new(edinet_code: "E00002", submitter_type: "bbb", submitter_name: "BBB", ticker_symbol: "20010")
+
+    # execute
+    assert_raise RuntimeError, "Stock not found. ticker_symbol=2001" do
+      edinet_code.get_stock
+    end
+  end
+
 end
