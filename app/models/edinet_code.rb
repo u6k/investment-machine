@@ -148,4 +148,10 @@ class EdinetCode < ApplicationRecord
     end
   end
 
+  def self.find_by_ticker_symbol(ticker_symbol)
+    edinet_codes = EdinetCode.where(ticker_symbol: "#{ticker_symbol}0")
+
+    edinet_codes.empty? ? nil : edinet_codes[0]
+  end
+
 end

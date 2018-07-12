@@ -238,4 +238,39 @@ class EdinetCodeTest < ActiveSupport::TestCase
     end
   end
 
+  test "edinet code find by ticker_symbol" do
+    # precondition
+    edinet_codes = [
+      EdinetCode.new(edinet_code: "E00001", submitter_type: "aaa", submitter_name: "AAA", ticker_symbol: "10010"),
+      EdinetCode.new(edinet_code: "E00002", submitter_type: "bbb", submitter_name: "BBB", ticker_symbol: "10020"),
+      EdinetCode.new(edinet_code: "E00003", submitter_type: "ccc", submitter_name: "CCC", ticker_symbol: "10030"),
+    ]
+    EdinetCode.import(edinet_codes)
+
+    # execute
+    edinet_code = EdinetCode.find_by_ticker_symbol("1002")
+
+    # postcondition
+    assert_equal "E00002", edinet_code.edinet_code
+    assert_equal "bbb", edinet_code.submitter_type
+    assert_equal "BBB", edinet_code.submitter_name
+    assert_equal "10020", edinet_code.ticker_symbol
+  end
+
+  test "edinet code find by ticker_symbol, case not found" do
+    # precondition
+    edinet_codes = [
+      EdinetCode.new(edinet_code: "E00001", submitter_type: "aaa", submitter_name: "AAA", ticker_symbol: "10010"),
+      EdinetCode.new(edinet_code: "E00002", submitter_type: "bbb", submitter_name: "BBB", ticker_symbol: "10020"),
+      EdinetCode.new(edinet_code: "E00003", submitter_type: "ccc", submitter_name: "CCC", ticker_symbol: "10030"),
+    ]
+    EdinetCode.import(edinet_codes)
+
+    # execute
+    edinet_code = EdinetCode.find_by_ticker_symbol("9999")
+
+    # postcondition
+    assert_nil edinet_code
+  end
+
 end
