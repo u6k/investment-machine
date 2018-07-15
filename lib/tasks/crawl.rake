@@ -96,13 +96,22 @@ namespace :crawl do
       Rails.logger.info "download_stock_prices: get_years: end: #{stock_index}/#{stocks.length}: ticker_symbol=#{stock.ticker_symbol}, years=#{years}"
     end
 
+    task_failed = false
     ticker_symbol_years.each.with_index(1) do |record, index|
       Rails.logger.info "download_stock_prices: csv: start: #{index}/#{ticker_symbol_years.length}: ticker_symbol=#{record[:ticker_symbol]}, year=#{record[:year]}"
-      result = StockPrice.download_stock_price_csv(record[:ticker_symbol], record[:year], missing_only)
-      if result != nil
-        StockPrice.put_stock_price_csv(record[:ticker_symbol], record[:year], result[:data])
+      begin
+        result = StockPrice.download_stock_price_csv(record[:ticker_symbol], record[:year], missing_only)
+        if result != nil
+          StockPrice.put_stock_price_csv(record[:ticker_symbol], record[:year], result[:data])
+        end
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
       end
     end
+
+    Rails.logger.info "download_stock_prices: end"
+    raise "failed" if task_failed
   end
 
   task :import_stock_prices, [:ticker_symbol, :year] => :environment do |task, args|
