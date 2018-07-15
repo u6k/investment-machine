@@ -23,7 +23,7 @@ namespace :crawl do
         result = Stock.download_stock_list_page(page_link)
         Stock.put_stock_list_page(page_link, result[:data])
       rescue => e
-        Rails.logger.error "#{e.class} (#{e.message}):\n#{e.backtrace.join("\n")}"
+        Rails.logger.error build_error_log(e)
         task_failed = true
       end
     end
@@ -331,6 +331,10 @@ namespace :crawl do
     end
 
     Rails.logger.info "download_wertpapier_report_zips: end"
+  end
+
+  def build_error_log(e)
+    "#{e.class} (#{e.message}):\n#{e.backtrace.join("\n")}"
   end
 
 end
