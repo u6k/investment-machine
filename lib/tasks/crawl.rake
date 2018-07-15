@@ -42,15 +42,22 @@ namespace :crawl do
     page_links = Stock.parse_index_page(data)
     Rails.logger.info "import_stocks: get_page_links: end: length=#{page_links.length}"
 
+    task_failed = false
     page_links.each.with_index(1) do |page_link, index|
       Rails.logger.info "import_stocks: import: start: #{index}/#{page_links.length}: page_link=#{page_link}"
-      data = Stock.get_stock_list_page(page_link)
-      stocks = Stock.parse_stock_list_page(data)
-      Stock.import(stocks)
-      Rails.logger.info "import_stocks: import: end: stocks.length=#{stocks.length}"
+      begin
+        data = Stock.get_stock_list_page(page_link)
+        stocks = Stock.parse_stock_list_page(data)
+        Stock.import(stocks)
+        Rails.logger.info "import_stocks: import: end: stocks.length=#{stocks.length}"
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
+      end
     end
 
     Rails.logger.info "import_stocks: end: Stock.all.length=#{Stock.all.length}"
+    raise "failed" if task_failed
   end
 
   task :download_stock_prices, [:ticker_symbol, :year, :missing_only] => :environment do |task, args|
