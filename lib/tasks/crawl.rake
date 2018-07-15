@@ -18,8 +18,12 @@ namespace :crawl do
 
     page_links.each.with_index(1) do |page_link, index|
       Rails.logger.info "download_stocks: download_stock_list_page: #{index}/#{page_links.length}, page_link=#{page_link}"
-      result = Stock.download_stock_list_page(page_link)
-      Stock.put_stock_list_page(page_link, result[:data])
+      begin
+        result = Stock.download_stock_list_page(page_link)
+        Stock.put_stock_list_page(page_link, result[:data])
+      rescue => e
+        Rails.logger.error "#{e.class} (#{e.message}):\n#{e.backtrace.join("\n")}"
+      end
     end
 
     Rails.logger.info "download_stocks: end"
