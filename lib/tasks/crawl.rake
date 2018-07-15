@@ -16,6 +16,7 @@ namespace :crawl do
     Stock.put_index_page(data)
     Rails.logger.info "download_stocks: download_index_page: end: length=#{page_links.length}"
 
+    task_failed = false
     page_links.each.with_index(1) do |page_link, index|
       Rails.logger.info "download_stocks: download_stock_list_page: #{index}/#{page_links.length}, page_link=#{page_link}"
       begin
@@ -23,10 +24,12 @@ namespace :crawl do
         Stock.put_stock_list_page(page_link, result[:data])
       rescue => e
         Rails.logger.error "#{e.class} (#{e.message}):\n#{e.backtrace.join("\n")}"
+        task_failed = true
       end
     end
 
     Rails.logger.info "download_stocks: end"
+    raise "failed" if task_failed
   end
 
   task :import_stocks, [] => :environment do |task, args|
