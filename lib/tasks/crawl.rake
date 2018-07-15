@@ -170,13 +170,20 @@ namespace :crawl do
       target_dates = (Date.new(args.year.to_i, 1, 1) .. Date.new(args.year.to_i, 12, 31)).select { |d| d.day == 1 }
     end
 
+    task_failed = false
     target_dates.each.with_index(1) do |target_date, target_date_index|
       Rails.logger.info "download nikkei average: download: #{target_date_index}/#{target_dates.length}: date=#{target_date}"
-      result = NikkeiAverage.download_nikkei_average_html(target_date.year, target_date.month, missing_only)
-      NikkeiAverage.put_nikkei_average_html(target_date.year, target_date.month, result[:data])
+      begin
+        result = NikkeiAverage.download_nikkei_average_html(target_date.year, target_date.month, missing_only)
+        NikkeiAverage.put_nikkei_average_html(target_date.year, target_date.month, result[:data])
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
+      end
     end
 
     Rails.logger.info "download_nikkei_averages: end"
+    raise "failed" if task_failed
   end
 
   task :import_nikkei_averages, [:year] => :environment do |task, args|
@@ -190,15 +197,22 @@ namespace :crawl do
       target_dates = (Date.new(args.year.to_i, 1, 1) .. Date.new(args.year.to_i, 12, 31)).select { |d| d.day == 1 }
     end
 
+    task_failed = false
     target_dates.each.with_index(1) do |target_date, target_date_index|
       Rails.logger.info "import nikkei average: import: start: #{target_date_index}/#{target_dates.length}: date=#{target_date}"
-      data = NikkeiAverage.get_nikkei_average_html(target_date.year, target_date.month)
-      nikkei_averages = NikkeiAverage.parse_nikkei_average_html(data)
-      NikkeiAverage.import(nikkei_averages)
-      Rails.logger.info "import nikkei average: import: end: #{nikkei_averages.length}"
+      begin
+        data = NikkeiAverage.get_nikkei_average_html(target_date.year, target_date.month)
+        nikkei_averages = NikkeiAverage.parse_nikkei_average_html(data)
+        NikkeiAverage.import(nikkei_averages)
+        Rails.logger.info "import nikkei average: import: end: #{nikkei_averages.length}"
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
+      end
     end
 
     Rails.logger.info "import_nikkei_averages: end"
+    raise "failed" if task_failed
   end
 
   task :download_topixes, [:year] => :environment do |task, args|
@@ -286,13 +300,20 @@ namespace :crawl do
     Rails.logger.info "download_wertpapier_report_feeds: search stocks: end: length=#{ticker_symbols.length}"
 
     # download feed
+    task_failed = false
     ticker_symbols.each.with_index(1) do |ticker_symbol, index|
       Rails.logger.info "download_wertpapier_report_feeds: download feed: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}"
-      result = WertpapierReport.download_feed(ticker_symbol)
-      WertpapierReport.put_feed(ticker_symbol, result[:data])
+      begin
+        result = WertpapierReport.download_feed(ticker_symbol)
+        WertpapierReport.put_feed(ticker_symbol, result[:data])
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
+      end
     end
 
     Rails.logger.info "download_wertpapier_report_feeds: end"
+    raise "failed" if task_failed
   end
 
   task :import_wertpapier_report_feeds, [:ticker_symbol] => :environment do |task, args|
@@ -310,15 +331,22 @@ namespace :crawl do
     Rails.logger.info "import_wertpapier_report_feeds: search stocks: end: length=#{ticker_symbols.length}"
 
     # get and import wertpapier report feeds
+    task_failed = false
     ticker_symbols.each.with_index(1) do |ticker_symbol, index|
       Rails.logger.info "import_wertpapier_report_feeds: import: start: #{index}/#{ticker_symbols.length}: ticker_symbol=#{ticker_symbol}"
-      data = WertpapierReport.get_feed(ticker_symbol)
-      wertpapier_reports = WertpapierReport.parse_feed(ticker_symbol, data)
-      wertpapier_report_ids = WertpapierReport.import_feed(wertpapier_reports)
-      Rails.logger.info "import_wertpapier_report_feeds: import: end: result=#{wertpapier_report_ids.length}"
+      begin
+        data = WertpapierReport.get_feed(ticker_symbol)
+        wertpapier_reports = WertpapierReport.parse_feed(ticker_symbol, data)
+        wertpapier_report_ids = WertpapierReport.import_feed(wertpapier_reports)
+        Rails.logger.info "import_wertpapier_report_feeds: import: end: result=#{wertpapier_report_ids.length}"
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
+      end
     end
 
     Rails.logger.info "import_wertpapier_report_feeds: end"
+    raise "failed" if task_failed
   end
 
   task :download_wertpapier_report_zips, [:ticker_symbol, :missing_only] => :environment do |task, args|
@@ -347,15 +375,22 @@ namespace :crawl do
     end
 
     # download zip
+    task_failed = false
     wertpapier_reports.each.with_index(1) do |wertpapier_report, index|
       Rails.logger.info "download_wertpapier_report_zips: #{index}/#{wertpapier_reports.length}"
-      result = WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, missing_only)
-      if result != nil
-        WertpapierReport.put_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, result[:data])
+      begin
+        result = WertpapierReport.download_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, missing_only)
+        if result != nil
+          WertpapierReport.put_wertpapier_zip(wertpapier_report.ticker_symbol, wertpapier_report.entry_id, result[:data])
+        end
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
       end
     end
 
     Rails.logger.info "download_wertpapier_report_zips: end"
+    raise "failed" if task_failed
   end
 
   def build_error_log(e)
