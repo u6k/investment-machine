@@ -141,12 +141,21 @@ namespace :crawl do
       Rails.logger.info "import_stock_prices: get_years: end: ticker_symbol=#{stock.ticker_symbol}, years=#{years}"
     end
 
+    task_failed = false
     ticker_symbol_years.each.with_index(1) do |record, index|
       Rails.logger.info "import_stock_prices: import: start: #{index}/#{ticker_symbol_years.length}: ticker_symbol=#{record[:ticker_symbol]}, year=#{record[:year]}"
-      stock_prices = StockPrice.parse_stock_price_csv(StockPrice.get_stock_price_csv(record[:ticker_symbol], record[:year]), record[:ticker_symbol])
-      StockPrice.import(stock_prices)
-      Rails.logger.info "import_stock_prices: import: length=#{stock_prices.length}"
+      begin
+        stock_prices = StockPrice.parse_stock_price_csv(StockPrice.get_stock_price_csv(record[:ticker_symbol], record[:year]), record[:ticker_symbol])
+        StockPrice.import(stock_prices)
+        Rails.logger.info "import_stock_prices: import: length=#{stock_prices.length}"
+      rescue => e
+        Rails.logger.error build_error_log(e)
+        task_failed = true
+      end
     end
+
+    Rails.logger.info "import_stock_prices: end"
+    raise "failed" if task_failed
   end
 
   task :download_nikkei_averages, [:year, :missing_only] => :environment do |task, args|
