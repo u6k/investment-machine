@@ -140,7 +140,7 @@ class CrawlTest < ActionDispatch::IntegrationTest
 
     assert_equal 2, Stock._get_s3_objects_size(bucket.objects)
     feed_count = WertpapierReport.all.length
-    assert feed_count > 60
+    assert feed_count > 0
 
     Rake::Task["crawl:download_wertpapier_report_zips"].invoke("1301")
 
