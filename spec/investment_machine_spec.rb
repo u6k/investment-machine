@@ -17,6 +17,14 @@ RSpec.describe InvestmentMachine::CLI do
       status: [200, "OK"],
       body: File.open("spec/data/stock_list_page.html").read)
 
+    WebMock.stub_request(:get, "https://kabuoji3.com/stock/1301/").to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/stock_prices_page.1301.html").read)
+
+    WebMock.stub_request(:get, "https://kabuoji3.com/stock/1301/2019/").to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/stock_prices_page.1301.html").read)
+
     WebMock.disable_net_connect!(allow: "s3")
   end
 
