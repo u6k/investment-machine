@@ -1,17 +1,12 @@
-FROM ruby:2.5
+FROM ruby:2.6
 LABEL maintainer="u6k.apps@gmail.com"
 
 RUN apt-get update && \
-    apt-get install -y \
-        nodejs && \
-    apt-get clean
+    apt-get -y upgrade && \
+    apt-get clean && \
+    gem install specific_install && \
+    gem specific_install -l "https://github.com/u6k/crawline.git" && \
+    gem specific_install -l "https://github.com/u6k/investment-machine.git"
 
-WORKDIR /var/myapp
+ENTRYPOINT ["investment-machine"]
 
-COPY . .
-
-RUN bundle install
-
-EXPOSE 3000
-
-CMD ["bin/entrypoint.sh"]
