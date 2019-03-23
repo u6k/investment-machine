@@ -1,107 +1,71 @@
 # 投資マシン _(investment-machine)_
 
-[![Travis](https://img.shields.io/travis/u6k/investment-machine.svg)](https://travis-ci.org/u6k/investment-machine)
-[![license](https://img.shields.io/github/license/u6k/investment-machine.svg)](https://github.com/u6k/investment-machine/blob/master/LICENSE)
-[![GitHub tag](https://img.shields.io/github/tag/u6k/investment-machine.svg)](https://github.com/u6k/investment-machine/releases)
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![Travis](https://img.shields.io/travis/u6k/investment-machine.svg)](https://travis-ci.org/u6k/investment-machine) [![license](https://img.shields.io/github/license/u6k/investment-machine.svg)](https://github.com/u6k/investment-machine/blob/master/LICENSE) [![GitHub release](https://img.shields.io/github/release/u6k/investment-machine.svg)](https://github.com/u6k/investment-machine/releases) [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme) [![WebSite](https://img.shields.io/website-up-down-green-red/https/shields.io.svg?label=u6k.Redmine)](https://redmine.u6k.me/projects/investment-machine)
 
-> 投資マシン。
+> 投資をサポートする
+
+__Table of Contents__
+
+- [Install](#Install)
+- [Usage](#Usage)
+- [Other](#Other)
+- [API](#API)
+- [Maintainer](#Maintainer)
+- [Contributing](#Contributing)
+- [License](#License)
 
 ## Install
 
-Dockerを使用します。
+Rubyを使用します。
 
 ```
-$ docker version
-Client:
- Version:       18.03.0-ce
- API version:   1.37
- Go version:    go1.9.4
- Git commit:    0520e24
- Built: Wed Mar 21 23:06:22 2018
- OS/Arch:       darwin/amd64
- Experimental:  false
- Orchestrator:  swarm
-
-Server:
- Engine:
-  Version:      18.03.0-ce
-  API version:  1.37 (minimum version 1.12)
-  Go version:   go1.9.4
-  Git commit:   0520e24
-  Built:        Wed Mar 21 23:14:32 2018
-  OS/Arch:      linux/amd64
-  Experimental: true
-yu1-no-MacBook-Pro:investment-machine yu1$
-
-$ docker-compose version
-docker-compose version 1.20.1, build 5d8c71b
-docker-py version: 3.1.4
-CPython version: 3.6.4
-OpenSSL version: OpenSSL 1.0.2n  7 Dec 2017
+$ ruby --version
+ruby 2.6.0p0 (2018-12-25 revision 66547) [x86_64-linux]
 ```
 
-ビルド手順は、`.travis.yml`を参照すること。起動は`docker-compose.production.yml`を参照すること。
-
-## Development
-
-開発用Dockerイメージをビルドします。
+`Gemfile`に次を追加して、`bundle install`でインストールします。
 
 ```
-$ docker-compose build
+gem 'crawline', :git => 'https://github.com/u6k/crawline.git'
+gem 'investment_machine', :git => 'https://github.com/u6k/investment-machine.git'
 ```
 
-環境変数を設定するため、 `.env` を作成します。
+## Usage
 
 ```
-$ mv .env.example .env
+$ investment-machine help
+Commands:
+  investment-machine crawl           # Crawl stocks
+  investment-machine help [COMMAND]  # Describe available commands or one specific command
+  investment-machine version         # Display version
 ```
 
-開発用Dockerコンテナを起動します。
+## Other
 
-```
-$ docker-compose up -d
-```
+最新の情報は、 [Wiki - investment-machine - u6k.Redmine](https://redmine.u6k.me/projects/investment-machine/wiki) を参照してください。
 
-DBをマイグレートします。
-
-```
-$ docker-compose exec app rails db:migrate
-```
-
-Minioのバケットを作成します。
-
-```
-$ docker-compose exec s3 mkdir /export/investment
-```
-
-テストを実行します。
-
-```
-$ docker-compose exec app rails test
-```
-
-簡単に動作確認をします。
-
-```
-$ curl http://localhost:3000
-```
+- [基本情報](https://redmine.u6k.me/projects/investment-machine/wiki/%E5%9F%BA%E6%9C%AC%E6%83%85%E5%A0%B1)
+- [関連サイト](https://redmine.u6k.me/projects/investment-machine/wiki/%E9%96%A2%E9%80%A3%E3%82%B5%E3%82%A4%E3%83%88)
+- [外部データソース構造](https://redmine.u6k.me/projects/investment-machine/wiki/%E5%A4%96%E9%83%A8%E3%83%87%E3%83%BC%E3%82%BF%E3%82%BD%E3%83%BC%E3%82%B9%E6%A7%8B%E9%80%A0)
+- [データ構造](https://redmine.u6k.me/projects/investment-machine/wiki/%E3%83%87%E3%83%BC%E3%82%BF%E6%A7%8B%E9%80%A0)
+- [リリース手順](https://redmine.u6k.me/projects/investment-machine/wiki/%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E6%89%8B%E9%A0%86)
 
 ## API
 
-|API|URL|
-|---|---|
-|ヘルスチェック|/okcomputer/all.json|
+[APIリファレンス](https://u6k.github.io/investment-machine/) を参照してください。
 
 ## Maintainer
 
-- [u6k - GitHub](https://github.com/u6k/)
-- [u6k.Blog()](https://blog.u6k.me/)
-- [u6k_yu1 | Twitter](https://twitter.com/u6k_yu1)
+- u6k
+    - [Twitter](https://twitter.com/u6k_yu1)
+    - [GitHub](https://github.com/u6k)
+    - [Blog](https://blog.u6k.me/)
 
-## Contribute
+## Contributing
 
-ライセンスの範囲内で、ご自由にご使用ください。
+当プロジェクトに興味を持っていただき、ありがとうございます。[新しいチケットを起票](https://redmine.u6k.me/projects/investment-machine/issues/new)していただくか、プルリクエストをサブミットしていただけると幸いです。
+
+当プロジェクトは、[Contributor Covenant](https://www.contributor-covenant.org/version/1/4/code-of-conduct)に準拠します。
 
 ## License
 
