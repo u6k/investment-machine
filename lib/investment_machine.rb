@@ -1,6 +1,13 @@
+require "thor"
+
 require "investment_machine/version"
 
 module InvestmentMachine
-  class Error < StandardError; end
-  # Your code goes here...
+  class CLI < Thor
+    desc "version", "Display version"
+    def version
+      puts InvestmentMachine::VERSION
+    end
+  end
 end
+
