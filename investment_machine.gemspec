@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency 'timecop', '~> 0.9.1'
   spec.add_development_dependency 'webmock', '~> 3.5', '>= 3.5.1'
+  spec.add_development_dependency 'yard', '~> 0.9.18'
 
   spec.add_dependency "crawline"
   spec.add_dependency 'thor', '~> 0.20.3'
