@@ -33,5 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "crawline"
   spec.add_dependency 'thor', '~> 0.20.3'
   spec.add_dependency 'nokogiri', '~> 1.10', '>= 1.10.1'
+  spec.add_dependency 'rubyzip', '~> 1.2', '>= 1.2.2'
 end
 
