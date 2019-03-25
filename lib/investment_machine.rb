@@ -30,6 +30,8 @@ module InvestmentMachine
       parsers = {
         /^https:\/\/kabuoji3\.com\/stock\/(\?page=\d{1,2})?$/ => Parser::StockListPageParser,
         /^https:\/\/kabuoji3\.com\/stock\/\d{4}\/(\d+\/)?$/ => Parser::StockPricesPageParser,
+        /^https:\/\/resource\.ufocatch\.com\/atom\/(edinetx|tdnetx)(\/\d+)?$/ => Parser::EdinetFeedParser,
+        /^https:\/\/resource\.ufocatch\.com\/data\/(edinet|tdnet)\/\w+$/ => Parser::XbrlZipParser,
       }
 
       engine = Crawline::Engine.new(downloader, repo, parsers, options.interval.to_i)
