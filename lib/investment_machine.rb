@@ -3,6 +3,8 @@ require "thor"
 require "investment_machine/version"
 require "parser/stock_list_page_parser"
 require "parser/stock_prices_page_parser"
+require "parser/edinet_feed_parser"
+require "parser/xbrl_zip_parser"
 
 module InvestmentMachine
   class CLI < Thor
