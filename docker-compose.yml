@@ -10,7 +10,7 @@ services:
       - "AWS_S3_BUCKET=test.investment-machine"
       - "AWS_S3_ENDPOINT=http://s3:9000"
       - "AWS_S3_FORCE_PATH_STYLE=true"
-      - "CRAWLINE_LOGGER_LEVEL=INFO"
+      - "CRAWLINE_LOGGER_LEVEL=FATAL"
       - "INVESTMENT_LOGGER_LEVEL=INFO"
     volumes:
       - ".:/var/myapp"
