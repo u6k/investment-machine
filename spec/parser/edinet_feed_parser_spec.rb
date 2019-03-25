@@ -13,7 +13,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
 
     @parser = InvestmentMachine::Parser::EdinetFeedParser.new(url, data)
 
-    url = "https://resource.ufocatch.com/atom/edinetx/416",
+    url = "https://resource.ufocatch.com/atom/edinetx/416"
     data = {
       "url" => "https://resource.ufocatch.com/atom/edinetx/416",
       "request_method" => "GET",
@@ -24,7 +24,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
 
     @parser_edinet_416 = InvestmentMachine::Parser::EdinetFeedParser.new(url, data)
 
-    url = "https://resource.ufocatch.com/atom/tdnetx",
+    url = "https://resource.ufocatch.com/atom/tdnetx"
     data = {
       "url" => "https://resource.ufocatch.com/atom/tdnetx",
       "request_method" => "GET",
@@ -35,7 +35,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
 
     @parser_tdnet_1 = InvestmentMachine::Parser::EdinetFeedParser.new(url, data)
 
-    url = "https://resource.ufocatch.com/atom/tdnetx/115",
+    url = "https://resource.ufocatch.com/atom/tdnetx/115"
     data = {
       "url" => "https://resource.ufocatch.com/atom/tdnetx/115",
       "request_method" => "GET",
@@ -46,7 +46,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
 
     @parser_tdnet_115 = InvestmentMachine::Parser::EdinetFeedParser.new(url, data)
 
-    url = "https://resource.ufocatch.com/atom/xxx",
+    url = "https://resource.ufocatch.com/atom/xxx"
     data = {
       "url" => "https://resource.ufocatch.com/atom/xxx",
       "request_method" => "GET",
@@ -87,13 +87,13 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       end
 
       it "is valid(tdnet last atom)" do
-        expect(@parser_tdnet__115).to be_valid
+        expect(@parser_tdnet_115).to be_valid
       end
     end
 
     context "invalid page" do
       it "is invalid" do
-        expect(@parser_error).to be_valid
+        expect(@parser_error).not_to be_valid
       end
     end
   end
