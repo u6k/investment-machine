@@ -8,7 +8,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
       "request_method" => "GET",
       "request_headers" => {},
       "response_headers" => {},
-      "response_body" => File.open("spec/data/nikkei_aberage.index.html").read,
+      "response_body" => File.open("spec/data/nikkei_average.index.html").read,
       "downloaded_timestamp" => Time.utc(2019, 3, 27, 20, 35, 12)}
 
     @parser = InvestmentMachine::Parser::NikkeiAverageIndexParser.new(url, data)
@@ -36,7 +36,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
 
   describe "#related_links" do
     it "is nikkei average daily data pages" do
-      expected_links = (1946..2019).map do |y|
+      expected_links = (1949..2019).map do |y|
         (1..12).map do |m|
           "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=#{y}&month=#{m}"
         end
@@ -50,7 +50,9 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
     it "is empty" do
       context = {}
 
-      @parser.parse(context).to be_empty
+      @parser.parse(context)
+
+      expect(context).to be_empty
     end
   end
 end
