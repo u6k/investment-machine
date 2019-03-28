@@ -33,6 +33,8 @@ module InvestmentMachine
         /^https:\/\/kabuoji3\.com\/stock\/\d{4}\/(\d+\/)?$/ => Parser::StockPricesPageParser,
         /^https:\/\/resource\.ufocatch\.com\/atom\/(edinetx|tdnetx)(\/\d+)?$/ => Parser::EdinetFeedParser,
         /^https:\/\/resource\.ufocatch\.com\/data\/(edinet|tdnet)\/\w+$/ => Parser::XbrlZipParser,
+        /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/archives.*$/ => Parser::NikkeiAverageIndexParser,
+        /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/statistics.*$/ => Parser::NikkeiAverageDataParser,
       }
 
       engine = Crawline::Engine.new(downloader, repo, parsers, options.interval.to_i)

@@ -40,6 +40,17 @@ RSpec.describe InvestmentMachine::CLI do
       status: [200, "OK"],
       body: File.open("spec/data/ED2019032500001.zip").read)
 
+    WebMock.stub_request(:get, /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/.*$/).to_return(
+      status: [404, "Not Found"])
+
+    WebMock.stub_request(:get, "https://indexes.nikkei.co.jp/nkave/archives/").to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/nikkei_average.index.html").read)
+
+    WebMock.stub_request(:get, "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2").to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/nikkei_average.201902.html").read)
+
     WebMock.disable_net_connect!(allow: "s3")
   end
 
@@ -65,5 +76,8 @@ RSpec.describe InvestmentMachine::CLI do
     InvestmentMachine::CLI.new.invoke("crawl", [], s3_access_key: ENV["AWS_S3_ACCESS_KEY"], s3_secret_key: ENV["AWS_S3_SECRET_KEY"], s3_region: ENV["AWS_S3_REGION"], s3_bucket: ENV["AWS_S3_BUCKET"], s3_endpoint: ENV["AWS_S3_ENDPOINT"], s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"], interval: 0.001, entrypoint_url: "https://resource.ufocatch.com/atom/tdnetx")
   end
 
+  it "crawl nikkei average is success" do
+    InvestmentMachine::CLI.new.invoke("crawl", [], s3_access_key: ENV["AWS_S3_ACCESS_KEY"], s3_secret_key: ENV["AWS_S3_SECRET_KEY"], s3_region: ENV["AWS_S3_REGION"], s3_bucket: ENV["AWS_S3_BUCKET"], s3_endpoint: ENV["AWS_S3_ENDPOINT"], s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"], interval: 0.001, entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/")
+  end
 end
 
