@@ -7,6 +7,8 @@ class StockPrices < ActiveRecord::Migration[5.2]
       t.integer :high_price
       t.integer :low_price
       t.integer :close_price
+      t.integer :turnover
+      t.integer :adjustment_value
     end
   end
 end
