@@ -5,6 +5,7 @@ require "parser/stock_list_page_parser"
 require "parser/stock_prices_page_parser"
 require "parser/edinet_feed_parser"
 require "parser/xbrl_zip_parser"
+require "parser/nikkei_average_parser"
 
 module InvestmentMachine
   class CLI < Thor
@@ -32,6 +33,8 @@ module InvestmentMachine
         /^https:\/\/kabuoji3\.com\/stock\/\d{4}\/(\d+\/)?$/ => Parser::StockPricesPageParser,
         /^https:\/\/resource\.ufocatch\.com\/atom\/(edinetx|tdnetx)(\/\d+)?$/ => Parser::EdinetFeedParser,
         /^https:\/\/resource\.ufocatch\.com\/data\/(edinet|tdnet)\/\w+$/ => Parser::XbrlZipParser,
+        /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/archives.*$/ => Parser::NikkeiAverageIndexParser,
+        /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/statistics.*$/ => Parser::NikkeiAverageDataParser,
       }
 
       engine = Crawline::Engine.new(downloader, repo, parsers, options.interval.to_i)
