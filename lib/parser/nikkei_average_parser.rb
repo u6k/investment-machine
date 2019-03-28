@@ -49,5 +49,10 @@ module InvestmentMachine::Parser
       end
     end
   end
+
+  class NikkeiAverageDataParser < Crawline::BaseParser
+    def initialize(url, data)
+    end
+  end
 end
 
