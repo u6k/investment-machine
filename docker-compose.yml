@@ -10,12 +10,17 @@ services:
       - "AWS_S3_BUCKET=test.investment-machine"
       - "AWS_S3_ENDPOINT=http://s3:9000"
       - "AWS_S3_FORCE_PATH_STYLE=true"
+      - "DB_DATABASE=db"
+      - "DB_USERNAME=db_user"
+      - "DB_PASSWORD=db_pass"
+      - "DB_HOST=db"
       - "CRAWLINE_LOGGER_LEVEL=FATAL"
       - "INVESTMENT_LOGGER_LEVEL=INFO"
     volumes:
       - ".:/var/myapp"
     depends_on:
       - "s3"
+      - "db"
     command: /bin/sh -c "bundle install && rake spec"
   s3:
     image: minio/minio
@@ -26,8 +31,18 @@ services:
     volumes:
       - "s3:/export"
     command: server /export
+  db:
+    image: postgres:11
+    environment:
+      - "POSTGRES_USER=db_user"
+      - "POSTGRES_PASSWORD=db_pass"
+      - "POSTGRES_DB=db"
+    volumes:
+      - "db:/var/lib/postgresql/data"
 
 volumes:
   s3:
+    driver: local
+  db:
     driver: local
 
