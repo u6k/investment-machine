@@ -36,9 +36,11 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
 
   describe "#related_links" do
     it "is nikkei average daily data pages" do
-      expected_links = (1949..2019).map do |y|
+      expected_links = []
+
+      (1949..2019).map do |y|
         (1..12).map do |m|
-          "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=#{y}&month=#{m}"
+          expected_links << "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=#{y}&month=#{m}"
         end
       end
 

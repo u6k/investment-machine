@@ -39,12 +39,14 @@ module InvestmentMachine::Parser
 
       doc = Nokogiri::HTML.parse(@data["response_body"], nil, "UTF-8")
 
-      @related_links = doc.xpath("//div[@class='col-sm-2'][1]/select/option").map do |option|
+      @related_links = []
+
+      doc.xpath("//div[@class='col-sm-2'][1]/select/option").map do |option|
         @logger.debug("NikkeiAverageIndexParser#_parse: option=#{option}")
 
         y = option["value"]
         (1..12).map do |m|
-          "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=#{y}&month=#{m}"
+          @related_links << "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=#{y}&month=#{m}"
         end
       end
     end
