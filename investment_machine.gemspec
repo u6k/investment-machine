@@ -34,5 +34,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'thor', '~> 0.20.3'
   spec.add_dependency 'nokogiri', '~> 1.10', '>= 1.10.1'
   spec.add_dependency 'rubyzip', '~> 1.2', '>= 1.2.2'
+  spec.add_dependency 'pg'
+  spec.add_dependency 'activerecord'
+  spec.add_dependency 'standalone_migrations'
 end
 
