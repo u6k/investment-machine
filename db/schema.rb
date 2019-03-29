@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(version: 2019_03_28_103926) do
 
   create_table "stock_prices", force: :cascade do |t|
     t.string "ticker_symbol"
-    t.date "date"
+    t.datetime "date"
     t.integer "opening_price"
     t.integer "high_price"
     t.integer "low_price"
