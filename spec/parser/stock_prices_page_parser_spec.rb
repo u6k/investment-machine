@@ -2,6 +2,11 @@ require "timecop"
 
 RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
   before do
+    # Setup database
+    InvestmentMachine::Model::Company.delete_all
+    InvestmentMachine::Model::StockPrice.delete_all
+
+    # Setup parser
     url = "https://kabuoji3.com/stock/1301/"
     data = {
       "url" => "https://kabuoji3.com/stock/1301/",
@@ -23,11 +28,6 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
       "downloaded_timestamp" => Time.utc(2019, 3, 24, 3, 12, 59)}
 
     @parser_error = InvestmentMachine::Parser::StockPricesPageParser.new(url, data)
-  end
-
-  after do
-    InvestmentMachine::Model::Company.delete_all
-    InvestmentMachine::Model::StockPrice.delete_all
   end
 
   describe "#redownload?" do
