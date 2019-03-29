@@ -24,5 +24,16 @@ RSpec.configure do |config|
 
     result
   end
+
+  # Database config
+  db_config = {
+    adapter: "postgresql",
+    database: ENV["DB_DATABASE"],
+    host: ENV["DB_HOST"],
+    username: ENV["DB_USERNAME"],
+    password: ENV["DB_PASSWORD"]
+  }
+
+  ActiveRecord::Base.establish_connection db_config
 end
 
