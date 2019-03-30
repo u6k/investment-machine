@@ -1,3 +1,3 @@
 module InvestmentMachine
-  VERSION = "0.7.0-develop"
+  VERSION = "0.7.0"
 end
