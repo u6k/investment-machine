@@ -82,7 +82,11 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_bucket: ENV["AWS_S3_BUCKET"],
                                       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
-                                      interval: 0.001)
+                                      interval: 0.001,
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Company.count).to eq 0
@@ -97,7 +101,11 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_bucket: ENV["AWS_S3_BUCKET"],
                                       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
-                                      interval: 0.001)
+                                      interval: 0.001,
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
     InvestmentMachine::CLI.new.invoke("parse", [],
                                       s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
                                       s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
@@ -124,7 +132,11 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
                                       interval: 0.001,
-                                      entrypoint_url: "https://resource.ufocatch.com/atom/edinetx")
+                                      entrypoint_url: "https://resource.ufocatch.com/atom/edinetx",
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Company.count).to eq 0
@@ -140,7 +152,11 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
                                       interval: 0.001,
-                                      entrypoint_url: "https://resource.ufocatch.com/atom/tdnetx")
+                                      entrypoint_url: "https://resource.ufocatch.com/atom/tdnetx",
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Company.count).to eq 0
@@ -156,7 +172,11 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
                                       interval: 0.001,
-                                      entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/")
+                                      entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/",
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::NikkeiAverage.count).to eq 0
@@ -171,7 +191,11 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
                                       interval: 0.001,
-                                      entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/")
+                                      entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/",
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
     InvestmentMachine::CLI.new.invoke("parse", [],
                                       s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
                                       s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
