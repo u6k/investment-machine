@@ -263,7 +263,6 @@
       <pre class="lines">
 
 
-56
 57
 58
 59
@@ -271,10 +270,11 @@
 61
 62
 63
-64</pre>
+64
+65</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 57</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_url'>url</span><span class='comma'>,</span> <span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
   <span class='ivar'>@logger</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../InvestmentMachine.html" title="InvestmentMachine (module)">InvestmentMachine</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../AppLogger.html" title="InvestmentMachine::AppLogger (class)">AppLogger</a></span></span><span class='period'>.</span><span class='id identifier rubyid_get_logger'><span class='object_link'><a href="../AppLogger.html#get_logger-class_method" title="InvestmentMachine::AppLogger.get_logger (method)">get_logger</a></span></span>
@@ -312,26 +312,22 @@
       <pre class="lines">
 
 
-84
 85
 86
 87
 88
 89
 90
-91
-92</pre>
+91</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 84</span>
+      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 85</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_context'>context</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='kw'>not</span> <span class='id identifier rubyid_valid?'>valid?</span>
 
-  <span class='kw'>if</span> <span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>nikkei_average</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
-    <span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>nikkei_average</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='ivar'>@prices</span>
-  <span class='kw'>else</span>
-    <span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>nikkei_average</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>+=</span> <span class='ivar'>@prices</span>
+  <span class='ivar'>@prices</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_price'>price</span><span class='op'>|</span>
+    <span class='id identifier rubyid_price'>price</span><span class='period'>.</span><span class='id identifier rubyid_save!'>save!</span> <span class='kw'>if</span> <span class='id identifier rubyid_price'>price</span><span class='period'>.</span><span class='id identifier rubyid_valid?'>valid?</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -376,16 +372,16 @@
       <pre class="lines">
 
 
-66
 67
 68
 69
 70
 71
-72</pre>
+72
+73</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 66</span>
+      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 67</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_redownload?'>redownload?</span>
   <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>NikkeiAverageDataParser#redownload?: start: now=</span><span class='embexpr_beg'>#{</span><span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='embexpr_end'>}</span><span class='tstring_content'>, downloaded_timestamp=</span><span class='embexpr_beg'>#{</span><span class='ivar'>@data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>downloaded_timestamp</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'>, target_month=</span><span class='embexpr_beg'>#{</span><span class='ivar'>@target_month</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -414,12 +410,12 @@
       <pre class="lines">
 
 
-80
 81
-82</pre>
+82
+83</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 80</span>
+      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 81</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_related_links'>related_links</span>
   <span class='kw'>nil</span>
@@ -466,14 +462,14 @@
       <pre class="lines">
 
 
-74
 75
 76
 77
-78</pre>
+78
+79</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 74</span>
+      <pre class="code"><span class="info file"># File 'lib/parser/nikkei_average_parser.rb', line 75</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_valid?'>valid?</span>
   <span class='ivar'>@logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>NikkeiAverageDataParser#valid?: start: prices.empty?=</span><span class='embexpr_beg'>#{</span><span class='ivar'>@prices</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -490,7 +486,7 @@
 </div>
 
       <div id="footer">
-  Generated on Fri Mar 29 10:42:03 2019 by
+  Generated on Sat Mar 30 19:26:15 2019 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.18 (ruby-2.6.2).
 </div>
