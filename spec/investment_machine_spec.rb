@@ -57,6 +57,7 @@ RSpec.describe InvestmentMachine::CLI do
     # Setup database
     InvestmentMachine::Model::Company.delete_all
     InvestmentMachine::Model::StockPrice.delete_all
+    InvestmentMachine::Model::NikkeiAverage.delete_all
 
     # Setup resource repository
     @repo = Crawline::ResourceRepository.new(ENV["AWS_S3_ACCESS_KEY"], ENV["AWS_S3_SECRET_KEY"], ENV["AWS_S3_REGION"], ENV["AWS_S3_BUCKET"], ENV["AWS_S3_ENDPOINT"], ENV["AWS_S3_FORCE_PATH_STYLE"], nil)
@@ -158,8 +159,34 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/")
 
     expect(count_s3_objects).to be > 0
-    expect(InvestmentMachine::Model::Company.count).to eq 0
-    expect(InvestmentMachine::Model::StockPrice.count).to eq 0
+    expect(InvestmentMachine::Model::NikkeiAverage.count).to eq 0
+  end
+
+  it "parse nikkei average is success" do
+    InvestmentMachine::CLI.new.invoke("crawl", [],
+                                      s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
+                                      s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
+                                      s3_region: ENV["AWS_S3_REGION"],
+                                      s3_bucket: ENV["AWS_S3_BUCKET"],
+                                      s3_endpoint: ENV["AWS_S3_ENDPOINT"],
+                                      s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
+                                      interval: 0.001,
+                                      entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/")
+    InvestmentMachine::CLI.new.invoke("parse", [],
+                                      s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
+                                      s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
+                                      s3_region: ENV["AWS_S3_REGION"],
+                                      s3_bucket: ENV["AWS_S3_BUCKET"],
+                                      s3_endpoint: ENV["AWS_S3_ENDPOINT"],
+                                      s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"],
+                                      entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/")
+
+    expect(count_s3_objects).to be > 0
+    expect(InvestmentMachine::Model::NikkeiAverage.count).to be > 0
   end
 
   def count_s3_objects
