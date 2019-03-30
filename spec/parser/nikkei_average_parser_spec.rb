@@ -273,6 +273,23 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
         ])
       end
     end
+
+    it "not stored duplicate data" do
+      @parser_201902.parse({})
+
+      url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
+      data = {
+        "url" => url,
+        "request_method" => "GET",
+        "request_headers" => {},
+        "response_headers" => {},
+        "response_body" => File.open("spec/data/nikkei_average.201902.html").read,
+        "downloaded_timestamp" => Time.utc(2019, 3, 27, 23, 58, 51)}
+  
+      parser_201902 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(url, data)
+
+      expect(InvestmentMachine::Model::NikkeiAverage.count).to eq 19
+    end
   end
 end
 
