@@ -21,9 +21,15 @@ module InvestmentMachine
     method_option :s3_bucket
     method_option :s3_endpoint, default: "https://s3.amazonaws.com"
     method_option :s3_force_path_style, default: false
+    method_option :db_database
+    method_option :db_host, default: "localhost"
+    method_option :db_username
+    method_option :db_password
     method_option :interval, default: "1.0"
     method_option :entrypoint_url, default: "https://kabuoji3.com/stock/"
     def crawl
+      setup_db_connection(options.db_database, options.db_host, options.db_username, options.db_password)
+
       engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, options.interval)
 
       engine.crawl(options.entrypoint_url)

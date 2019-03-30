@@ -207,16 +207,20 @@
       <pre class="lines">
 
 
-26
-27
-28
-29
-30</pre>
+30
+31
+32
+33
+34
+35
+36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/investment_machine.rb', line 26</span>
+      <pre class="code"><span class="info file"># File 'lib/investment_machine.rb', line 30</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_crawl'>crawl</span>
+  <span class='id identifier rubyid_setup_db_connection'>setup_db_connection</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_database'>db_database</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_host'>db_host</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_username'>db_username</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_password'>db_password</span><span class='rparen'>)</span>
+
   <span class='id identifier rubyid_engine'>engine</span> <span class='op'>=</span> <span class='id identifier rubyid_setup_crawline_engine'>setup_crawline_engine</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_s3_access_key'>s3_access_key</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_s3_secret_key'>s3_secret_key</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_s3_region'>s3_region</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_s3_bucket'>s3_bucket</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_s3_endpoint'>s3_endpoint</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_s3_force_path_style'>s3_force_path_style</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_interval'>interval</span><span class='rparen'>)</span>
 
   <span class='id identifier rubyid_engine'>engine</span><span class='period'>.</span><span class='id identifier rubyid_crawl'>crawl</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_entrypoint_url'>entrypoint_url</span><span class='rparen'>)</span>
@@ -241,16 +245,16 @@
       <pre class="lines">
 
 
-44
-45
-46
-47
-48
-49
-50</pre>
+50
+51
+52
+53
+54
+55
+56</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/investment_machine.rb', line 44</span>
+      <pre class="code"><span class="info file"># File 'lib/investment_machine.rb', line 50</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse'>parse</span>
   <span class='id identifier rubyid_setup_db_connection'>setup_db_connection</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_database'>db_database</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_host'>db_host</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_username'>db_username</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span><span class='period'>.</span><span class='id identifier rubyid_db_password'>db_password</span><span class='rparen'>)</span>
@@ -299,7 +303,7 @@
 </div>
 
       <div id="footer">
-  Generated on Sat Mar 30 19:26:14 2019 by
+  Generated on Sat Mar 30 20:57:49 2019 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.18 (ruby-2.6.2).
 </div>
