@@ -61,6 +61,10 @@ end
 
 RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
   before do
+    # Setup database
+    InvestmentMachine::Model::NikkeiAverage.delete_all
+
+    # Setup parser
     url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=1"
     data = {
       "url" => url,
@@ -160,141 +164,29 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
 
         @parser_201902.parse(context)
 
-        expect(context).to match(
-          "nikkei_average" => [
-            {
-              "date" => Time.local(2019, 2, 1),
-              "opening_price" => 20797.03,
-              "high_price" => 20929.63,
-              "low_price" => 20741.98,
-              "close_price" => 20788.39
-            },
-            {
-              "date" => Time.local(2019, 2, 4),
-              "opening_price" => 20831.90,
-              "high_price" => 20922.58,
-              "low_price" => 20823.68,
-              "close_price" => 20883.77
-            },
-            {
-              "date" => Time.local(2019, 2, 5),
-              "opening_price" => 20960.47,
-              "high_price" => 20981.23,
-              "low_price" => 20823.18,
-              "close_price" => 20844.45
-            },
-            {
-              "date" => Time.local(2019, 2, 6),
-              "opening_price" => 20928.87,
-              "high_price" => 20971.66,
-              "low_price" => 20860.99,
-              "close_price" => 20874.06
-            },
-            {
-              "date" => Time.local(2019, 2, 7),
-              "opening_price" => 20812.22,
-              "high_price" => 20844.77,
-              "low_price" => 20665.51,
-              "close_price" => 20751.28
-            },
-            {
-              "date" => Time.local(2019, 2, 8),
-              "opening_price" => 20510.50,
-              "high_price" => 20562.39,
-              "low_price" => 20315.31,
-              "close_price" => 20333.17
-            },
-            {
-              "date" => Time.local(2019, 2, 12),
-              "opening_price" => 20442.55,
-              "high_price" => 20885.88,
-              "low_price" => 20428.57,
-              "close_price" => 20864.21
-            },
-            {
-              "date" => Time.local(2019, 2, 13),
-              "opening_price" => 21029.93,
-              "high_price" => 21213.74,
-              "low_price" => 20992.88,
-              "close_price" => 21144.48
-            },
-            {
-              "date" => Time.local(2019, 2, 14),
-              "opening_price" => 21147.89,
-              "high_price" => 21235.62,
-              "low_price" => 21102.16,
-              "close_price" => 21139.71
-            },
-            {
-              "date" => Time.local(2019, 2, 15),
-              "opening_price" => 21051.51,
-              "high_price" => 21051.51,
-              "low_price" => 20853.33,
-              "close_price" => 20900.63
-            },
-            {
-              "date" => Time.local(2019, 2, 18),
-              "opening_price" => 21217.32,
-              "high_price" => 21306.36,
-              "low_price" => 21189.97,
-              "close_price" => 21281.85
-            },
-            {
-              "date" => Time.local(2019, 2, 19),
-              "opening_price" => 21256.58,
-              "high_price" => 21344.17,
-              "low_price" => 21217.16,
-              "close_price" => 21302.65
-            },
-            {
-              "date" => Time.local(2019, 2, 20),
-              "opening_price" => 21346.04,
-              "high_price" => 21494.85,
-              "low_price" => 21315.39,
-              "close_price" => 21431.49
-            },
-            {
-              "date" => Time.local(2019, 2, 21),
-              "opening_price" => 21422.31,
-              "high_price" => 21553.35,
-              "low_price" => 21318.74,
-              "close_price" => 21464.23
-            },
-            {
-              "date" => Time.local(2019, 2, 22),
-              "opening_price" => 21376.36,
-              "high_price" => 21451.23,
-              "low_price" => 21348.67,
-              "close_price" => 21425.51
-            },
-            {
-              "date" => Time.local(2019, 2, 25),
-              "opening_price" => 21567.66,
-              "high_price" => 21590.03,
-              "low_price" => 21505.07,
-              "close_price" => 21528.23
-            },
-            {
-              "date" => Time.local(2019, 2, 26),
-              "opening_price" => 21556.02,
-              "high_price" => 21610.88,
-              "low_price" => 21405.84,
-              "close_price" => 21449.39
-            },
-            {
-              "date" => Time.local(2019, 2, 27),
-              "opening_price" => 21504.61,
-              "high_price" => 21578.81,
-              "low_price" => 21492.65,
-              "close_price" => 21556.51
-            },
-            {
-              "date" => Time.local(2019, 2, 28),
-              "opening_price" => 21536.55,
-              "high_price" => 21536.55,
-              "low_price" => 21364.09,
-              "close_price" => 21385.16
-            }])
+        expect(context).to be_empty
+
+        expect(InvestmentMachine::Model::NikkeiAverage.all).to match_array([
+          have_attributes(date: Time.local(2019, 2, 1), opening_price: 20797.03, high_price: 20929.63, low_price: 20741.98, close_price: 20788.39),
+          have_attributes(date: Time.local(2019, 2, 4), opening_price: 20831.90, high_price: 20922.58, low_price: 20823.68, close_price: 20883.77),
+          have_attributes(date: Time.local(2019, 2, 5), opening_price: 20960.47, high_price: 20981.23, low_price: 20823.18, close_price: 20844.45),
+          have_attributes(date: Time.local(2019, 2, 6), opening_price: 20928.87, high_price: 20971.66, low_price: 20860.99, close_price: 20874.06),
+          have_attributes(date: Time.local(2019, 2, 7), opening_price: 20812.22, high_price: 20844.77, low_price: 20665.51, close_price: 20751.28),
+          have_attributes(date: Time.local(2019, 2, 8), opening_price: 20510.50, high_price: 20562.39, low_price: 20315.31, close_price: 20333.17),
+          have_attributes(date: Time.local(2019, 2, 12), opening_price: 20442.55, high_price: 20885.88, low_price: 20428.57, close_price: 20864.21),
+          have_attributes(date: Time.local(2019, 2, 13), opening_price: 21029.93, high_price: 21213.74, low_price: 20992.88, close_price: 21144.48),
+          have_attributes(date: Time.local(2019, 2, 14), opening_price: 21147.89, high_price: 21235.62, low_price: 21102.16, close_price: 21139.71),
+          have_attributes(date: Time.local(2019, 2, 15), opening_price: 21051.51, high_price: 21051.51, low_price: 20853.33, close_price: 20900.63),
+          have_attributes(date: Time.local(2019, 2, 18), opening_price: 21217.32, high_price: 21306.36, low_price: 21189.97, close_price: 21281.85),
+          have_attributes(date: Time.local(2019, 2, 19), opening_price: 21256.58, high_price: 21344.17, low_price: 21217.16, close_price: 21302.65),
+          have_attributes(date: Time.local(2019, 2, 20), opening_price: 21346.04, high_price: 21494.85, low_price: 21315.39, close_price: 21431.49),
+          have_attributes(date: Time.local(2019, 2, 21), opening_price: 21422.31, high_price: 21553.35, low_price: 21318.74, close_price: 21464.23),
+          have_attributes(date: Time.local(2019, 2, 22), opening_price: 21376.36, high_price: 21451.23, low_price: 21348.67, close_price: 21425.51),
+          have_attributes(date: Time.local(2019, 2, 25), opening_price: 21567.66, high_price: 21590.03, low_price: 21505.07, close_price: 21528.23),
+          have_attributes(date: Time.local(2019, 2, 26), opening_price: 21556.02, high_price: 21610.88, low_price: 21405.84, close_price: 21449.39),
+          have_attributes(date: Time.local(2019, 2, 27), opening_price: 21504.61, high_price: 21578.81, low_price: 21492.65, close_price: 21556.51),
+          have_attributes(date: Time.local(2019, 2, 28), opening_price: 21536.55, high_price: 21536.55, low_price: 21364.09, close_price: 21385.16),
+        ])
       end
     end
 
@@ -304,106 +196,24 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
 
         @parser_194905.parse(context)
 
-        expect(context).to match(
-          "nikkei_average" => [
-            {
-              "date" => Time.local(1949, 5, 16),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.21
-            },
-            {
-              "date" => Time.local(1949, 5, 17),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 174.80
-            },
-            {
-              "date" => Time.local(1949, 5, 18),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 172.53
-            },
-            {
-              "date" => Time.local(1949, 5, 19),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 171.34
-            },
-            {
-              "date" => Time.local(1949, 5, 20),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 169.20
-            },
-            {
-              "date" => Time.local(1949, 5, 21),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 169.92
-            },
-            {
-              "date" => Time.local(1949, 5, 23),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 171.85
-            },
-            {
-              "date" => Time.local(1949, 5, 24),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 172.75
-            },
-            {
-              "date" => Time.local(1949, 5, 25),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 171.53
-            },
-            {
-              "date" => Time.local(1949, 5, 26),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 170.43
-            },
-            {
-              "date" => Time.local(1949, 5, 27),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 172.76
-            },
-            {
-              "date" => Time.local(1949, 5, 28),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.30
-            },
-            {
-              "date" => Time.local(1949, 5, 30),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.21
-            },
-            {
-              "date" => Time.local(1949, 5, 31),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.52
-            }])
+        expect(context).to be_empty
+
+        expect(InvestmentMachine::Model::NikkeiAverage.all).to match_array([
+          have_attributes(date: Time.local(1949, 5, 16), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
+          have_attributes(date: Time.local(1949, 5, 17), opening_price: nil, high_price: nil, low_price: nil, close_price: 174.80),
+          have_attributes(date: Time.local(1949, 5, 18), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.53),
+          have_attributes(date: Time.local(1949, 5, 19), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.34),
+          have_attributes(date: Time.local(1949, 5, 20), opening_price: nil, high_price: nil, low_price: nil, close_price: 169.20),
+          have_attributes(date: Time.local(1949, 5, 21), opening_price: nil, high_price: nil, low_price: nil, close_price: 169.92),
+          have_attributes(date: Time.local(1949, 5, 23), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.85),
+          have_attributes(date: Time.local(1949, 5, 24), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.75),
+          have_attributes(date: Time.local(1949, 5, 25), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.53),
+          have_attributes(date: Time.local(1949, 5, 26), opening_price: nil, high_price: nil, low_price: nil, close_price: 170.43),
+          have_attributes(date: Time.local(1949, 5, 27), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.76),
+          have_attributes(date: Time.local(1949, 5, 28), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.30),
+          have_attributes(date: Time.local(1949, 5, 30), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
+          have_attributes(date: Time.local(1949, 5, 31), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.52),
+        ])
       end
     end
 
@@ -424,240 +234,61 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
         @parser_194905.parse(context)
         @parser_201902.parse(context)
 
-        expect(context).to match(
-          "nikkei_average" => [
-            {
-              "date" => Time.local(1949, 5, 16),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.21
-            },
-            {
-              "date" => Time.local(1949, 5, 17),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 174.80
-            },
-            {
-              "date" => Time.local(1949, 5, 18),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 172.53
-            },
-            {
-              "date" => Time.local(1949, 5, 19),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 171.34
-            },
-            {
-              "date" => Time.local(1949, 5, 20),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 169.20
-            },
-            {
-              "date" => Time.local(1949, 5, 21),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 169.92
-            },
-            {
-              "date" => Time.local(1949, 5, 23),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 171.85
-            },
-            {
-              "date" => Time.local(1949, 5, 24),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 172.75
-            },
-            {
-              "date" => Time.local(1949, 5, 25),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 171.53
-            },
-            {
-              "date" => Time.local(1949, 5, 26),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 170.43
-            },
-            {
-              "date" => Time.local(1949, 5, 27),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 172.76
-            },
-            {
-              "date" => Time.local(1949, 5, 28),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.30
-            },
-            {
-              "date" => Time.local(1949, 5, 30),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.21
-            },
-            {
-              "date" => Time.local(1949, 5, 31),
-              "opening_price" => nil,
-              "high_price" => nil,
-              "low_price" => nil,
-              "close_price" => 176.52
-            },
-            {
-              "date" => Time.local(2019, 2, 1),
-              "opening_price" => 20797.03,
-              "high_price" => 20929.63,
-              "low_price" => 20741.98,
-              "close_price" => 20788.39
-            },
-            {
-              "date" => Time.local(2019, 2, 4),
-              "opening_price" => 20831.90,
-              "high_price" => 20922.58,
-              "low_price" => 20823.68,
-              "close_price" => 20883.77
-            },
-            {
-              "date" => Time.local(2019, 2, 5),
-              "opening_price" => 20960.47,
-              "high_price" => 20981.23,
-              "low_price" => 20823.18,
-              "close_price" => 20844.45
-            },
-            {
-              "date" => Time.local(2019, 2, 6),
-              "opening_price" => 20928.87,
-              "high_price" => 20971.66,
-              "low_price" => 20860.99,
-              "close_price" => 20874.06
-            },
-            {
-              "date" => Time.local(2019, 2, 7),
-              "opening_price" => 20812.22,
-              "high_price" => 20844.77,
-              "low_price" => 20665.51,
-              "close_price" => 20751.28
-            },
-            {
-              "date" => Time.local(2019, 2, 8),
-              "opening_price" => 20510.50,
-              "high_price" => 20562.39,
-              "low_price" => 20315.31,
-              "close_price" => 20333.17
-            },
-            {
-              "date" => Time.local(2019, 2, 12),
-              "opening_price" => 20442.55,
-              "high_price" => 20885.88,
-              "low_price" => 20428.57,
-              "close_price" => 20864.21
-            },
-            {
-              "date" => Time.local(2019, 2, 13),
-              "opening_price" => 21029.93,
-              "high_price" => 21213.74,
-              "low_price" => 20992.88,
-              "close_price" => 21144.48
-            },
-            {
-              "date" => Time.local(2019, 2, 14),
-              "opening_price" => 21147.89,
-              "high_price" => 21235.62,
-              "low_price" => 21102.16,
-              "close_price" => 21139.71
-            },
-            {
-              "date" => Time.local(2019, 2, 15),
-              "opening_price" => 21051.51,
-              "high_price" => 21051.51,
-              "low_price" => 20853.33,
-              "close_price" => 20900.63
-            },
-            {
-              "date" => Time.local(2019, 2, 18),
-              "opening_price" => 21217.32,
-              "high_price" => 21306.36,
-              "low_price" => 21189.97,
-              "close_price" => 21281.85
-            },
-            {
-              "date" => Time.local(2019, 2, 19),
-              "opening_price" => 21256.58,
-              "high_price" => 21344.17,
-              "low_price" => 21217.16,
-              "close_price" => 21302.65
-            },
-            {
-              "date" => Time.local(2019, 2, 20),
-              "opening_price" => 21346.04,
-              "high_price" => 21494.85,
-              "low_price" => 21315.39,
-              "close_price" => 21431.49
-            },
-            {
-              "date" => Time.local(2019, 2, 21),
-              "opening_price" => 21422.31,
-              "high_price" => 21553.35,
-              "low_price" => 21318.74,
-              "close_price" => 21464.23
-            },
-            {
-              "date" => Time.local(2019, 2, 22),
-              "opening_price" => 21376.36,
-              "high_price" => 21451.23,
-              "low_price" => 21348.67,
-              "close_price" => 21425.51
-            },
-            {
-              "date" => Time.local(2019, 2, 25),
-              "opening_price" => 21567.66,
-              "high_price" => 21590.03,
-              "low_price" => 21505.07,
-              "close_price" => 21528.23
-            },
-            {
-              "date" => Time.local(2019, 2, 26),
-              "opening_price" => 21556.02,
-              "high_price" => 21610.88,
-              "low_price" => 21405.84,
-              "close_price" => 21449.39
-            },
-            {
-              "date" => Time.local(2019, 2, 27),
-              "opening_price" => 21504.61,
-              "high_price" => 21578.81,
-              "low_price" => 21492.65,
-              "close_price" => 21556.51
-            },
-            {
-              "date" => Time.local(2019, 2, 28),
-              "opening_price" => 21536.55,
-              "high_price" => 21536.55,
-              "low_price" => 21364.09,
-              "close_price" => 21385.16
-            }])
+        expect(context).to be_empty
+
+        expect(InvestmentMachine::Model::NikkeiAverage.all).to match_array([
+          have_attributes(date: Time.local(1949, 5, 16), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
+          have_attributes(date: Time.local(1949, 5, 17), opening_price: nil, high_price: nil, low_price: nil, close_price: 174.80),
+          have_attributes(date: Time.local(1949, 5, 18), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.53),
+          have_attributes(date: Time.local(1949, 5, 19), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.34),
+          have_attributes(date: Time.local(1949, 5, 20), opening_price: nil, high_price: nil, low_price: nil, close_price: 169.20),
+          have_attributes(date: Time.local(1949, 5, 21), opening_price: nil, high_price: nil, low_price: nil, close_price: 169.92),
+          have_attributes(date: Time.local(1949, 5, 23), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.85),
+          have_attributes(date: Time.local(1949, 5, 24), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.75),
+          have_attributes(date: Time.local(1949, 5, 25), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.53),
+          have_attributes(date: Time.local(1949, 5, 26), opening_price: nil, high_price: nil, low_price: nil, close_price: 170.43),
+          have_attributes(date: Time.local(1949, 5, 27), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.76),
+          have_attributes(date: Time.local(1949, 5, 28), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.30),
+          have_attributes(date: Time.local(1949, 5, 30), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
+          have_attributes(date: Time.local(1949, 5, 31), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.52),
+          have_attributes(date: Time.local(2019, 2, 1), opening_price: 20797.03, high_price: 20929.63, low_price: 20741.98, close_price: 20788.39),
+          have_attributes(date: Time.local(2019, 2, 4), opening_price: 20831.90, high_price: 20922.58, low_price: 20823.68, close_price: 20883.77),
+          have_attributes(date: Time.local(2019, 2, 5), opening_price: 20960.47, high_price: 20981.23, low_price: 20823.18, close_price: 20844.45),
+          have_attributes(date: Time.local(2019, 2, 6), opening_price: 20928.87, high_price: 20971.66, low_price: 20860.99, close_price: 20874.06),
+          have_attributes(date: Time.local(2019, 2, 7), opening_price: 20812.22, high_price: 20844.77, low_price: 20665.51, close_price: 20751.28),
+          have_attributes(date: Time.local(2019, 2, 8), opening_price: 20510.50, high_price: 20562.39, low_price: 20315.31, close_price: 20333.17),
+          have_attributes(date: Time.local(2019, 2, 12), opening_price: 20442.55, high_price: 20885.88, low_price: 20428.57, close_price: 20864.21),
+          have_attributes(date: Time.local(2019, 2, 13), opening_price: 21029.93, high_price: 21213.74, low_price: 20992.88, close_price: 21144.48),
+          have_attributes(date: Time.local(2019, 2, 14), opening_price: 21147.89, high_price: 21235.62, low_price: 21102.16, close_price: 21139.71),
+          have_attributes(date: Time.local(2019, 2, 15), opening_price: 21051.51, high_price: 21051.51, low_price: 20853.33, close_price: 20900.63),
+          have_attributes(date: Time.local(2019, 2, 18), opening_price: 21217.32, high_price: 21306.36, low_price: 21189.97, close_price: 21281.85),
+          have_attributes(date: Time.local(2019, 2, 19), opening_price: 21256.58, high_price: 21344.17, low_price: 21217.16, close_price: 21302.65),
+          have_attributes(date: Time.local(2019, 2, 20), opening_price: 21346.04, high_price: 21494.85, low_price: 21315.39, close_price: 21431.49),
+          have_attributes(date: Time.local(2019, 2, 21), opening_price: 21422.31, high_price: 21553.35, low_price: 21318.74, close_price: 21464.23),
+          have_attributes(date: Time.local(2019, 2, 22), opening_price: 21376.36, high_price: 21451.23, low_price: 21348.67, close_price: 21425.51),
+          have_attributes(date: Time.local(2019, 2, 25), opening_price: 21567.66, high_price: 21590.03, low_price: 21505.07, close_price: 21528.23),
+          have_attributes(date: Time.local(2019, 2, 26), opening_price: 21556.02, high_price: 21610.88, low_price: 21405.84, close_price: 21449.39),
+          have_attributes(date: Time.local(2019, 2, 27), opening_price: 21504.61, high_price: 21578.81, low_price: 21492.65, close_price: 21556.51),
+          have_attributes(date: Time.local(2019, 2, 28), opening_price: 21536.55, high_price: 21536.55, low_price: 21364.09, close_price: 21385.16),
+        ])
       end
+    end
+
+    it "not stored duplicate data" do
+      @parser_201902.parse({})
+
+      url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
+      data = {
+        "url" => url,
+        "request_method" => "GET",
+        "request_headers" => {},
+        "response_headers" => {},
+        "response_body" => File.open("spec/data/nikkei_average.201902.html").read,
+        "downloaded_timestamp" => Time.utc(2019, 3, 27, 23, 58, 51)}
+  
+      parser_201902 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(url, data)
+
+      expect(InvestmentMachine::Model::NikkeiAverage.count).to eq 19
     end
   end
 end
