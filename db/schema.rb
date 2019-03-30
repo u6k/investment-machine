@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_28_103926) do
+ActiveRecord::Schema.define(version: 2019_03_29_133032) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,14 @@ ActiveRecord::Schema.define(version: 2019_03_28_103926) do
     t.string "ticker_symbol"
     t.string "name"
     t.string "market"
+  end
+
+  create_table "nikkei_averages", force: :cascade do |t|
+    t.datetime "date"
+    t.float "opening_price"
+    t.float "high_price"
+    t.float "low_price"
+    t.float "close_price"
   end
 
   create_table "stock_prices", force: :cascade do |t|

@@ -1,4 +1,5 @@
 require "nokogiri"
+require "active_record"
 require "crawline"
 
 module InvestmentMachine::Parser
@@ -84,10 +85,8 @@ module InvestmentMachine::Parser
     def parse(context)
       return if not valid?
 
-      if context["nikkei_average"].nil?
-        context["nikkei_average"] = @prices
-      else
-        context["nikkei_average"] += @prices
+      @prices.each do |price|
+        price.save! if price.valid?
       end
     end
 
@@ -101,30 +100,36 @@ module InvestmentMachine::Parser
       @prices = doc.xpath("//tr[not(contains(@class, 'list-header'))]").map do |tr|
         @logger.debug("NikkeiAverageDataParser#_parse: tr=#{tr}")
 
-        price = {}
+        price = InvestmentMachine::Model::NikkeiAverage.new
 
         list_date_parts = tr.at_xpath("td[1]").text.split(".")
-        price["date"] = Time.local(list_date_parts[0].to_i, list_date_parts[1].to_i, list_date_parts[2].to_i, 0, 0, 0)
+        price.date = Time.local(list_date_parts[0].to_i, list_date_parts[1].to_i, list_date_parts[2].to_i, 0, 0, 0)
 
         list_value = tr.at_xpath("td[2]").text
-        price["opening_price"] = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
+        price.opening_price = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
 
         list_value = tr.at_xpath("td[3]").text
-        price["high_price"] = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
+        price.high_price = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
 
         list_value = tr.at_xpath("td[4]").text
-        price["low_price"] = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
+        price.low_price = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
 
         list_value = tr.at_xpath("td[5]").text
-        price["close_price"] = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
+        price.close_price = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
 
         price
       end
 
       if not @prices.empty?
-        @target_month = Time.local(@prices[0]["date"].year, @prices[0]["date"].month, 1, 0, 0, 0)
+        @target_month = Time.local(@prices[0].date.year, @prices[0].date.month, 1, 0, 0, 0)
       end
     end
+  end
+end
+
+module InvestmentMachine::Model
+  class NikkeiAverage < ActiveRecord::Base
+    validates :date, uniqueness: true
   end
 end
 
