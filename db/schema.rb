@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_29_133032) do
+ActiveRecord::Schema.define(version: 2019_04_03_093744) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -38,6 +38,14 @@ ActiveRecord::Schema.define(version: 2019_03_29_133032) do
     t.integer "close_price"
     t.integer "turnover"
     t.integer "adjustment_value"
+  end
+
+  create_table "topixes", force: :cascade do |t|
+    t.datetime "date"
+    t.float "opening_price"
+    t.float "high_price"
+    t.float "low_price"
+    t.float "close_price"
   end
 
 end
