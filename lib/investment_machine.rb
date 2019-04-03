@@ -70,6 +70,8 @@ module InvestmentMachine
         /^https:\/\/resource\.ufocatch\.com\/data\/(edinet|tdnet)\/\w+$/ => Parser::XbrlZipParser,
         /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/archives.*$/ => Parser::NikkeiAverageIndexParser,
         /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/statistics.*$/ => Parser::NikkeiAverageDataParser,
+        /^https:\/\/quotes\.wsj\.com\/index\/JP\/XTKS\/I0000\/historical-prices\/$/ => Parser::TopixIndexPageParser,
+        /^https:\/\/quotes\.wsj\.com\/index\/JP\/XTKS\/I0000\/historical-prices\/.+$/ => Parser::TopixCsvParser,
       }
 
       engine = Crawline::Engine.new(downloader, repo, parsers, interval.to_i)
