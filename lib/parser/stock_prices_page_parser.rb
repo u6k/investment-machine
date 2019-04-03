@@ -43,7 +43,7 @@ module InvestmentMachine::Parser
     private
 
     def _parse
-      @logger.debug("StockPricesPageParser#_parse")
+      @logger.debug("StockPricesPageParser#_parse: start")
 
       doc = Nokogiri::HTML.parse(@data["response_body"], nil, "UTF-8")
 
