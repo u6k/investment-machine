@@ -42,13 +42,7 @@ Commands:
 
 ## Other
 
-最新の情報は、 [Wiki - investment-machine - u6k.Redmine](https://redmine.u6k.me/projects/investment-machine/wiki) を参照してください。
-
-- [基本情報](https://redmine.u6k.me/projects/investment-machine/wiki/%E5%9F%BA%E6%9C%AC%E6%83%85%E5%A0%B1)
-- [関連サイト](https://redmine.u6k.me/projects/investment-machine/wiki/%E9%96%A2%E9%80%A3%E3%82%B5%E3%82%A4%E3%83%88)
-- [外部データソース構造](https://redmine.u6k.me/projects/investment-machine/wiki/%E5%A4%96%E9%83%A8%E3%83%87%E3%83%BC%E3%82%BF%E3%82%BD%E3%83%BC%E3%82%B9%E6%A7%8B%E9%80%A0)
-- [データ構造](https://redmine.u6k.me/projects/investment-machine/wiki/%E3%83%87%E3%83%BC%E3%82%BF%E6%A7%8B%E9%80%A0)
-- [リリース手順](https://redmine.u6k.me/projects/investment-machine/wiki/%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E6%89%8B%E9%A0%86)
+その他の情報は、 [Wiki - investment-machine - u6k.Redmine](https://redmine.u6k.me/projects/investment-machine/wiki) を参照してください。
 
 ## API
 
@@ -70,3 +64,4 @@ Commands:
 ## License
 
 [MIT License](https://github.com/u6k/investment-machine/blob/master/LICENSE)
+
