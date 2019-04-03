@@ -1,3 +1,5 @@
+require "timecop"
+
 RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
   before do
     url = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/"
@@ -7,7 +9,7 @@ RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
       "request_headers" => {},
       "response_headers" => {},
       "response_body" => "test",
-      "download_timestamp" => Time.utc(2018, 4, 3, 17, 23, 27)}
+      "downloaded_timestamp" => Time.utc(2018, 4, 3, 17, 23, 27)}
 
     @parser = InvestmentMachine::Parser::TopixIndexPageParser.new(url, data)
   end
@@ -37,7 +39,7 @@ RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
         "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1997&endDate=12/31/1997",
         "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1998&endDate=12/31/1998",
         "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1999&endDate=12/31/1999",
-        "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1000&endDate=12/31/1000",
+        "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2000&endDate=12/31/2000",
         "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2001&endDate=12/31/2001",
         "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2002&endDate=12/31/2002",
         "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2003&endDate=12/31/2003",
@@ -72,6 +74,10 @@ end
 
 RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
   before do
+    # Cleanup database
+    InvestmentMachine::Model::Topix.delete_all
+
+    # Setup parser
     url = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2019&endDate=12/31/2019"
     data = {
       "url" => url,
@@ -79,7 +85,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
       "request_headers" => {},
       "response_headers" => {},
       "response_body" => File.open("spec/data/topix.2019.csv").read,
-      "download_timestamp" => Time.utc(2019, 4, 3, 17, 31, 27)}
+      "downloaded_timestamp" => Time.utc(2019, 4, 3, 17, 31, 27)}
 
     @parser_2019 = InvestmentMachine::Parser::TopixCsvParser.new(url, data)
 
@@ -90,7 +96,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
       "request_headers" => {},
       "response_headers" => {},
       "response_body" => File.open("spec/data/topix.1990.csv").read,
-      "download_timestamp" => Time.utc(1990, 4, 3, 17, 30, 52)}
+      "downloaded_timestamp" => Time.utc(1990, 4, 3, 17, 30, 52)}
 
     @parser_1990 = InvestmentMachine::Parser::TopixCsvParser.new(url, data)
   end
@@ -113,13 +119,13 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
     context "2019s" do
       it "redownload if newer than 2 years" do
         Timecop.freeze(Time.local(2020, 12, 31, 23, 59, 59)) do
-          expect(@parser_1990).to be_redownload
+          expect(@parser_2019).to be_redownload
         end
       end
 
       it "do not redownload if over 2 years" do
         Timecop.freeze(Time.local(2021, 1, 1, 0, 0, 0)) do
-          expect(@parser_1990).not_to be_redownload
+          expect(@parser_2019).not_to be_redownload
         end
       end
     end
@@ -162,7 +168,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
   
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::Topix.all).to maatch_array([
+        expect(InvestmentMachine::Model::Topix.all).to match_array([
           have_attributes(date: Time.local(1990, 12, 28), opening_price: 1733.83, high_price: 1742.77, low_price: 1726.69, close_price: 1733.83),
           have_attributes(date: Time.local(1990, 12, 27), opening_price: 1740.55, high_price: 1750.92, low_price: 1729.99, close_price: 1740.55),
           have_attributes(date: Time.local(1990, 12, 26), opening_price: 1729.81, high_price: 1731.47, low_price: 1720.22, close_price: 1729.81),
@@ -421,7 +427,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
   
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::Topix.all).to maatch_array([
+        expect(InvestmentMachine::Model::Topix.all).to match_array([
           have_attributes(date: Time.local(2019, 4, 2), opening_price: 1632.03, high_price: 1632.03, low_price: 1611.26, close_price: 1611.69),
           have_attributes(date: Time.local(2019, 4, 1), opening_price: 1612.13, high_price: 1624.43, low_price: 1611.71, close_price: 1615.81),
           have_attributes(date: Time.local(2019, 3, 29), opening_price: 1595.58, high_price: 1597.66, low_price: 1588.12, close_price: 1591.64),

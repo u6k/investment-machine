@@ -6,6 +6,7 @@ require "parser/stock_prices_page_parser"
 require "parser/edinet_feed_parser"
 require "parser/xbrl_zip_parser"
 require "parser/nikkei_average_parser"
+require "parser/topix_parser"
 
 module InvestmentMachine
   class CLI < Thor
