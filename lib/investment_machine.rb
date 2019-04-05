@@ -7,6 +7,7 @@ require "parser/edinet_feed_parser"
 require "parser/xbrl_zip_parser"
 require "parser/nikkei_average_parser"
 require "parser/topix_parser"
+require "parser/djia_parser"
 
 module InvestmentMachine
   class CLI < Thor
@@ -72,6 +73,8 @@ module InvestmentMachine
         /^https:\/\/indexes\.nikkei\.co\.jp\/nkave\/statistics.*$/ => Parser::NikkeiAverageDataParser,
         /^https:\/\/quotes\.wsj\.com\/index\/JP\/XTKS\/I0000\/historical-prices\/$/ => Parser::TopixIndexPageParser,
         /^https:\/\/quotes\.wsj\.com\/index\/JP\/XTKS\/I0000\/historical-prices\/.+$/ => Parser::TopixCsvParser,
+        /^https:\/\/quotes\.wsj\.com\/index\/DJIA\/historical-prices\/$/ => Parser::DjiaIndexPageParser,
+        /^https:\/\/quotes\.wsj\.com\/index\/DJIA\/historical-prices\/.+$/ => Parser::DjiaCsvParser,
       }
 
       engine = Crawline::Engine.new(downloader, repo, parsers, interval.to_i)
