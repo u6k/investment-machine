@@ -25,12 +25,14 @@ module InvestmentMachine
     method_option :s3_force_path_style, default: false
     method_option :db_database
     method_option :db_host, default: "localhost"
+    method_option :db_port, default: "5432"
     method_option :db_username
     method_option :db_password
+    method_option :db_sslmode, default: nil
     method_option :interval, default: "1.0"
     method_option :entrypoint_url, default: "https://kabuoji3.com/stock/"
     def crawl
-      setup_db_connection(options.db_database, options.db_host, options.db_username, options.db_password)
+      setup_db_connection(options.db_database, options.db_host, options.db_port, options.db_username, options.db_password, options.db_sslmode)
 
       engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, options.interval)
 
@@ -46,11 +48,13 @@ module InvestmentMachine
     method_option :s3_force_path_style, default: false
     method_option :db_database
     method_option :db_host, default: "localhost"
+    method_option :db_port, default: "5432"
     method_option :db_username
     method_option :db_password
+    method_option :db_sslmode, default: nil
     method_option :entrypoint_url, default: "https://kabuoji3.com/stock/"
     def parse
-      setup_db_connection(options.db_database, options.db_host, options.db_username, options.db_password)
+      setup_db_connection(options.db_database, options.db_host, options.db_port, options.db_username, options.db_password, options.db_sslmode)
 
       engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, 1.0)
 
@@ -80,13 +84,15 @@ module InvestmentMachine
       engine = Crawline::Engine.new(downloader, repo, parsers, interval.to_i)
     end
 
-    def setup_db_connection(db_database, db_host, db_username, db_password)
+    def setup_db_connection(db_database, db_host, db_port, db_username, db_password, db_sslmode)
       db_config = {
         adapter: "postgresql",
         database: db_database,
         host: db_host,
+        port: db_port,
         username: db_username,
-        password: db_password
+        password: db_password,
+        sslmode: db_sslmode
       }
 
       ActiveRecord::Base.establish_connection db_config
