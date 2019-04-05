@@ -3,8 +3,10 @@ default: &default
   encoding: utf8
   database: <%= ENV["DB_DATABASE"] %>
   host: <%= ENV["DB_HOST"] %>
+  port: <%= ENV["DB_PORT"] %>
   username: <%= ENV["DB_USERNAME"] %>
   password: <%= ENV["DB_PASSWORD"] %>
+  sslmode: <%= ENV["DB_SSLMODE"] %>
 
 development:
   <<: *default
