@@ -505,7 +505,10 @@ RSpec.describe InvestmentMachine::Parser::DjiaIndexPageParser do
       body: "test")
 
     downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
-    @parser = InvestmentMachine::Parser::DjiaIndexPageParser.new(url, downloader.download_with_get(url))
+
+    Timecop.freeze(Time.utc(2018, 4, 5, 16, 42, 48)) do
+      @parser = InvestmentMachine::Parser::DjiaIndexPageParser.new(url, downloader.download_with_get(url))
+    end
 
     WebMock.disable!
   end
@@ -553,8 +556,7 @@ RSpec.describe InvestmentMachine::Parser::DjiaIndexPageParser do
         "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2015&endDate=12/31/2015",
         "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2016&endDate=12/31/2016",
         "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2017&endDate=12/31/2017",
-        "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2018&endDate=12/31/2018",
-        "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2019&endDate=12/31/2019")
+        "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2018&endDate=12/31/2018")
     end
   end
 
