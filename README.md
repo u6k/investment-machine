@@ -37,6 +37,7 @@ $ investment-machine help
 Commands:
   investment-machine crawl           # Crawl stocks
   investment-machine help [COMMAND]  # Describe available commands or one specific command
+  investment-machine parse           # Parse stocks
   investment-machine version         # Display version
 ```
 
