@@ -67,6 +67,18 @@ RSpec.describe InvestmentMachine::CLI do
       status: [200, "OK"],
       body: File.open("spec/data/topix.1990.csv").read)
 
+    WebMock.stub_request(:get, "https://quotes.wsj.com/index/DJIA/historical-prices/").to_return(
+      status: [200, "OK"],
+      body: "test")
+
+    WebMock.stub_request(:get, "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1990&endDate=12/31/1990").to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/djia.1990.csv").read)
+
+    WebMock.stub_request(:get, "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2019&endDate=12/31/2019").to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/djia.2019.csv").read)
+
     WebMock.disable_net_connect!(allow: "s3")
 
     # Setup database
@@ -74,6 +86,7 @@ RSpec.describe InvestmentMachine::CLI do
     InvestmentMachine::Model::StockPrice.delete_all
     InvestmentMachine::Model::NikkeiAverage.delete_all
     InvestmentMachine::Model::Topix.delete_all
+    InvestmentMachine::Model::Djia.delete_all
 
     # Setup resource repository
     @repo = Crawline::ResourceRepository.new(ENV["AWS_S3_ACCESS_KEY"], ENV["AWS_S3_SECRET_KEY"], ENV["AWS_S3_REGION"], ENV["AWS_S3_BUCKET"], ENV["AWS_S3_ENDPOINT"], ENV["AWS_S3_FORCE_PATH_STYLE"], nil)
@@ -277,6 +290,56 @@ RSpec.describe InvestmentMachine::CLI do
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Topix.count).to be > 0
+  end
+
+  it "crawl djia is success" do
+    InvestmentMachine::CLI.new.invoke("crawl", [],
+                                      s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
+                                      s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
+                                      s3_region: ENV["AWS_S3_REGION"],
+                                      s3_bucket: ENV["AWS_S3_BUCKET"],
+                                      s3_endpoint: ENV["AWS_S3_ENDPOINT"],
+                                      s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
+                                      interval: 0.001,
+                                      entrypoint_url: "https://quotes.wsj.com/index/DJIA/historical-prices/",
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
+
+    expect(count_s3_objects).to be > 0
+    expect(InvestmentMachine::Model::Djia.count).to eq 0
+  end
+
+  it "parse djia is success" do
+    InvestmentMachine::CLI.new.invoke("crawl", [],
+                                      s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
+                                      s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
+                                      s3_region: ENV["AWS_S3_REGION"],
+                                      s3_bucket: ENV["AWS_S3_BUCKET"],
+                                      s3_endpoint: ENV["AWS_S3_ENDPOINT"],
+                                      s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
+                                      interval: 0.001,
+                                      entrypoint_url: "https://quotes.wsj.com/index/DJIA/historical-prices/",
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
+    InvestmentMachine::CLI.new.invoke("parse", [],
+                                      s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
+                                      s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
+                                      s3_region: ENV["AWS_S3_REGION"],
+                                      s3_bucket: ENV["AWS_S3_BUCKET"],
+                                      s3_endpoint: ENV["AWS_S3_ENDPOINT"],
+                                      s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
+                                      entrypoint_url: "https://quotes.wsj.com/index/DJIA/historical-prices/",
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"])
+
+    expect(count_s3_objects).to be > 0
+    expect(InvestmentMachine::Model::Djia.count).to be > 0
   end
 
   def count_s3_objects
