@@ -114,8 +114,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       interval: 0.001,
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Company.count).to eq 0
@@ -133,8 +135,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       interval: 0.001,
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
     InvestmentMachine::CLI.new.invoke("parse", [],
                                       s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
                                       s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
@@ -144,8 +148,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Company.count).to be > 0
@@ -164,8 +170,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://resource.ufocatch.com/atom/edinetx",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Company.count).to eq 0
@@ -184,8 +192,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://resource.ufocatch.com/atom/tdnetx",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Company.count).to eq 0
@@ -204,8 +214,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::NikkeiAverage.count).to eq 0
@@ -223,8 +235,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
     InvestmentMachine::CLI.new.invoke("parse", [],
                                       s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
                                       s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
@@ -234,8 +248,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
                                       db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"],
                                       entrypoint_url: "https://indexes.nikkei.co.jp/nkave/archives/")
 
     expect(count_s3_objects).to be > 0
@@ -254,8 +270,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Topix.count).to eq 0
@@ -273,8 +291,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
     InvestmentMachine::CLI.new.invoke("parse", [],
                                       s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
                                       s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
@@ -285,8 +305,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Topix.count).to be > 0
@@ -304,8 +326,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://quotes.wsj.com/index/DJIA/historical-prices/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Djia.count).to eq 0
@@ -323,8 +347,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://quotes.wsj.com/index/DJIA/historical-prices/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
     InvestmentMachine::CLI.new.invoke("parse", [],
                                       s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
                                       s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
@@ -335,8 +361,10 @@ RSpec.describe InvestmentMachine::CLI do
                                       entrypoint_url: "https://quotes.wsj.com/index/DJIA/historical-prices/",
                                       db_database: ENV["DB_DATABASE"],
                                       db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
                                       db_username: ENV["DB_USERNAME"],
-                                      db_password: ENV["DB_PASSWORD"])
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
     expect(InvestmentMachine::Model::Djia.count).to be > 0
