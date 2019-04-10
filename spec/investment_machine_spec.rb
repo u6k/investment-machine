@@ -370,6 +370,36 @@ RSpec.describe InvestmentMachine::CLI do
     expect(InvestmentMachine::Model::Djia.count).to be > 0
   end
 
+  it "list cache state" do
+    InvestmentMachine::CLI.new.invoke("crawl", [],
+                                      s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
+                                      s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
+                                      s3_region: ENV["AWS_S3_REGION"],
+                                      s3_bucket: ENV["AWS_S3_BUCKET"],
+                                      s3_endpoint: ENV["AWS_S3_ENDPOINT"],
+                                      s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
+                                      interval: 0.001,
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
+    InvestmentMachine::CLI.new.invoke("list_cache_state", [],
+                                      s3_access_key: ENV["AWS_S3_ACCESS_KEY"],
+                                      s3_secret_key: ENV["AWS_S3_SECRET_KEY"],
+                                      s3_region: ENV["AWS_S3_REGION"],
+                                      s3_bucket: ENV["AWS_S3_BUCKET"],
+                                      s3_endpoint: ENV["AWS_S3_ENDPOINT"],
+                                      s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
+                                      db_database: ENV["DB_DATABASE"],
+                                      db_host: ENV["DB_HOST"],
+                                      db_port: ENV["DB_PORT"],
+                                      db_username: ENV["DB_USERNAME"],
+                                      db_password: ENV["DB_PASSWORD"],
+                                      db_sslmode: ENV["DB_SSLMODE"])
+  end
+
   def count_s3_objects
     count = 0
 

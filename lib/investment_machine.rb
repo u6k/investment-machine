@@ -1,4 +1,5 @@
 require "thor"
+require "json"
 
 require "investment_machine/version"
 require "parser/stock_list_page_parser"
@@ -61,12 +62,38 @@ module InvestmentMachine
       engine.parse(options.entrypoint_url)
     end
 
+    desc "list_cache_state", "Listing cache state"
+    method_option :s3_access_key
+    method_option :s3_secret_key
+    method_option :s3_region, default: "us-east-1"
+    method_option :s3_bucket
+    method_option :s3_endpoint, default: "https://s3.amazonaws.com"
+    method_option :s3_force_path_style, default: false
+    method_option :db_database
+    method_option :db_host, default: "localhost"
+    method_option :db_port, default: "5432"
+    method_option :db_username
+    method_option :db_password
+    method_option :db_sslmode, default: nil
+    method_option :entrypoint_url, default: "https://kabuoji3.com/stock/"
+    def list_cache_state
+      setup_db_connection(options.db_database, options.db_host, options.db_port, options.db_username, options.db_password, options.db_sslmode)
+
+      engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, 1.0)
+
+      engine.list_cache_state(options.entrypoint_url) do |url, data, parser|
+        state = {"url" => url, "state" => (data.nil? ? "not found" : "found"), "timestamp" => (data.nil? ? nil : data["downloaded_timestamp"])}
+        puts state.to_json
+      end
+    end
+
     private
 
     def setup_crawline_engine(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, interval)
       downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION} (https://github.com/u6k/investment-machine)")
 
       repo = Crawline::ResourceRepository.new(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, nil)
+      @repo = repo
 
       parsers = {
         /^https:\/\/kabuoji3\.com\/stock\/(\?page=\d{1,2})?$/ => Parser::StockListPageParser,
