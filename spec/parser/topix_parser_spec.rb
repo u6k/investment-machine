@@ -1,17 +1,22 @@
 require "timecop"
+require "webmock/rspec"
 
 RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
   before do
-    url = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/"
-    data = {
-      "url" => url,
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => "test",
-      "downloaded_timestamp" => Time.utc(2018, 4, 3, 17, 23, 27)}
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser = InvestmentMachine::Parser::TopixIndexPageParser.new(url, data)
+    WebMock.enable!
+
+    @url = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/"
+    WebMock.stub_request(:get, @url).to_return(
+      status: [200, "OK"],
+      body: "test")
+
+    Timecop.freeze(Time.utc(2018, 4, 10, 14, 39, 41)) do
+      @parser = InvestmentMachine::Parser::TopixIndexPageParser.new(@url, @downloader.download_with_get(@url))
+    end
+
+    WebMock.disable!
   end
 
   describe "#redownload?" do
@@ -21,8 +26,19 @@ RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
   end
 
   describe "#valid?" do
-    it "always valid" do
-      expect(@parser).to be_valid
+    context "local data" do
+      it "always valid" do
+        expect(@parser).to be_valid
+      end
+    end
+
+    context "data on web" do
+      it "always valid" do
+        data = @downloader.download_with_get(@url)
+        parser = InvestmentMachine::Parser::TopixIndexPageParser.new(@url, @downloader.download_with_get(@url))
+
+        expect(parser).to be_valid
+      end
     end
   end
 
@@ -78,27 +94,25 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
     InvestmentMachine::Model::Topix.delete_all
 
     # Setup parser
-    url = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2019&endDate=12/31/2019"
-    data = {
-      "url" => url,
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/topix.2019.csv").read,
-      "downloaded_timestamp" => Time.utc(2019, 4, 3, 17, 31, 27)}
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser_2019 = InvestmentMachine::Parser::TopixCsvParser.new(url, data)
+    WebMock.enable!
 
-    url = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1990&endDate=12/31/1990"
-    data = {
-      "url" => url,
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/topix.1990.csv").read,
-      "downloaded_timestamp" => Time.utc(1990, 4, 3, 17, 30, 52)}
+    @url_2019 = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2019&endDate=12/31/2019"
+    WebMock.stub_request(:get, @url_2019).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/topix.2019.csv").read)
 
-    @parser_1990 = InvestmentMachine::Parser::TopixCsvParser.new(url, data)
+    @parser_2019 = InvestmentMachine::Parser::TopixCsvParser.new(@url_2019, @downloader.download_with_get(@url_2019))
+
+    @url_1990 = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1990&endDate=12/31/1990"
+    WebMock.stub_request(:get, @url_1990).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/topix.1990.csv").read)
+
+    @parser_1990 = InvestmentMachine::Parser::TopixCsvParser.new(@url_1990, @downloader.download_with_get(@url_1990))
+
+    WebMock.disable!
   end
 
   describe "#redownload?" do
@@ -141,6 +155,24 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
     context "2019s" do
       it "is valid" do
         expect(@parser_2019).to be_valid
+      end
+    end
+
+    context "1990s on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url_1990)
+        parser = InvestmentMachine::Parser::TopixCsvParser.new(@url_1990, data)
+
+        expect(parser).to be_valid
+      end
+    end
+
+    context "2019s on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url_2019)
+        parser = InvestmentMachine::Parser::TopixCsvParser.new(@url_2019, data)
+
+        expect(parser).to be_valid
       end
     end
   end
