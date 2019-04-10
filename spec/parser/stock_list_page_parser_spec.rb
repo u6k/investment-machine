@@ -1,28 +1,29 @@
 require "timecop"
+require "webmock/rspec"
 
 RSpec.describe InvestmentMachine::Parser::StockListPageParser do
   before do
-    url = "https://kabuoji3.com/stock/"
-    data = {
-      "url" => "https://kabuoji3.com/stock/",
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/stock_list_page.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 23, 16, 18, 32)}
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser = InvestmentMachine::Parser::StockListPageParser.new(url, data)
+    WebMock.enable!
 
-    url = "https://kabuoji3.com/stock/?page=abc"
-    data = {
-      "url" => "https://kabuoji3.com/stock/?page=abc",
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/stock_list_page.error.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 23, 21, 54, 12)}
+    @url = "https://kabuoji3.com/stock/"
+    WebMock.stub_request(:get, @url).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/stock_list_page.html").read)
 
-    @parser_error = InvestmentMachine::Parser::StockListPageParser.new(url, data)
+    Timecop.freeze(Time.utc(2019, 3, 23, 16, 18, 32)) do
+      @parser = InvestmentMachine::Parser::StockListPageParser.new(@url, @downloader.download_with_get(@url))
+    end
+
+    @url_error = "https://kabuoji3.com/stock/?page=abc"
+    WebMock.stub_request(:get, @url_error).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/stock_list_page.error.html").read)
+
+    @parser_error = InvestmentMachine::Parser::StockListPageParser.new(@url_error, @downloader.download_with_get(@url_error))
+
+    WebMock.disable!
   end
 
   describe "#redownload?" do
@@ -49,6 +50,15 @@ RSpec.describe InvestmentMachine::Parser::StockListPageParser do
     context "error page" do
       it "is invalid" do
         expect(@parser_error).not_to be_valid
+      end
+    end
+
+    context "valid page on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url)
+        parser = InvestmentMachine::Parser::StockListPageParser.new(@url, data)
+
+        expect(parser).to be_valid
       end
     end
   end
