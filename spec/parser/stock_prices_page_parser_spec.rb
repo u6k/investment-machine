@@ -1,4 +1,5 @@
 require "timecop"
+require "webmock/rspec"
 
 RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
   before do
@@ -7,27 +8,27 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
     InvestmentMachine::Model::StockPrice.delete_all
 
     # Setup parser
-    url = "https://kabuoji3.com/stock/1301/"
-    data = {
-      "url" => "https://kabuoji3.com/stock/1301/",
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/stock_prices_page.1301.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 24, 3, 11, 23)}
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser = InvestmentMachine::Parser::StockPricesPageParser.new(url, data)
+    WebMock.enable!
 
-    url = "https://kabuoji3.com/stock/1301/9999/"
-    data = {
-      "url" => "https://kabuoji3.com/stock/1301/9999/",
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/stock_prices_page.error.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 24, 3, 12, 59)}
+    @url = "https://kabuoji3.com/stock/1301/"
+    WebMock.stub_request(:get, @url).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/stock_prices_page.1301.html").read)
 
-    @parser_error = InvestmentMachine::Parser::StockPricesPageParser.new(url, data)
+    Timecop.freeze(Time.utc(2019, 3, 24, 3, 11, 23)) do
+      @parser = InvestmentMachine::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
+    end
+
+    @url_error = "https://kabuoji3.com/stock/1301/9999/"
+    WebMock.stub_request(:get, @url_error).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/stock_prices_page.error.html").read)
+
+    @parser_error = InvestmentMachine::Parser::StockPricesPageParser.new(@url_error, @downloader.download_with_get(@url_error))
+
+    WebMock.disable!
   end
 
   describe "#redownload?" do
@@ -66,6 +67,15 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
     context "error page" do
       it "is invalid" do
         expect(@parser_error).not_to be_valid
+      end
+    end
+
+    context "valid page on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url)
+        parser = InvestmentMachine::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
+
+        expect(parser).to be_valid
       end
     end
   end

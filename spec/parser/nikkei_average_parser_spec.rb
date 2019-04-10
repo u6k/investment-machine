@@ -1,17 +1,22 @@
 require "timecop"
+require "webmock/rspec"
 
 RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
   before do
-    url = "https://indexes.nikkei.co.jp/nkave/archives/"
-    data = {
-      "url" => url,
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/nikkei_average.index.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 27, 20, 35, 12)}
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser = InvestmentMachine::Parser::NikkeiAverageIndexParser.new(url, data)
+    WebMock.enable!
+
+    @url = "https://indexes.nikkei.co.jp/nkave/archives/data"
+    WebMock.stub_request(:get, @url).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/nikkei_average.index.html").read)
+
+    Timecop.freeze(Time.utc(2019, 3, 27, 20, 35, 12)) do
+      @parser = InvestmentMachine::Parser::NikkeiAverageIndexParser.new(@url, @downloader.download_with_get(@url))
+    end
+
+    WebMock.disable!
   end
 
   describe "#redownload?" do
@@ -29,8 +34,19 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
   end
 
   describe "#valid?" do
-    it "is valid" do
-      expect(@parser).to be_valid
+    context "local data" do
+      it "is valid" do
+        expect(@parser).to be_valid
+      end
+    end
+
+    context "data on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url)
+        parser = InvestmentMachine::Parser::NikkeiAverageIndexParser.new(@url, data)
+
+        expect(parser).to be_valid
+      end
     end
   end
 
@@ -65,38 +81,38 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
     InvestmentMachine::Model::NikkeiAverage.delete_all
 
     # Setup parser
-    url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=1"
-    data = {
-      "url" => url,
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/nikkei_average.194901.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 27, 23, 55, 12)}
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser_194901 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(url, data)
+    WebMock.enable!
 
-    url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=5"
-    data = {
-      "url" => url,
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/nikkei_average.194905.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 27, 23, 57, 43)}
+    @url_194901 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=1"
+    WebMock.stub_request(:get, @url_194901).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/nikkei_average.194901.html").read)
 
-    @parser_194905 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(url, data)
+    Timecop.freeze(Time.utc(2019, 3, 27, 23, 55, 12)) do
+      @parser_194901 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
+    end
 
-    url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
-    data = {
-      "url" => url,
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/nikkei_average.201902.html").read,
-      "downloaded_timestamp" => Time.utc(2019, 3, 27, 23, 58, 51)}
+    @url_194905 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=5"
+    WebMock.stub_request(:get, @url_194905).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/nikkei_average.194905.html").read)
 
-    @parser_201902 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(url, data)
+    Timecop.freeze(Time.utc(2019, 3, 27, 23, 57, 43)) do
+      @parser_194905 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
+    end
+
+    @url_201902 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
+    WebMock.stub_request(:get, @url_201902).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/nikkei_average.201902.html").read)
+
+    Timecop.freeze(Time.utc(2019, 3, 27, 23, 58, 51)) do
+      @parser_201902 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
+    end
+
+    WebMock.disable!
   end
 
   describe "#redownload?" do
@@ -145,6 +161,29 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
     context "1949-01 (empty data)" do
       it "is invalid" do
         expect(@parser_194901).not_to be_valid
+      end
+    end
+
+    context "data on web" do
+      it "is valid(2019-02)" do
+        data = @downloader.download_with_get(@url_201902)
+        parser = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
+
+        expect(parser).to be_valid
+      end
+
+      it "is valid(1949-05)" do
+        data = @downloader.download_with_get(@url_194905)
+        parser = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
+
+        expect(parser).to be_valid
+      end
+
+      it "is invalid(1949-01)" do
+        data = @downloader.download_with_get(@url_194901)
+        parser = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
+
+        expect(parser).not_to be_valid
       end
     end
   end

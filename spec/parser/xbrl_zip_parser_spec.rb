@@ -1,15 +1,19 @@
+require "webmock/rspec"
+
 RSpec.describe InvestmentMachine::Parser::XbrlZipParser do
   before do
-    url = "https://resource.ufocatch.com/data/edinet/ED2019032500001"
-    data = {
-      "url" => "https://resource.ufocatch.com/data/edinet/ED2019032500001",
-      "request_method" => "GET",
-      "request_headers" => {},
-      "response_headers" => {},
-      "response_body" => File.open("spec/data/ED2019032500001.zip").read,
-      "downloaded_timestamp" => Time.now.utc}
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser = InvestmentMachine::Parser::XbrlZipParser.new(url, data)
+    WebMock.enable!
+
+    @url = "https://resource.ufocatch.com/data/edinet/ED2019032500001"
+    WebMock.stub_request(:get, @url).to_return(
+      status: [200, "OK"],
+      body: File.open("spec/data/ED2019032500001.zip").read)
+
+    @parser = InvestmentMachine::Parser::XbrlZipParser.new(@url, @downloader.download_with_get(@url))
+
+    WebMock.disable!
   end
 
   describe "#redownload?" do
@@ -22,6 +26,15 @@ RSpec.describe InvestmentMachine::Parser::XbrlZipParser do
     context "valid xbrl zip" do
       it "is valid" do
         expect(@parser).to be_valid
+      end
+    end
+
+    context "xbrl zip on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url)
+        parser = InvestmentMachine::Parser::XbrlZipParser.new(@url, data)
+
+        expect(parser).to be_valid
       end
     end
   end
