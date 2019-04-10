@@ -85,21 +85,21 @@ RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
     # Setup webmock
     WebMock.enable!
 
-    url_1990 = "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1990&endDate=12/31/1990"
-    WebMock.stub_request(:get, url_1990).to_return(
+    @url_1990 = "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1990&endDate=12/31/1990"
+    WebMock.stub_request(:get, @url_1990).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/djia.1990.csv").read)
 
-    url_2019 = "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2019&endDate=12/31/2019"
-    WebMock.stub_request(:get, url_2019).to_return(
+    @url_2019 = "https://quotes.wsj.com/index/DJIA/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/2019&endDate=12/31/2019"
+    WebMock.stub_request(:get, @url_2019).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/djia.2019.csv").read)
 
     # Setup parser
-    downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
 
-    @parser_1990 = InvestmentMachine::Parser::DjiaCsvParser.new(url_1990, downloader.download_with_get(url_1990))
-    @parser_2019 = InvestmentMachine::Parser::DjiaCsvParser.new(url_2019, downloader.download_with_get(url_2019))
+    @parser_1990 = InvestmentMachine::Parser::DjiaCsvParser.new(@url_1990, @downloader.download_with_get(@url_1990))
+    @parser_2019 = InvestmentMachine::Parser::DjiaCsvParser.new(@url_2019, @downloader.download_with_get(@url_2019))
 
     WebMock.disable!
   end
@@ -141,9 +141,29 @@ RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
       end
     end
 
+    context "1990s on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url_1990)
+
+        parser = InvestmentMachine::Parser::DjiaCsvParser.new(@url_1990, data)
+
+        expect(parser).to be_valid
+      end
+    end
+
     context "2019s" do
       it "is valid" do
         expect(@parser_2019).to be_valid
+      end
+    end
+
+    context "2019s on web" do
+      it "is valid" do
+        data = @downloader.download_with_get(@url_2019)
+
+        parser = InvestmentMachine::Parser::DjiaCsvParser.new(@url_2019, data)
+
+        expect(parser).to be_valid
       end
     end
   end
