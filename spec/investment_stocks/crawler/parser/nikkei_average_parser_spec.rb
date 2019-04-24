@@ -1,9 +1,9 @@
 require "timecop"
 require "webmock/rspec"
 
-RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser do
   before do
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -13,7 +13,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
       body: File.open("spec/data/nikkei_average.index.html").read)
 
     Timecop.freeze(Time.utc(2019, 3, 27, 20, 35, 12)) do
-      @parser = InvestmentMachine::Parser::NikkeiAverageIndexParser.new(@url, @downloader.download_with_get(@url))
+      @parser = InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser.new(@url, @downloader.download_with_get(@url))
     end
 
     WebMock.disable!
@@ -43,7 +43,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
     context "data on web" do
       it "is valid" do
         data = @downloader.download_with_get(@url)
-        parser = InvestmentMachine::Parser::NikkeiAverageIndexParser.new(@url, data)
+        parser = InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser.new(@url, data)
 
         expect(parser).to be_valid
       end
@@ -75,13 +75,13 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageIndexParser do
   end
 end
 
-RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser do
   before do
     # Setup database
-    InvestmentMachine::Model::NikkeiAverage.delete_all
+    InvestmentStocks::Crawler::Model::NikkeiAverage.delete_all
 
     # Setup parser
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -91,7 +91,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
       body: File.open("spec/data/nikkei_average.194901.html").read)
 
     Timecop.freeze(Time.utc(2019, 3, 27, 23, 55, 12)) do
-      @parser_194901 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
+      @parser_194901 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
     end
 
     @url_194905 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=5"
@@ -100,7 +100,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
       body: File.open("spec/data/nikkei_average.194905.html").read)
 
     Timecop.freeze(Time.utc(2019, 3, 27, 23, 57, 43)) do
-      @parser_194905 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
+      @parser_194905 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
     end
 
     @url_201902 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
@@ -109,7 +109,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
       body: File.open("spec/data/nikkei_average.201902.html").read)
 
     Timecop.freeze(Time.utc(2019, 3, 27, 23, 58, 51)) do
-      @parser_201902 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
+      @parser_201902 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
     end
 
     WebMock.disable!
@@ -167,21 +167,21 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
     context "data on web" do
       it "is valid(2019-02)" do
         data = @downloader.download_with_get(@url_201902)
-        parser = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
+        parser = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
 
         expect(parser).to be_valid
       end
 
       it "is valid(1949-05)" do
         data = @downloader.download_with_get(@url_194905)
-        parser = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
+        parser = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
 
         expect(parser).to be_valid
       end
 
       it "is invalid(1949-01)" do
         data = @downloader.download_with_get(@url_194901)
-        parser = InvestmentMachine::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
+        parser = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
 
         expect(parser).not_to be_valid
       end
@@ -205,7 +205,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
 
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::NikkeiAverage.all).to match_array([
+        expect(InvestmentStocks::Crawler::Model::NikkeiAverage.all).to match_array([
           have_attributes(date: Time.local(2019, 2, 1), opening_price: 20797.03, high_price: 20929.63, low_price: 20741.98, close_price: 20788.39),
           have_attributes(date: Time.local(2019, 2, 4), opening_price: 20831.90, high_price: 20922.58, low_price: 20823.68, close_price: 20883.77),
           have_attributes(date: Time.local(2019, 2, 5), opening_price: 20960.47, high_price: 20981.23, low_price: 20823.18, close_price: 20844.45),
@@ -237,7 +237,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
 
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::NikkeiAverage.all).to match_array([
+        expect(InvestmentStocks::Crawler::Model::NikkeiAverage.all).to match_array([
           have_attributes(date: Time.local(1949, 5, 16), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
           have_attributes(date: Time.local(1949, 5, 17), opening_price: nil, high_price: nil, low_price: nil, close_price: 174.80),
           have_attributes(date: Time.local(1949, 5, 18), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.53),
@@ -275,7 +275,7 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
 
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::NikkeiAverage.all).to match_array([
+        expect(InvestmentStocks::Crawler::Model::NikkeiAverage.all).to match_array([
           have_attributes(date: Time.local(1949, 5, 16), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
           have_attributes(date: Time.local(1949, 5, 17), opening_price: nil, high_price: nil, low_price: nil, close_price: 174.80),
           have_attributes(date: Time.local(1949, 5, 18), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.53),
@@ -325,9 +325,9 @@ RSpec.describe InvestmentMachine::Parser::NikkeiAverageDataParser do
         "response_body" => File.open("spec/data/nikkei_average.201902.html").read,
         "downloaded_timestamp" => Time.utc(2019, 3, 27, 23, 58, 51)}
   
-      parser_201902 = InvestmentMachine::Parser::NikkeiAverageDataParser.new(url, data)
+      parser_201902 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(url, data)
 
-      expect(InvestmentMachine::Model::NikkeiAverage.count).to eq 19
+      expect(InvestmentStocks::Crawler::Model::NikkeiAverage.count).to eq 19
     end
   end
 end

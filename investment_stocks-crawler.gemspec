@@ -1,17 +1,16 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "investment_machine/version"
+require "investment_stocks/crawler/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "investment_machine"
-  spec.version       = InvestmentMachine::VERSION
+  spec.name          = "investment_stocks-crawler"
+  spec.version       = InvestmentStocks::Crawler::VERSION
   spec.authors       = ["u6k"]
   spec.email         = ["u6k.apps@gmail.com"]
 
-  spec.summary       = %q{Support investment tool.}
-  spec.description   = %q{Support investment tool.}
-  spec.homepage      = "https://github.com/u6k/investment-machine"
+  spec.summary       = %q{Crawl stocks.}
+  spec.homepage      = "https://github.com/u6k/investment-stocks-crawler"
   spec.license       = "MIT"
 
   # Specify which files should be added to the gem when it is released.
@@ -38,4 +37,3 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activerecord'
   spec.add_dependency 'standalone_migrations'
 end
-

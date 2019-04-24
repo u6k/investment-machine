@@ -1,8 +1,8 @@
 require "webmock/rspec"
 
-RSpec.describe InvestmentMachine::Parser::XbrlZipParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::XbrlZipParser do
   before do
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -11,7 +11,7 @@ RSpec.describe InvestmentMachine::Parser::XbrlZipParser do
       status: [200, "OK"],
       body: File.open("spec/data/ED2019032500001.zip").read)
 
-    @parser = InvestmentMachine::Parser::XbrlZipParser.new(@url, @downloader.download_with_get(@url))
+    @parser = InvestmentStocks::Crawler::Parser::XbrlZipParser.new(@url, @downloader.download_with_get(@url))
 
     WebMock.disable!
   end
@@ -32,7 +32,7 @@ RSpec.describe InvestmentMachine::Parser::XbrlZipParser do
     context "xbrl zip on web" do
       it "is valid" do
         data = @downloader.download_with_get(@url)
-        parser = InvestmentMachine::Parser::XbrlZipParser.new(@url, data)
+        parser = InvestmentStocks::Crawler::Parser::XbrlZipParser.new(@url, data)
 
         expect(parser).to be_valid
       end

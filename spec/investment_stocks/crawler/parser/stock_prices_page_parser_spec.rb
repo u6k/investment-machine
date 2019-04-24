@@ -1,14 +1,14 @@
 require "timecop"
 require "webmock/rspec"
 
-RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::StockPricesPageParser do
   before do
     # Setup database
-    InvestmentMachine::Model::Company.delete_all
-    InvestmentMachine::Model::StockPrice.delete_all
+    InvestmentStocks::Crawler::Model::Company.delete_all
+    InvestmentStocks::Crawler::Model::StockPrice.delete_all
 
     # Setup parser
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -18,7 +18,7 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
       body: File.open("spec/data/stock_prices_page.1301.html").read)
 
     Timecop.freeze(Time.utc(2019, 3, 24, 3, 11, 23)) do
-      @parser = InvestmentMachine::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
+      @parser = InvestmentStocks::Crawler::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
     end
 
     @url_error = "https://kabuoji3.com/stock/1301/9999/"
@@ -26,7 +26,7 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
       status: [200, "OK"],
       body: File.open("spec/data/stock_prices_page.error.html").read)
 
-    @parser_error = InvestmentMachine::Parser::StockPricesPageParser.new(@url_error, @downloader.download_with_get(@url_error))
+    @parser_error = InvestmentStocks::Crawler::Parser::StockPricesPageParser.new(@url_error, @downloader.download_with_get(@url_error))
 
     WebMock.disable!
   end
@@ -73,7 +73,7 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
     context "valid page on web" do
       it "is valid" do
         data = @downloader.download_with_get(@url)
-        parser = InvestmentMachine::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
+        parser = InvestmentStocks::Crawler::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
 
         expect(parser).to be_valid
       end
@@ -129,13 +129,13 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
     it "is company info, and stock prices" do
       @parser.parse({})
 
-      expect(InvestmentMachine::Model::Company.all).to match_array([
+      expect(InvestmentStocks::Crawler::Model::Company.all).to match_array([
         have_attributes(ticker_symbol: "1301",
                         name: "(株)極洋",
                         market: "東証1部")
       ])
 
-      expect(InvestmentMachine::Model::StockPrice.all).to match_array([
+      expect(InvestmentStocks::Crawler::Model::StockPrice.all).to match_array([
         have_attributes(ticker_symbol: "1301", date: Time.local(2019,  3, 22), opening_price: 3040, high_price: 3045, low_price: 3000, close_price: 3015, turnover: 43400, adjustment_value: 3015),
         have_attributes(ticker_symbol: "1301", date: Time.local(2019,  3, 20), opening_price: 3010, high_price: 3035, low_price: 2997, close_price: 3035, turnover: 25900, adjustment_value: 3035),
         have_attributes(ticker_symbol: "1301", date: Time.local(2019,  3, 19), opening_price: 3050, high_price: 3055, low_price: 2991, close_price: 2994, turnover: 59800, adjustment_value: 2994),
@@ -451,11 +451,11 @@ RSpec.describe InvestmentMachine::Parser::StockPricesPageParser do
         "response_body" => File.open("spec/data/stock_prices_page.1301.html").read,
         "downloaded_timestamp" => Time.utc(2019, 3, 24, 3, 11, 23)}
 
-      parser2 = InvestmentMachine::Parser::StockPricesPageParser.new(url, data)
+      parser2 = InvestmentStocks::Crawler::Parser::StockPricesPageParser.new(url, data)
       parser2.parse({})
 
-      expect(InvestmentMachine::Model::Company.all.count).to eq 1
-      expect(InvestmentMachine::Model::StockPrice.all.count).to eq 300
+      expect(InvestmentStocks::Crawler::Model::Company.all.count).to eq 1
+      expect(InvestmentStocks::Crawler::Model::StockPrice.all.count).to eq 300
     end
   end
 end

@@ -2,10 +2,10 @@ require "nokogiri"
 require "active_record"
 require "crawline"
 
-module InvestmentMachine::Parser
+module InvestmentStocks::Crawler::Parser
   class NikkeiAverageIndexParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("NikkeiAverageIndexParser#initialize: start: url=#{url}, data.nil?=#{data.nil?}")
 
       @url = url
@@ -55,7 +55,7 @@ module InvestmentMachine::Parser
 
   class NikkeiAverageDataParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("NikkeiAverageDataParser#initialize: start: url=#{url}, data.nil?=#{data.nil?}")
 
       @url = url
@@ -100,7 +100,7 @@ module InvestmentMachine::Parser
       @prices = doc.xpath("//tr[not(contains(@class, 'list-header'))]").map do |tr|
         @logger.debug("NikkeiAverageDataParser#_parse: tr=#{tr}")
 
-        price = InvestmentMachine::Model::NikkeiAverage.new
+        price = InvestmentStocks::Crawler::Model::NikkeiAverage.new
 
         list_date_parts = tr.at_xpath("td[1]").text.split(".")
         price.date = Time.local(list_date_parts[0].to_i, list_date_parts[1].to_i, list_date_parts[2].to_i, 0, 0, 0)
@@ -127,7 +127,7 @@ module InvestmentMachine::Parser
   end
 end
 
-module InvestmentMachine::Model
+module InvestmentStocks::Crawler::Model
   class NikkeiAverage < ActiveRecord::Base
     validates :date, uniqueness: true
   end

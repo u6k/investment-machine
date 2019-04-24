@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "investment_machine"
+require "investment_stocks/crawler"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -38,4 +38,3 @@ RSpec.configure do |config|
 
   ActiveRecord::Base.establish_connection db_config
 end
-

@@ -1,10 +1,10 @@
 require "nokogiri"
 require "crawline"
 
-module InvestmentMachine::Parser
+module InvestmentStocks::Crawler::Parser
   class EdinetFeedParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("EdinetFeedParser#initialize: start: url=#{url}, data.nil?=#{data.nil?}")
 
       @url = url

@@ -1,9 +1,9 @@
 require "timecop"
 require "webmock/rspec"
 
-RSpec.describe InvestmentMachine::Parser::StockListPageParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::StockListPageParser do
   before do
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -13,7 +13,7 @@ RSpec.describe InvestmentMachine::Parser::StockListPageParser do
       body: File.open("spec/data/stock_list_page.html").read)
 
     Timecop.freeze(Time.utc(2019, 3, 23, 16, 18, 32)) do
-      @parser = InvestmentMachine::Parser::StockListPageParser.new(@url, @downloader.download_with_get(@url))
+      @parser = InvestmentStocks::Crawler::Parser::StockListPageParser.new(@url, @downloader.download_with_get(@url))
     end
 
     @url_error = "https://kabuoji3.com/stock/?page=abc"
@@ -21,7 +21,7 @@ RSpec.describe InvestmentMachine::Parser::StockListPageParser do
       status: [200, "OK"],
       body: File.open("spec/data/stock_list_page.error.html").read)
 
-    @parser_error = InvestmentMachine::Parser::StockListPageParser.new(@url_error, @downloader.download_with_get(@url_error))
+    @parser_error = InvestmentStocks::Crawler::Parser::StockListPageParser.new(@url_error, @downloader.download_with_get(@url_error))
 
     WebMock.disable!
   end
@@ -56,7 +56,7 @@ RSpec.describe InvestmentMachine::Parser::StockListPageParser do
     context "valid page on web" do
       it "is valid" do
         data = @downloader.download_with_get(@url)
-        parser = InvestmentMachine::Parser::StockListPageParser.new(@url, data)
+        parser = InvestmentStocks::Crawler::Parser::StockListPageParser.new(@url, data)
 
         expect(parser).to be_valid
       end

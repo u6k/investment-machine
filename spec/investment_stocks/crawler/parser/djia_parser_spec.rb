@@ -1,7 +1,7 @@
 require "timecop"
 require "webmock/rspec"
 
-RSpec.describe InvestmentMachine::Parser::DjiaIndexPageParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::DjiaIndexPageParser do
   before do
     WebMock.enable!
 
@@ -10,10 +10,10 @@ RSpec.describe InvestmentMachine::Parser::DjiaIndexPageParser do
       status: [200, "OK"],
       body: "test")
 
-    downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     Timecop.freeze(Time.utc(2018, 4, 5, 16, 42, 48)) do
-      @parser = InvestmentMachine::Parser::DjiaIndexPageParser.new(url, downloader.download_with_get(url))
+      @parser = InvestmentStocks::Crawler::Parser::DjiaIndexPageParser.new(url, downloader.download_with_get(url))
     end
 
     WebMock.disable!
@@ -77,10 +77,10 @@ RSpec.describe InvestmentMachine::Parser::DjiaIndexPageParser do
   end
 end
 
-RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::DjiaCsvParser do
   before do
     # Cleanup database
-    InvestmentMachine::Model::Djia.delete_all
+    InvestmentStocks::Crawler::Model::Djia.delete_all
 
     # Setup webmock
     WebMock.enable!
@@ -96,10 +96,10 @@ RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
       body: File.open("spec/data/djia.2019.csv").read)
 
     # Setup parser
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
-    @parser_1990 = InvestmentMachine::Parser::DjiaCsvParser.new(@url_1990, @downloader.download_with_get(@url_1990))
-    @parser_2019 = InvestmentMachine::Parser::DjiaCsvParser.new(@url_2019, @downloader.download_with_get(@url_2019))
+    @parser_1990 = InvestmentStocks::Crawler::Parser::DjiaCsvParser.new(@url_1990, @downloader.download_with_get(@url_1990))
+    @parser_2019 = InvestmentStocks::Crawler::Parser::DjiaCsvParser.new(@url_2019, @downloader.download_with_get(@url_2019))
 
     WebMock.disable!
   end
@@ -145,7 +145,7 @@ RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
       it "is valid" do
         data = @downloader.download_with_get(@url_1990)
 
-        parser = InvestmentMachine::Parser::DjiaCsvParser.new(@url_1990, data)
+        parser = InvestmentStocks::Crawler::Parser::DjiaCsvParser.new(@url_1990, data)
 
         expect(parser).to be_valid
       end
@@ -161,7 +161,7 @@ RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
       it "is valid" do
         data = @downloader.download_with_get(@url_2019)
 
-        parser = InvestmentMachine::Parser::DjiaCsvParser.new(@url_2019, data)
+        parser = InvestmentStocks::Crawler::Parser::DjiaCsvParser.new(@url_2019, data)
 
         expect(parser).to be_valid
       end
@@ -191,7 +191,7 @@ RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
 
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::Djia.all).to match_array([
+        expect(InvestmentStocks::Crawler::Model::Djia.all).to match_array([
           have_attributes(date: Time.local(1990, 1, 2), opening_price: 2810.15, high_price: 2811.65, low_price: 2732.51, close_price: 2810.15),
           have_attributes(date: Time.local(1990, 1, 3), opening_price: 2809.73, high_price: 2834.04, low_price: 2786.26, close_price: 2809.73),
           have_attributes(date: Time.local(1990, 1, 4), opening_price: 2796.08, high_price: 2821.46, low_price: 2766.42, close_price: 2796.08),
@@ -457,7 +457,7 @@ RSpec.describe InvestmentMachine::Parser::DjiaCsvParser do
 
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::Djia.all).to match_array([
+        expect(InvestmentStocks::Crawler::Model::Djia.all).to match_array([
           have_attributes(date: Time.local(2019, 4, 4), opening_price: 26213.42, high_price: 26398.90, low_price: 26212.78, close_price: 26384.63),
           have_attributes(date: Time.local(2019, 4, 3), opening_price: 26238.03, high_price: 26282.17, low_price: 26138.47, close_price: 26218.13),
           have_attributes(date: Time.local(2019, 4, 2), opening_price: 26213.55, high_price: 26221.24, low_price: 26122.31, close_price: 26179.13),

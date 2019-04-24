@@ -1,20 +1,20 @@
 require "thor"
 require "json"
 
-require "investment_machine/version"
-require "parser/stock_list_page_parser"
-require "parser/stock_prices_page_parser"
-require "parser/edinet_feed_parser"
-require "parser/xbrl_zip_parser"
-require "parser/nikkei_average_parser"
-require "parser/topix_parser"
-require "parser/djia_parser"
+require "investment_stocks/crawler/version"
+require "investment_stocks/crawler/parser/stock_list_page_parser"
+require "investment_stocks/crawler/parser/stock_prices_page_parser"
+require "investment_stocks/crawler/parser/edinet_feed_parser"
+require "investment_stocks/crawler/parser/xbrl_zip_parser"
+require "investment_stocks/crawler/parser/nikkei_average_parser"
+require "investment_stocks/crawler/parser/topix_parser"
+require "investment_stocks/crawler/parser/djia_parser"
 
-module InvestmentMachine
+module InvestmentStocks::Crawler
   class CLI < Thor
     desc "version", "Display version"
     def version
-      puts InvestmentMachine::VERSION
+      puts InvestmentStocks::Crawler::VERSION
     end
 
     desc "crawl", "Crawl stocks"
@@ -90,7 +90,7 @@ module InvestmentMachine
     private
 
     def setup_crawline_engine(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, interval)
-      downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION} (https://github.com/u6k/investment-machine)")
+      downloader = Crawline::Downloader.new("investment-machine/#{InvestmentStocks::Crawler::VERSION} (https://github.com/u6k/investment-machine)")
 
       repo = Crawline::ResourceRepository.new(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, nil)
       @repo = repo
@@ -139,4 +139,3 @@ module InvestmentMachine
     end
   end
 end
-

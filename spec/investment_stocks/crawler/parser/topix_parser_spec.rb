@@ -1,9 +1,9 @@
 require "timecop"
 require "webmock/rspec"
 
-RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::TopixIndexPageParser do
   before do
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -13,7 +13,7 @@ RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
       body: "test")
 
     Timecop.freeze(Time.utc(2018, 4, 10, 14, 39, 41)) do
-      @parser = InvestmentMachine::Parser::TopixIndexPageParser.new(@url, @downloader.download_with_get(@url))
+      @parser = InvestmentStocks::Crawler::Parser::TopixIndexPageParser.new(@url, @downloader.download_with_get(@url))
     end
 
     WebMock.disable!
@@ -35,7 +35,7 @@ RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
     context "data on web" do
       it "always valid" do
         data = @downloader.download_with_get(@url)
-        parser = InvestmentMachine::Parser::TopixIndexPageParser.new(@url, @downloader.download_with_get(@url))
+        parser = InvestmentStocks::Crawler::Parser::TopixIndexPageParser.new(@url, @downloader.download_with_get(@url))
 
         expect(parser).to be_valid
       end
@@ -88,13 +88,13 @@ RSpec.describe InvestmentMachine::Parser::TopixIndexPageParser do
   end
 end
 
-RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::TopixCsvParser do
   before do
     # Cleanup database
-    InvestmentMachine::Model::Topix.delete_all
+    InvestmentStocks::Crawler::Model::Topix.delete_all
 
     # Setup parser
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -103,14 +103,14 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
       status: [200, "OK"],
       body: File.open("spec/data/topix.2019.csv").read)
 
-    @parser_2019 = InvestmentMachine::Parser::TopixCsvParser.new(@url_2019, @downloader.download_with_get(@url_2019))
+    @parser_2019 = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_2019, @downloader.download_with_get(@url_2019))
 
     @url_1990 = "https://quotes.wsj.com/index/JP/XTKS/I0000/historical-prices/download?MOD_VIEW=page&num_rows=366&range_days=366&startDate=01/01/1990&endDate=12/31/1990"
     WebMock.stub_request(:get, @url_1990).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/topix.1990.csv").read)
 
-    @parser_1990 = InvestmentMachine::Parser::TopixCsvParser.new(@url_1990, @downloader.download_with_get(@url_1990))
+    @parser_1990 = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_1990, @downloader.download_with_get(@url_1990))
 
     WebMock.disable!
   end
@@ -161,7 +161,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
     context "1990s on web" do
       it "is valid" do
         data = @downloader.download_with_get(@url_1990)
-        parser = InvestmentMachine::Parser::TopixCsvParser.new(@url_1990, data)
+        parser = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_1990, data)
 
         expect(parser).to be_valid
       end
@@ -170,7 +170,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
     context "2019s on web" do
       it "is valid" do
         data = @downloader.download_with_get(@url_2019)
-        parser = InvestmentMachine::Parser::TopixCsvParser.new(@url_2019, data)
+        parser = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_2019, data)
 
         expect(parser).to be_valid
       end
@@ -200,7 +200,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
   
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::Topix.all).to match_array([
+        expect(InvestmentStocks::Crawler::Model::Topix.all).to match_array([
           have_attributes(date: Time.local(1990, 12, 28), opening_price: 1733.83, high_price: 1742.77, low_price: 1726.69, close_price: 1733.83),
           have_attributes(date: Time.local(1990, 12, 27), opening_price: 1740.55, high_price: 1750.92, low_price: 1729.99, close_price: 1740.55),
           have_attributes(date: Time.local(1990, 12, 26), opening_price: 1729.81, high_price: 1731.47, low_price: 1720.22, close_price: 1729.81),
@@ -459,7 +459,7 @@ RSpec.describe InvestmentMachine::Parser::TopixCsvParser do
   
         expect(context).to be_empty
 
-        expect(InvestmentMachine::Model::Topix.all).to match_array([
+        expect(InvestmentStocks::Crawler::Model::Topix.all).to match_array([
           have_attributes(date: Time.local(2019, 4, 2), opening_price: 1632.03, high_price: 1632.03, low_price: 1611.26, close_price: 1611.69),
           have_attributes(date: Time.local(2019, 4, 1), opening_price: 1612.13, high_price: 1624.43, low_price: 1611.71, close_price: 1615.81),
           have_attributes(date: Time.local(2019, 3, 29), opening_price: 1595.58, high_price: 1597.66, low_price: 1588.12, close_price: 1591.64),

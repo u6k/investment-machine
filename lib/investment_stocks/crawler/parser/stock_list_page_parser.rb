@@ -1,10 +1,10 @@
 require "nokogiri"
 require "crawline"
 
-module InvestmentMachine::Parser
+module InvestmentStocks::Crawler::Parser
   class StockListPageParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("StockListPageParser#initialize: start: url=#{url}, data.nil?=#{data.nil?}")
 
       @url = url

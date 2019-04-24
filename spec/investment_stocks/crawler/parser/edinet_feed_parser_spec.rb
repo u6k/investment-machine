@@ -1,9 +1,9 @@
 require "timecop"
 require "webmock/rspec"
 
-RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
+RSpec.describe InvestmentStocks::Crawler::Parser::EdinetFeedParser do
   before do
-    @downloader = Crawline::Downloader.new("investment-machine/#{InvestmentMachine::VERSION}")
+    @downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION}")
 
     WebMock.enable!
 
@@ -13,7 +13,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       body: File.open("spec/data/ufocatch_edinet.1.atom").read)
 
     Timecop.freeze(Time.utc(2019, 3, 25, 0, 54, 47)) do
-      @parser = InvestmentMachine::Parser::EdinetFeedParser.new(@url, @downloader.download_with_get(@url))
+      @parser = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url, @downloader.download_with_get(@url))
     end
 
     @url_edinet_416 = "https://resource.ufocatch.com/atom/edinetx/416"
@@ -22,7 +22,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       body: File.open("spec/data/ufocatch_edinet.416.atom").read)
 
     Timecop.freeze(Time.utc(2019, 3, 25, 0, 56, 29)) do
-      @parser_edinet_416 = InvestmentMachine::Parser::EdinetFeedParser.new(@url_edinet_416, @downloader.download_with_get(@url_edinet_416))
+      @parser_edinet_416 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_edinet_416, @downloader.download_with_get(@url_edinet_416))
     end
 
     @url_tdnet_1 = "https://resource.ufocatch.com/atom/tdnetx"
@@ -31,7 +31,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       body: File.open("spec/data/ufocatch_tdnet.1.atom").read)
 
     Timecop.freeze(Time.utc(2019, 3, 25, 0, 58, 7)) do
-      @parser_tdnet_1 = InvestmentMachine::Parser::EdinetFeedParser.new(@url_tdnet_1, @downloader.download_with_get(@url_tdnet_1))
+      @parser_tdnet_1 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_tdnet_1, @downloader.download_with_get(@url_tdnet_1))
     end
 
     @url_tdnet_115 = "https://resource.ufocatch.com/atom/tdnetx/115"
@@ -40,7 +40,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       body: File.open("spec/data/ufocatch_tdnet.115.atom").read)
 
     Timecop.freeze(Time.utc(2019, 3, 25, 0, 59, 14)) do
-      @parser_tdnet_115 = InvestmentMachine::Parser::EdinetFeedParser.new(@url_tdnet_115, @downloader.download_with_get(@url_tdnet_115))
+      @parser_tdnet_115 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_tdnet_115, @downloader.download_with_get(@url_tdnet_115))
     end
 
     @url_error = "https://resource.ufocatch.com/atom/xxx"
@@ -48,7 +48,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       status: [200, "OK"],
       body: File.open("spec/data/ufocatch_edinet.error.atom").read)
 
-    @parser_error = InvestmentMachine::Parser::EdinetFeedParser.new(@url_error, @downloader.download_with_get(@url_error))
+    @parser_error = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_error, @downloader.download_with_get(@url_error))
 
     WebMock.disable!
   end
@@ -96,7 +96,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       it "is valid(edinet first atom)" do
         data = @downloader.download_with_get(@url)
 
-        parser = InvestmentMachine::Parser::EdinetFeedParser.new(@url, data)
+        parser = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url, data)
 
         expect(parser).to be_valid
       end
@@ -104,7 +104,7 @@ RSpec.describe InvestmentMachine::Parser::EdinetFeedParser do
       it "is valid(tdnet first atom)" do
         data = @downloader.download_with_get(@url_tdnet_1)
 
-        parser = InvestmentMachine::Parser::EdinetFeedParser.new(@url_tdnet_1, data)
+        parser = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_tdnet_1, data)
 
         expect(parser).to be_valid
       end

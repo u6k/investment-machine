@@ -2,10 +2,10 @@ require "csv"
 require "active_record"
 require "crawline"
 
-module InvestmentMachine::Parser
+module InvestmentStocks::Crawler::Parser
   class DjiaIndexPageParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("DjiaIndexPageParser#initialize: start: url=#{url}, data.nil?=#{data.nil?}")
 
       @data = data
@@ -31,7 +31,7 @@ module InvestmentMachine::Parser
 
   class DjiaCsvParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("DjiaCsvParser#initialize: start: url=#{url}, data.nil?=#{data.nil?}")
 
       @url = url
@@ -69,7 +69,7 @@ module InvestmentMachine::Parser
 
         date_parts = row[0].split("/")
 
-        price = InvestmentMachine::Model::Djia.new
+        price = InvestmentStocks::Crawler::Model::Djia.new
         price.date = Time.local(date_parts[2].to_i + (date_parts[2].to_i > 89 ? 1900 : 2000), date_parts[0].to_i, date_parts[1].to_i)
         price.opening_price = row[1].to_f
         price.high_price = row[2].to_f
@@ -82,7 +82,7 @@ module InvestmentMachine::Parser
   end
 end
 
-module InvestmentMachine::Model
+module InvestmentStocks::Crawler::Model
   class Djia < ActiveRecord::Base
     validates :date, uniqueness: true
   end

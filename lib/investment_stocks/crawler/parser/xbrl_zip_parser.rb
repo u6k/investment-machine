@@ -1,10 +1,10 @@
 require "crawline"
 require "zip"
 
-module InvestmentMachine::Parser
+module InvestmentStocks::Crawler::Parser
   class XbrlZipParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("XbrlZipParser#initialize: start: url=#{url}, data.size=#{data.size}")
 
       @url = url

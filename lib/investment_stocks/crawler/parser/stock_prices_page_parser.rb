@@ -2,10 +2,10 @@ require "nokogiri"
 require "active_record"
 require "crawline"
 
-module InvestmentMachine::Parser
+module InvestmentStocks::Crawler::Parser
   class StockPricesPageParser < Crawline::BaseParser
     def initialize(url, data)
-      @logger = InvestmentMachine::AppLogger.get_logger
+      @logger = InvestmentStocks::Crawler::AppLogger.get_logger
       @logger.debug("StockPricesPageParser#initialize: start: url=#{url}, data.nil?=#{data.nil?}")
 
       @url = url
@@ -50,7 +50,7 @@ module InvestmentMachine::Parser
       doc.xpath("//meta[@name='keywords']").each do |meta|
         @logger.debug("StockPricesPageParser#_parse: meta=#{meta}")
 
-        @company = InvestmentMachine::Model::Company.new
+        @company = InvestmentStocks::Crawler::Model::Company.new
         @company.ticker_symbol = meta["content"].split(",")[0]
         @company.name = meta["content"].split(",")[1]
         @company.market = meta["content"].split(",")[2]
@@ -65,7 +65,7 @@ module InvestmentMachine::Parser
       @stock_prices = doc.xpath("//table[@class='stock_table stock_data_table']/tbody/tr").map do |tr|
         @logger.debug("StockPricesPageParser#_parse: tr=#{tr}")
 
-        stock_price = InvestmentMachine::Model::StockPrice.new
+        stock_price = InvestmentStocks::Crawler::Model::StockPrice.new
         stock_price.ticker_symbol = @company.ticker_symbol
         stock_price.date = Time.local(tr.at_xpath("td[1]").text[0..3], tr.at_xpath("td[1]").text[5..6], tr.at_xpath("td[1]").text[8..9])
         stock_price.opening_price = tr.at_xpath("td[2]").text.to_i
@@ -80,7 +80,7 @@ module InvestmentMachine::Parser
       @stock_prices += doc.xpath("//table[@class='stock_table stock_data_table']/tr").map do |tr|
         @logger.debug("StockPricesPageParser#_parse: tr=#{tr}")
 
-        stock_price = InvestmentMachine::Model::StockPrice.new
+        stock_price = InvestmentStocks::Crawler::Model::StockPrice.new
         stock_price.ticker_symbol = @company.ticker_symbol
         stock_price.date = Time.local(tr.at_xpath("td[1]").text[0..3], tr.at_xpath("td[1]").text[5..6], tr.at_xpath("td[1]").text[8..9])
         stock_price.opening_price = tr.at_xpath("td[2]").text.to_i
@@ -100,7 +100,7 @@ module InvestmentMachine::Parser
   end
 end
 
-module InvestmentMachine::Model
+module InvestmentStocks::Crawler::Model
   class Company < ActiveRecord::Base
     validates :ticker_symbol, uniqueness: true
   end

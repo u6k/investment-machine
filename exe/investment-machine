@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-
-require "investment_machine"
-
-InvestmentMachine::CLI.start(ARGV)
-
