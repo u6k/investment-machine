@@ -24,6 +24,7 @@ module InvestmentStocks::Crawler
     method_option :s3_bucket
     method_option :s3_endpoint, default: "https://s3.amazonaws.com"
     method_option :s3_force_path_style, default: false
+    method_option :s3_object_name_prefix, default: nil
     method_option :db_database
     method_option :db_host, default: "localhost"
     method_option :db_port, default: "5432"
@@ -35,7 +36,7 @@ module InvestmentStocks::Crawler
     def crawl
       setup_db_connection(options.db_database, options.db_host, options.db_port, options.db_username, options.db_password, options.db_sslmode)
 
-      engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, options.interval)
+      engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, options.s3_object_name_prefix, options.interval)
 
       engine.crawl(options.entrypoint_url)
     end
@@ -47,6 +48,7 @@ module InvestmentStocks::Crawler
     method_option :s3_bucket
     method_option :s3_endpoint, default: "https://s3.amazonaws.com"
     method_option :s3_force_path_style, default: false
+    method_option :s3_object_name_prefix, default: nil
     method_option :db_database
     method_option :db_host, default: "localhost"
     method_option :db_port, default: "5432"
@@ -57,7 +59,7 @@ module InvestmentStocks::Crawler
     def parse
       setup_db_connection(options.db_database, options.db_host, options.db_port, options.db_username, options.db_password, options.db_sslmode)
 
-      engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, 1.0)
+      engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, options.s3_object_name_prefix, 1.0)
 
       engine.parse(options.entrypoint_url)
     end
@@ -69,6 +71,7 @@ module InvestmentStocks::Crawler
     method_option :s3_bucket
     method_option :s3_endpoint, default: "https://s3.amazonaws.com"
     method_option :s3_force_path_style, default: false
+    method_option :s3_object_name_prefix, default: nil
     method_option :db_database
     method_option :db_host, default: "localhost"
     method_option :db_port, default: "5432"
@@ -79,7 +82,7 @@ module InvestmentStocks::Crawler
     def list_cache_state
       setup_db_connection(options.db_database, options.db_host, options.db_port, options.db_username, options.db_password, options.db_sslmode)
 
-      engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, 1.0)
+      engine = setup_crawline_engine(options.s3_access_key, options.s3_secret_key, options.s3_region, options.s3_bucket, options.s3_endpoint, options.s3_force_path_style, options.s3_object_name_prefix, 1.0)
 
       engine.list_cache_state(options.entrypoint_url) do |url, data, parser|
         state = {"url" => url, "state" => (data.nil? ? "not found" : "found"), "timestamp" => (data.nil? ? nil : data["downloaded_timestamp"])}
@@ -89,10 +92,10 @@ module InvestmentStocks::Crawler
 
     private
 
-    def setup_crawline_engine(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, interval)
+    def setup_crawline_engine(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, s3_object_name_prefix, interval)
       downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION} (https://github.com/u6k/investment-stocks-crawler)")
 
-      repo = Crawline::ResourceRepository.new(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, nil)
+      repo = Crawline::ResourceRepository.new(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, s3_object_name_prefix)
       @repo = repo
 
       parsers = {
