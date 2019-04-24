@@ -27,7 +27,7 @@ ruby 2.6.0p0 (2018-12-25 revision 66547) [x86_64-linux]
 
 ```
 gem 'crawline', :git => 'https://github.com/u6k/crawline.git'
-gem 'investment_machine_crawler', :git => 'https://github.com/u6k/investment-machine-crawler.git'
+gem 'investment_stocks-crawler', :git => 'https://github.com/u6k/investment-stocks-crawler.git'
 ```
 
 ## Usage
@@ -67,11 +67,11 @@ __TODO:__ 利用規約書籍を元に免責事項を見直す
 
 ## Contributing
 
-当プロジェクトに興味を持っていただき、ありがとうございます。[新しいチケットを起票](https://redmine.u6k.me/projects/investment-machine-crawler/issues/new)していただけると幸いです。
+当プロジェクトに興味を持っていただき、ありがとうございます。[新しいチケットを起票](https://redmine.u6k.me/projects/investment-stocks-crawler/issues)していただけると幸いです。
 
 当プロジェクトは、[Contributor Covenant](https://www.contributor-covenant.org/version/1/4/code-of-conduct)に準拠します。
 
 ## License
 
-[MIT License](https://github.com/u6k/investment-machine-crawler/blob/master/LICENSE)
+[MIT License](https://github.com/u6k/investment-stocks-crawler/blob/master/LICENSE)
 
