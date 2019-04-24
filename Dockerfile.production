@@ -1,12 +1,13 @@
 FROM ruby:2.6
 LABEL maintainer="u6k.apps@gmail.com"
 
+COPY . /var/myapp
+WORKDIR /var/myapp
+
 RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get clean && \
-    gem install specific_install && \
-    gem specific_install -l "https://github.com/u6k/crawline.git" && \
-    gem specific_install -l "https://github.com/u6k/investment-stocks-crawler.git"
+    bundle install
 
-ENTRYPOINT ["investment-stocks-crawler"]
+ENTRYPOINT ["bundle", "exec", "investment-stocks-crawler"]
 

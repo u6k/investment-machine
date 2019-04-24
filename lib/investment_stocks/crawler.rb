@@ -90,7 +90,7 @@ module InvestmentStocks::Crawler
     private
 
     def setup_crawline_engine(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, interval)
-      downloader = Crawline::Downloader.new("investment-machine/#{InvestmentStocks::Crawler::VERSION} (https://github.com/u6k/investment-machine)")
+      downloader = Crawline::Downloader.new("investment-stocks-crawler/#{InvestmentStocks::Crawler::VERSION} (https://github.com/u6k/investment-stocks-crawler)")
 
       repo = Crawline::ResourceRepository.new(s3_access_key, s3_secret_key, s3_region, s3_bucket, s3_endpoint, s3_force_path_style, nil)
       @repo = repo
