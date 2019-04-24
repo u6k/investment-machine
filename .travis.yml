@@ -10,16 +10,6 @@ script:
   - docker-compose build
   - docker-compose run app
 
-after_success:
-  - if [ -n "$TRAVIS_TAG" ]; then
-      docker build -t u6kapps/investment-stocks-crawler -f Dockerfile.production .;
-      docker login -u "$DOCKER_USER" -p "$DOCKER_PASS";
-      docker tag u6kapps/investment-stocks-crawler u6kapps/investment-stocks-crawler:$TRAVIS_TAG;
-      docker push u6kapps/investment-stocks-crawler;
-    else
-      echo skip docker push;
-    fi
-
 notifications:
   slack:
     secure: Eygds5eEBo9sPWRxQjBbEbalwo+qHae/P5kCZKGQJM6wuMMLzGKN7SxXd/7lEYW0baYhHfCwXaHV5nLDgjPAoxoNohtuJZbkilWLmjo2I/EIxBGRo6Jl4xVsy+KJE4c+zRKZ2Rh5dD5pkEg6HGhi9sLgbwP+p+fVOZ+ILGBh08p478KkwP/fFcyl5IcHUDScfzmuH+DU07BQKOjYt3/gGmbH9Oz1wMF3+H1GDFdSAm3auOyvOs/OCtBoPzx0OYvcURMIlfZLRqR3KgnTk5Ot4or9M8kF3mFZx/07oNmFvWEwkMVXPkJU5+HnBCZ8VoWOpb2QnuIEuTv0NJDFq6EYKQ+WoqjZPjeMJaFLI7kpN8abQGXfszflCyw4NNxEEqs0njBGAhMkWEq/3XV/ITOnJNEXhDPde9MC/iU70pZ0aVoNSM/9naQxxqJqdYJRBEgGKCuGjUONwBFo/h36VdKTKyXT/dUOkhTtS2DDsvv1qwRgJApwTJztR3UuBh9k9BOi1wyZJZCpTS1zXGjpKyykmmEaYGmmqFWoyCHKkGWnLJdd2otgJH20C8o9a9SyWSBqQvHLATYrgqnmqYC36+4Zu1RWpdBZzqsYrZb73erN+81xRTRb5KXRKsI0PTH1Hh09frzUR4uzlR0bFyR0l6kEdUYOZcRBgx6kayIc8m+YmOk=
