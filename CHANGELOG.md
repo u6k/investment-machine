@@ -5,9 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2019-04-24
+
+### Changed
+
+- [#6901: クローラー機能、判断機能のリポジトリを分ける](https://redmine.u6k.me/issues/6901)
+    - `investment-machine`から`investment-stocks-crawler`にリネームしました
+    - 既にある程度運用しているので、これを機にメジャー・バージョンを1にします
+
 ## [0.11.1] - 2019-04-10
 
-#### Added
+### Added
 
 - [#6895: 実際のデータソースにアクセスして、少なくともvalidであることをテストする](https://redmine.u6k.me/issues/6895)
 

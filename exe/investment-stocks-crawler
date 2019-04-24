@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require "investment_stocks/crawler"
+
+InvestmentStocks::Crawler::CLI.start(ARGV)
+

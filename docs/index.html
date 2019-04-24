@@ -58,12 +58,12 @@
       </div>
 
       <div id="content"><div id='filecontents'>
-<h1 id="label-E6-8A-95-E8-B3-87-E3-83-9E-E3-82-B7-E3-83-B3+-28investment-machine-29">投資マシン <em>(investment-machine)</em></h1>
+<h1 id="label-E6-A0-AA-E5-BC-8F-E6-8A-95-E8-B3-87-E3-82-AF-E3-83-AD-E3-83-BC-E3-83-A9-E3-83-BC+-28investment-stocks-crawler-29">株式投資クローラー <em>(investment-stocks-crawler)</em></h1>
 
-<p><a href="https://travis-ci.org/u6k/investment-machine"><img src="https://img.shields.io/travis/u6k/investment-machine.svg"></a> <a href="https://github.com/u6k/investment-machine/blob/master/LICENSE"><img src="https://img.shields.io/github/license/u6k/investment-machine.svg"></a> <a href="https://github.com/u6k/investment-machine/releases"><img src="https://img.shields.io/github/release/u6k/investment-machine.svg"></a> <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square"></a> <a href="https://redmine.u6k.me/projects/investment-machine"><img src="https://img.shields.io/website-up-down-green-red/https/shields.io.svg?label=u6k.Redmine"></a></p>
+<p><a href="https://travis-ci.org/u6k/investment-stocks-crawler"><img src="https://img.shields.io/travis/u6k/investment-stocks-crawler.svg"></a> <a href="https://github.com/u6k/investment-stocks-crawler/blob/master/LICENSE"><img src="https://img.shields.io/github/license/u6k/investment-stocks-crawler.svg"></a> <a href="https://github.com/u6k/investment-stocks-crawler/releases"><img src="https://img.shields.io/github/release/u6k/investment-stocks-crawler.svg"></a> <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square"></a> <a href="https://redmine.u6k.me/projects/investment-stocks"><img src="https://img.shields.io/website-up-down-green-red/https/shields.io.svg?label=u6k.Redmine"></a></p>
 
 <blockquote>
-<p>投資をサポートする</p>
+<p>株式投資に使用するデータを収集する</p>
 </blockquote>
 
 <p><strong>Table of Contents</strong></p>
@@ -74,7 +74,7 @@
 </li><li>
 <p><a href="#Other">Other</a></p>
 </li><li>
-<p><a href="#API">API</a></p>
+<p><a href="#Disclaimer">Disclaimer</a></p>
 </li><li>
 <p><a href="#Maintainer">Maintainer</a></p>
 </li><li>
@@ -94,26 +94,40 @@ ruby 2.6.0p0 (2018-12-25 revision 66547) [x86_64-linux]
 <p><code>Gemfile</code>に次を追加して、<code>bundle install</code>でインストールします。</p>
 
 <pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_gem'>gem</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>crawline</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='symbol'>:git</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>https://github.com/u6k/crawline.git</span><span class='tstring_end'>&#39;</span></span>
-<span class='id identifier rubyid_gem'>gem</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>investment_machine</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='symbol'>:git</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>https://github.com/u6k/investment-machine.git</span><span class='tstring_end'>&#39;</span></span>
+<span class='id identifier rubyid_gem'>gem</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>investment_machine_crawler</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='symbol'>:git</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>https://github.com/u6k/investment-machine-crawler.git</span><span class='tstring_end'>&#39;</span></span>
 </code></pre>
 
 <h2 id="label-Usage">Usage</h2>
 
-<pre class="code ruby"><code class="ruby">$ investment-machine help
+<pre class="code ruby"><code class="ruby">$ investment-stocks-crawler help
 Commands:
-  investment-machine crawl           # Crawl stocks
-  investment-machine help [COMMAND]  # Describe available commands or one specific command
-  investment-machine parse           # Parse stocks
-  investment-machine version         # Display version
+  investment-stocks-crawler crawl             # Crawl stocks
+  investment-stocks-crawler help [COMMAND]    # Describe available commands or one specific command
+  investment-stocks-crawler list_cache_state  # Listing cache state
+  investment-stocks-crawler parse             # Parse stocks
+  investment-stocks-crawler version           # Display version
 </code></pre>
 
 <h2 id="label-Other">Other</h2>
 
-<p>その他の情報は、 <a href="https://redmine.u6k.me/projects/investment-machine/wiki">Wiki - investment-machine - u6k.Redmine</a> を参照してください。</p>
+<p>その他の情報は、<a href="https://redmine.u6k.me/projects/investment-stocks-crawler/wiki/Wiki">investment-stocks-crawler | u6k.Redmine</a>を参照してください。</p>
 
-<h2 id="label-API">API</h2>
+<h2 id="label-Disclaimer">Disclaimer</h2>
+<ul><li>
+<p>本プロジェクトの内容は、作者個人が趣味の範囲で自発的に行ったものです。作者が所属する会社または団体は本プロジェクトについて、一切関知しておらず、何ら責任や関連はありません。</p>
+</li><li>
+<p>本プロジェクトの内容は、作者個人が運用する目的としたものであり、投資の勧誘を目的としたものではありません。</p>
+</li><li>
+<p>本プロジェクトの内容またはそれを元にして作成したアプリケーションあるいはそれによる予測(以下、その成果物が生成する情報と呼称する)を参考にして、投資の判断を行わないでください。また、本プロジェクトの内容またはその成果物が生成する情報が正確であることを、作者は一切保証しません。未来の出来事に対する予想も、あくまで予想であり、その時々の状況によって変わりうることにご注意ください。</p>
+</li><li>
+<p>投資を行う際には、投資を行う本人のみの判断と責任において行ってください。</p>
+</li><li>
+<p>仮に投資に失敗し、投資を行ったものの資産が減ったり債務を負ったりしても、作者は何ら責任を負いません。</p>
+</li><li>
+<p>その他、本プロジェクトを参考にしたかどうかに関わらず、投資の失敗や機会の損失などを含むいかなる不利益が何人に生じたとしても、作者は何ら責任を負いません。</p>
+</li></ul>
 
-<p><a href="https://u6k.github.io/investment-machine/">APIリファレンス</a> を参照してください。</p>
+<p><strong>TODO:</strong> 利用規約書籍を元に免責事項を見直す</p>
 
 <h2 id="label-Maintainer">Maintainer</h2>
 <ul><li>
@@ -129,19 +143,19 @@ Commands:
 
 <h2 id="label-Contributing">Contributing</h2>
 
-<p>当プロジェクトに興味を持っていただき、ありがとうございます。<a href="https://redmine.u6k.me/projects/investment-machine/issues/new">新しいチケットを起票</a>していただくか、プルリクエストをサブミットしていただけると幸いです。</p>
+<p>当プロジェクトに興味を持っていただき、ありがとうございます。<a href="https://redmine.u6k.me/projects/investment-machine-crawler/issues/new">新しいチケットを起票</a>していただけると幸いです。</p>
 
 <p>当プロジェクトは、<a href="https://www.contributor-covenant.org/version/1/4/code-of-conduct">Contributor Covenant</a>に準拠します。</p>
 
 <h2 id="label-License">License</h2>
 
-<p><a href="https://github.com/u6k/investment-machine/blob/master/LICENSE">MIT License</a></p>
+<p><a href="https://github.com/u6k/investment-machine-crawler/blob/master/LICENSE">MIT License</a></p>
 </div></div>
 
       <div id="footer">
-  Generated on Wed Apr 10 05:57:11 2019 by
+  Generated on Wed Apr 24 08:56:55 2019 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.9.19 (ruby-2.6.2).
+  0.9.19 (ruby-2.6.3).
 </div>
 
     </div>

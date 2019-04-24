@@ -6,7 +6,7 @@ RUN apt-get update && \
     apt-get clean && \
     gem install specific_install && \
     gem specific_install -l "https://github.com/u6k/crawline.git" && \
-    gem specific_install -l "https://github.com/u6k/investment-machine.git"
+    gem specific_install -l "https://github.com/u6k/investment-stocks-crawler.git"
 
-ENTRYPOINT ["investment-machine"]
+ENTRYPOINT ["investment-stocks-crawler"]
 
