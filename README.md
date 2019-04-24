@@ -6,7 +6,13 @@
 
 __Table of Contents__
 
-__TODO:__
+- [Install](#Install)
+- [Usage](#Usage)
+- [Other](#Other)
+- [Disclaimer](#Disclaimer)
+- [Maintainer](#Maintainer)
+- [Contributing](#Contributing)
+- [License](#License)
 
 ## Install
 
@@ -26,11 +32,20 @@ gem 'investment_machine_crawler', :git => 'https://github.com/u6k/investment-mac
 
 ## Usage
 
-__TODO:__
+```
+$ investment-stocks-crawler help
+Commands:
+  investment-stocks-crawler crawl             # Crawl stocks
+  investment-stocks-crawler help [COMMAND]    # Describe available commands or one specific command
+  investment-stocks-crawler list_cache_state  # Listing cache state
+  investment-stocks-crawler parse             # Parse stocks
+  investment-stocks-crawler version           # Display version
+```
 
 ## Other
 
-__TODO:__
+その他の情報は、[investment-stocks-crawler \| u6k.Redmine](https://redmine.u6k.me/projects/investment-stocks-crawler/wiki/Wiki)を参照してください。
+
 
 ## Disclaimer
 
@@ -42,7 +57,6 @@ __TODO:__
 - その他、本プロジェクトを参考にしたかどうかに関わらず、投資の失敗や機会の損失などを含むいかなる不利益が何人に生じたとしても、作者は何ら責任を負いません。
 
 __TODO:__ 利用規約書籍を元に免責事項を見直す
-__TODO:__ そもそもオープンにするつもりがないプロジェクトの免責事項を書く必要はあるか？
 
 ## Maintainer
 
