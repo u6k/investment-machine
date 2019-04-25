@@ -121,8 +121,8 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
       db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
-    expect(InvestmentStocks::Crawler::Model::Company.count).to eq 0
-    expect(InvestmentStocks::Crawler::Model::StockPrice.count).to eq 0
+    expect(InvestmentStocks::Crawler::Model::Company.count).to be > 0
+    expect(InvestmentStocks::Crawler::Model::StockPrice.count).to be > 0
   end
 
   it "parse stocks is success" do
@@ -226,7 +226,7 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
       db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
-    expect(InvestmentStocks::Crawler::Model::NikkeiAverage.count).to eq 0
+    expect(InvestmentStocks::Crawler::Model::NikkeiAverage.count).to be > 0
   end
 
   it "parse nikkei average is success" do
@@ -285,7 +285,7 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
       db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
-    expect(InvestmentStocks::Crawler::Model::Topix.count).to eq 0
+    expect(InvestmentStocks::Crawler::Model::Topix.count).to be > 0
   end
 
   it "parse topix is success" do
@@ -344,7 +344,7 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
       db_sslmode: ENV["DB_SSLMODE"])
 
     expect(count_s3_objects).to be > 0
-    expect(InvestmentStocks::Crawler::Model::Djia.count).to eq 0
+    expect(InvestmentStocks::Crawler::Model::Djia.count).to be > 0
   end
 
   it "parse djia is success" do
