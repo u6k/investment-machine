@@ -12,36 +12,28 @@ RSpec.describe InvestmentStocks::Crawler::Parser::EdinetFeedParser do
       status: [200, "OK"],
       body: File.open("spec/data/ufocatch_edinet.1.atom").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 25, 0, 54, 47)) do
-      @parser = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url, @downloader.download_with_get(@url))
-    end
+    @parser = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url, @downloader.download_with_get(@url))
 
     @url_edinet_416 = "https://resource.ufocatch.com/atom/edinetx/416"
     WebMock.stub_request(:get, @url_edinet_416).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/ufocatch_edinet.416.atom").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 25, 0, 56, 29)) do
-      @parser_edinet_416 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_edinet_416, @downloader.download_with_get(@url_edinet_416))
-    end
+    @parser_edinet_416 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_edinet_416, @downloader.download_with_get(@url_edinet_416))
 
     @url_tdnet_1 = "https://resource.ufocatch.com/atom/tdnetx"
     WebMock.stub_request(:get, @url_tdnet_1).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/ufocatch_tdnet.1.atom").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 25, 0, 58, 7)) do
-      @parser_tdnet_1 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_tdnet_1, @downloader.download_with_get(@url_tdnet_1))
-    end
+    @parser_tdnet_1 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_tdnet_1, @downloader.download_with_get(@url_tdnet_1))
 
     @url_tdnet_115 = "https://resource.ufocatch.com/atom/tdnetx/115"
     WebMock.stub_request(:get, @url_tdnet_115).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/ufocatch_tdnet.115.atom").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 25, 0, 59, 14)) do
-      @parser_tdnet_115 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_tdnet_115, @downloader.download_with_get(@url_tdnet_115))
-    end
+    @parser_tdnet_115 = InvestmentStocks::Crawler::Parser::EdinetFeedParser.new(@url_tdnet_115, @downloader.download_with_get(@url_tdnet_115))
 
     @url_error = "https://resource.ufocatch.com/atom/xxx"
     WebMock.stub_request(:get, @url_error).to_return(
@@ -54,16 +46,20 @@ RSpec.describe InvestmentStocks::Crawler::Parser::EdinetFeedParser do
   end
 
   describe "#redownload?" do
-    it "redownload if 1 hour has passed" do
-      Timecop.freeze(Time.utc(2019, 3, 25, 1, 54, 48)) do
-        expect(@parser).to be_redownload
-      end
+    it "(parser) is always true" do
+      expect(@parser).to be_redownload
     end
 
-    it "do not redownload within 1 hour" do
-      Timecop.freeze(Time.utc(2019, 3, 25, 1, 54, 47)) do
-        expect(@parser).not_to be_redownload
-      end
+    it "(parser_edinet_416) is always true" do
+      expect(@parser_edinet_416).to be_redownload
+    end
+
+    it "(parser_tdnet_1) is always true" do
+      expect(@parser_tdnet_1).to be_redownload
+    end
+
+    it "(parser_tdnet_115) is always true" do
+      expect(@parser_tdnet_115).to be_redownload
     end
   end
 

@@ -17,9 +17,7 @@ RSpec.describe InvestmentStocks::Crawler::Parser::StockPricesPageParser do
       status: [200, "OK"],
       body: File.open("spec/data/stock_prices_page.1301.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 24, 3, 11, 23)) do
-      @parser = InvestmentStocks::Crawler::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
-    end
+    @parser = InvestmentStocks::Crawler::Parser::StockPricesPageParser.new(@url, @downloader.download_with_get(@url))
 
     @url_error = "https://kabuoji3.com/stock/1301/9999/"
     WebMock.stub_request(:get, @url_error).to_return(
@@ -32,26 +30,14 @@ RSpec.describe InvestmentStocks::Crawler::Parser::StockPricesPageParser do
   end
 
   describe "#redownload?" do
-    it "redownload if newer than 1 year" do
-      Timecop.freeze(Time.local(2020, 3, 20)) do
+    it "redownload if newer than 30 days" do
+      Timecop.freeze(Time.local(2019, 4, 20, 23, 59, 59)) do
         expect(@parser).to be_redownload
       end
     end
 
-    it "do not redownload if over 1 year old" do
-      Timecop.freeze(Time.local(2020, 3, 21)) do
-        expect(@parser).not_to be_redownload
-      end
-    end
-
-    it "redownload if 23 hours has passed" do
-      Timecop.freeze(Time.utc(2019, 3, 25, 2, 11, 23)) do
-        expect(@parser).to be_redownload
-      end
-    end
-
-    it "do not redownload within 23 hours" do
-      Timecop.freeze(Time.utc(2019, 3, 25, 2, 11, 22)) do
+    it "do not redownload if over 30 days old" do
+      Timecop.freeze(Time.local(2019, 4, 21, 0, 0, 0)) do
         expect(@parser).not_to be_redownload
       end
     end

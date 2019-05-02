@@ -12,24 +12,14 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser do
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.index.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 20, 35, 12)) do
-      @parser = InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser.new(@url, @downloader.download_with_get(@url))
-    end
+    @parser = InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser.new(@url, @downloader.download_with_get(@url))
 
     WebMock.disable!
   end
 
   describe "#redownload?" do
-    it "redownload if 23 hours has passed" do
-      Timecop.freeze(Time.utc(2019, 3, 28, 19, 35, 13)) do
-        expect(@parser).to be_redownload
-      end
-    end
-
-    it "do not redownload within 23 hours" do
-      Timecop.freeze(Time.utc(2019, 3, 28, 19, 35, 12)) do
-        expect(@parser).not_to be_redownload
-      end
+    it "is always true" do
+      expect(@parser).to be_redownload
     end
   end
 
@@ -90,27 +80,21 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser do
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.194901.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 23, 55, 12)) do
-      @parser_194901 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
-    end
+    @parser_194901 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
 
     @url_194905 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=5"
     WebMock.stub_request(:get, @url_194905).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.194905.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 23, 57, 43)) do
-      @parser_194905 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
-    end
+    @parser_194905 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
 
     @url_201902 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
     WebMock.stub_request(:get, @url_201902).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.201902.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 23, 58, 51)) do
-      @parser_201902 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
-    end
+    @parser_201902 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
 
     WebMock.disable!
   end
@@ -126,20 +110,6 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser do
       it "do not redownload if over 2 months(60 days) old" do
         Timecop.freeze(Time.local(2019, 4, 2, 0, 0, 0)) do
           expect(@parser_201902).not_to be_redownload
-        end
-      end
-    end
-
-    context "1949-01 (case invalid data) do not redownload always" do
-      it "do not redownload if current month" do
-        Timecop.freeze(Time.local(1949, 1, 1, 0, 0, 0)) do
-          expect(@parser_194901).not_to be_redownload
-        end
-      end
-
-      it "do not redownload if the future" do
-        Timecop.freeze(Time.local(2019, 3, 1, 0, 0, 0)) do
-          expect(@parser_194901).not_to be_redownload
         end
       end
     end

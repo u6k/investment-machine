@@ -15,9 +15,7 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def redownload?
-      @logger.debug("NikkeiAverageIndexParser#redownload?: start: now=#{Time.now}, downloaded_timestamp=#{@data["downloaded_timestamp"]}")
-
-      (Time.now - @data["downloaded_timestamp"]) > (23 * 60 * 60)
+      true
     end
 
     def valid?
@@ -65,9 +63,7 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def redownload?
-      @logger.debug("NikkeiAverageDataParser#redownload?: start: now=#{Time.now}, downloaded_timestamp=#{@data["downloaded_timestamp"]}, target_month=#{@target_month}")
-
-      return false if not valid?
+      @logger.debug("NikkeiAverageDataParser#redownload?: start: now=#{Time.now}, target_month=#{@target_month}")
 
       (Time.now - @target_month) < (60 * 24 * 60 * 60)
     end
