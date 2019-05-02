@@ -12,9 +12,7 @@ RSpec.describe InvestmentStocks::Crawler::Parser::StockListPageParser do
       status: [200, "OK"],
       body: File.open("spec/data/stock_list_page.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 23, 16, 18, 32)) do
-      @parser = InvestmentStocks::Crawler::Parser::StockListPageParser.new(@url, @downloader.download_with_get(@url))
-    end
+    @parser = InvestmentStocks::Crawler::Parser::StockListPageParser.new(@url, @downloader.download_with_get(@url))
 
     @url_error = "https://kabuoji3.com/stock/?page=abc"
     WebMock.stub_request(:get, @url_error).to_return(
@@ -27,16 +25,8 @@ RSpec.describe InvestmentStocks::Crawler::Parser::StockListPageParser do
   end
 
   describe "#redownload?" do
-    it "redownload if 23 hours has passed" do
-      Timecop.freeze(Time.utc(2019, 3, 24, 15, 18, 33)) do
-        expect(@parser).to be_redownload
-      end
-    end
-
-    it "do not redownload within 23 hours" do
-      Timecop.freeze(Time.utc(2019, 3, 24, 15, 18, 32)) do
-        expect(@parser).not_to be_redownload
-      end
+    it "is always true" do
+      expect(@parser).to be_redownload
     end
   end
 

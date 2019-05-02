@@ -12,24 +12,14 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser do
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.index.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 20, 35, 12)) do
-      @parser = InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser.new(@url, @downloader.download_with_get(@url))
-    end
+    @parser = InvestmentStocks::Crawler::Parser::NikkeiAverageIndexParser.new(@url, @downloader.download_with_get(@url))
 
     WebMock.disable!
   end
 
   describe "#redownload?" do
-    it "redownload if 23 hours has passed" do
-      Timecop.freeze(Time.utc(2019, 3, 28, 19, 35, 13)) do
-        expect(@parser).to be_redownload
-      end
-    end
-
-    it "do not redownload within 23 hours" do
-      Timecop.freeze(Time.utc(2019, 3, 28, 19, 35, 12)) do
-        expect(@parser).not_to be_redownload
-      end
+    it "is always true" do
+      expect(@parser).to be_redownload
     end
   end
 
@@ -90,27 +80,21 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser do
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.194901.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 23, 55, 12)) do
-      @parser_194901 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
-    end
+    @parser_194901 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194901, @downloader.download_with_get(@url_194901))
 
     @url_194905 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=1949&month=5"
     WebMock.stub_request(:get, @url_194905).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.194905.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 23, 57, 43)) do
-      @parser_194905 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
-    end
+    @parser_194905 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_194905, @downloader.download_with_get(@url_194905))
 
     @url_201902 = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
     WebMock.stub_request(:get, @url_201902).to_return(
       status: [200, "OK"],
       body: File.open("spec/data/nikkei_average.201902.html").read)
 
-    Timecop.freeze(Time.utc(2019, 3, 27, 23, 58, 51)) do
-      @parser_201902 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
-    end
+    @parser_201902 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(@url_201902, @downloader.download_with_get(@url_201902))
 
     WebMock.disable!
   end
@@ -126,20 +110,6 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser do
       it "do not redownload if over 2 months(60 days) old" do
         Timecop.freeze(Time.local(2019, 4, 2, 0, 0, 0)) do
           expect(@parser_201902).not_to be_redownload
-        end
-      end
-    end
-
-    context "1949-01 (case invalid data) do not redownload always" do
-      it "do not redownload if current month" do
-        Timecop.freeze(Time.local(1949, 1, 1, 0, 0, 0)) do
-          expect(@parser_194901).not_to be_redownload
-        end
-      end
-
-      it "do not redownload if the future" do
-        Timecop.freeze(Time.local(2019, 3, 1, 0, 0, 0)) do
-          expect(@parser_194901).not_to be_redownload
         end
       end
     end
@@ -266,30 +236,25 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser do
       end
     end
 
-    context "1949-05 and 2019-02" do
+    context "existing data" do
+      before do
+        InvestmentStocks::Crawler::Model::NikkeiAverage.create(date: Time.new(2019,  1, 31), opening_price: 2019.0131, high_price: 2019.0131, low_price: 2019.0131, close_price: 2019.0131)
+        InvestmentStocks::Crawler::Model::NikkeiAverage.create(date: Time.new(2019,  2,  1), opening_price: 2019.0201, high_price: 2019.0201, low_price: 2019.0201, close_price: 2019.0201)
+        InvestmentStocks::Crawler::Model::NikkeiAverage.create(date: Time.new(2019,  2, 28), opening_price: 2019.0228, high_price: 2019.0228, low_price: 2019.0228, close_price: 2019.0228)
+        InvestmentStocks::Crawler::Model::NikkeiAverage.create(date: Time.new(2019,  3,  1), opening_price: 2019.0301, high_price: 2019.0301, low_price: 2019.0301, close_price: 2019.0301)
+      end
+
       it "is pries" do
         context = {}
 
-        @parser_194905.parse(context)
         @parser_201902.parse(context)
 
         expect(context).to be_empty
 
         expect(InvestmentStocks::Crawler::Model::NikkeiAverage.all).to match_array([
-          have_attributes(date: Time.local(1949, 5, 16), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
-          have_attributes(date: Time.local(1949, 5, 17), opening_price: nil, high_price: nil, low_price: nil, close_price: 174.80),
-          have_attributes(date: Time.local(1949, 5, 18), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.53),
-          have_attributes(date: Time.local(1949, 5, 19), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.34),
-          have_attributes(date: Time.local(1949, 5, 20), opening_price: nil, high_price: nil, low_price: nil, close_price: 169.20),
-          have_attributes(date: Time.local(1949, 5, 21), opening_price: nil, high_price: nil, low_price: nil, close_price: 169.92),
-          have_attributes(date: Time.local(1949, 5, 23), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.85),
-          have_attributes(date: Time.local(1949, 5, 24), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.75),
-          have_attributes(date: Time.local(1949, 5, 25), opening_price: nil, high_price: nil, low_price: nil, close_price: 171.53),
-          have_attributes(date: Time.local(1949, 5, 26), opening_price: nil, high_price: nil, low_price: nil, close_price: 170.43),
-          have_attributes(date: Time.local(1949, 5, 27), opening_price: nil, high_price: nil, low_price: nil, close_price: 172.76),
-          have_attributes(date: Time.local(1949, 5, 28), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.30),
-          have_attributes(date: Time.local(1949, 5, 30), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.21),
-          have_attributes(date: Time.local(1949, 5, 31), opening_price: nil, high_price: nil, low_price: nil, close_price: 176.52),
+          have_attributes(date: Time.local(2019, 1, 31), opening_price: 2019.0131, high_price: 2019.0131, low_price: 2019.0131, close_price: 2019.0131),
+          have_attributes(date: Time.local(2019, 3,  1), opening_price: 2019.0301, high_price: 2019.0301, low_price: 2019.0301, close_price: 2019.0301),
+
           have_attributes(date: Time.local(2019, 2, 1), opening_price: 20797.03, high_price: 20929.63, low_price: 20741.98, close_price: 20788.39),
           have_attributes(date: Time.local(2019, 2, 4), opening_price: 20831.90, high_price: 20922.58, low_price: 20823.68, close_price: 20883.77),
           have_attributes(date: Time.local(2019, 2, 5), opening_price: 20960.47, high_price: 20981.23, low_price: 20823.18, close_price: 20844.45),
@@ -311,23 +276,6 @@ RSpec.describe InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser do
           have_attributes(date: Time.local(2019, 2, 28), opening_price: 21536.55, high_price: 21536.55, low_price: 21364.09, close_price: 21385.16),
         ])
       end
-    end
-
-    it "not stored duplicate data" do
-      @parser_201902.parse({})
-
-      url = "https://indexes.nikkei.co.jp/nkave/statistics/dataload?list=daily&year=2019&month=2"
-      data = {
-        "url" => url,
-        "request_method" => "GET",
-        "request_headers" => {},
-        "response_headers" => {},
-        "response_body" => File.open("spec/data/nikkei_average.201902.html").read,
-        "downloaded_timestamp" => Time.utc(2019, 3, 27, 23, 58, 51)}
-  
-      parser_201902 = InvestmentStocks::Crawler::Parser::NikkeiAverageDataParser.new(url, data)
-
-      expect(InvestmentStocks::Crawler::Model::NikkeiAverage.count).to eq 19
     end
   end
 end

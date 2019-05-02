@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2019-05-02
+
+### Changed
+
+- [#7032: ロガーの名前をAPP_LOGGER_xxxに変更する](https://redmine.u6k.me/issues/7032)
+- [#7020: 再ダウンロード判定から、最近ダウンロードしたから再ダウンロードしない、という条件を除去する](https://redmine.u6k.me/issues/7020)
+- [#6981: パース処理の速度を改善する](https://redmine.u6k.me/issues/6981)
+
 ## [1.2.0] - 2019-04-25
 
 ### Changed

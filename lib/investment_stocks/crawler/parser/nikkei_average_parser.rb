@@ -1,5 +1,6 @@
 require "nokogiri"
 require "active_record"
+require "activerecord-import"
 require "crawline"
 
 module InvestmentStocks::Crawler::Parser
@@ -15,9 +16,7 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def redownload?
-      @logger.debug("NikkeiAverageIndexParser#redownload?: start: now=#{Time.now}, downloaded_timestamp=#{@data["downloaded_timestamp"]}")
-
-      (Time.now - @data["downloaded_timestamp"]) > (23 * 60 * 60)
+      true
     end
 
     def valid?
@@ -65,9 +64,7 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def redownload?
-      @logger.debug("NikkeiAverageDataParser#redownload?: start: now=#{Time.now}, downloaded_timestamp=#{@data["downloaded_timestamp"]}, target_month=#{@target_month}")
-
-      return false if not valid?
+      @logger.debug("NikkeiAverageDataParser#redownload?: start: now=#{Time.now}, target_month=#{@target_month}")
 
       (Time.now - @target_month) < (60 * 24 * 60 * 60)
     end
@@ -79,14 +76,19 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def related_links
-      nil
     end
 
     def parse(context)
+      @logger.debug("NikkeiAverageDataParser#parse: start")
+
       return if not valid?
 
-      @prices.each do |price|
-        price.save! if price.valid?
+      ActiveRecord::Base.transaction do
+        InvestmentStocks::Crawler::Model::NikkeiAverage.where(date: Time.new(@prices[0].date.year, @prices[0].date.month, 1)..(Time.new(@prices[0].date.year, @prices[0].date.month + 1, 1) - 24 * 60 * 60)).destroy_all
+        @logger.debug("NikkeiAverageDataParser#parse: NikkeiAverage(year=#{@prices[0].date.year}, month=#{@prices[0].date.month}) destroy all")
+
+        InvestmentStocks::Crawler::Model::NikkeiAverage.import(@prices)
+        @logger.debug("NikkeiAverageDataParser#parse: NikkeiAverage(count: #{@prices.count}) saved")
       end
     end
 

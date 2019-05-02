@@ -135,7 +135,7 @@ module InvestmentStocks::Crawler
     def self.get_logger
       if @@logger.nil?
         @@logger = Logger.new(STDOUT)
-        @@logger.level = ENV["INVESTMENT_LOGGER_LEVEL"] if ENV.has_key?("INVESTMENT_LOGGER_LEVEL")
+        @@logger.level = ENV["APP_LOGGER_LEVEL"] if ENV.has_key?("APP_LOGGER_LEVEL")
       end
 
       @@logger
