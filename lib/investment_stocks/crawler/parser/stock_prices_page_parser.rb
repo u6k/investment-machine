@@ -15,11 +15,9 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def redownload?
-      @logger.debug("StockPricesPageParser#redownload?: start: now=#{Time.now}, downloaded_timestamp=#{@data["downloaded_timestamp"]}, page_date=#{@stock_prices[0].date}")
+      @logger.debug("StockPricesPageParser#redownload?: start: now=#{Time.now}, page_date=#{@stock_prices[0].date}")
 
-      return false if (Time.now - @data["downloaded_timestamp"]) < (23 * 60 * 60)
-
-      (Time.now - @stock_prices[0].date) < (365 * 24 * 60 * 60)
+      (Time.now - @stock_prices[0].date) < (30 * 24 * 60 * 60)
     end
 
     def valid?

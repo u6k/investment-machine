@@ -14,9 +14,7 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def redownload?
-      @logger.debug("StockListPageParser#redownload?: start: now=#{Time.now}, downloaded_timestamp=#{@data["downloaded_timestamp"]}")
-
-      (Time.now - @data["downloaded_timestamp"]) > (23 * 60 * 60)
+      true
     end
 
     def valid?
