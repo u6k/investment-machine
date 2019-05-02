@@ -1,5 +1,6 @@
 require "nokogiri"
 require "active_record"
+require "activerecord-import"
 require "crawline"
 
 module InvestmentStocks::Crawler::Parser
@@ -31,10 +32,21 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def parse(context)
-      @company.save! if @company.valid?
+      @logger.debug("StockPricesPageParser#parse: start")
 
-      @stock_prices.each do |stock_price|
-        stock_price.save! if stock_price.valid?
+      ActiveRecord::Base.transaction do
+        if @company.valid?
+          @company.save!
+          @logger.debug("StockPricesPageParser#parse: Company(ticker_symbol: @company.ticker_symbol) saved")
+        else
+          @logger.debug("StockPricesPageParser#parse: Company(ticker_symbol: @company.ticker_symbol) skip")
+        end
+  
+        InvestmentStocks::Crawler::Model::StockPrice.where(ticker_symbol: @company.ticker_symbol, date: Time.new(@stock_prices[0].date.year, 1, 1, 0, 0, 0)..Time.new(@stock_prices[0].date.year, 12, 31, 23, 59, 59)).destroy_all
+        @logger.debug("StockPricesPageParser#parse: StockPrice(date.year: #{@stock_prices[0].date.year}) destroy all")
+
+        InvestmentStocks::Crawler::Model::StockPrice.import(@stock_prices)
+        @logger.debug("StockPricesPageParser#parse: StockPrice(count: #{@stock_prices.count}) saved")
       end
     end
 
