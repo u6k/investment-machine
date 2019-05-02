@@ -15,9 +15,8 @@ services:
       - "DB_PASSWORD=db_pass"
       - "DB_HOST=db"
       - "DB_PORT=5432"
-      #- "DB_SSLMODE=require"
       - "CRAWLINE_LOGGER_LEVEL=FATAL"
-      - "INVESTMENT_LOGGER_LEVEL=INFO"
+      - "APP_LOGGER_LEVEL=FATAL"
     volumes:
       - ".:/var/myapp"
     depends_on:
@@ -47,4 +46,3 @@ volumes:
     driver: local
   db:
     driver: local
-
