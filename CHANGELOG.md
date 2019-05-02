@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#7032: ロガーの名前をAPP_LOGGER_xxxに変更する](https://redmine.u6k.me/issues/7032)
 - [#7020: 再ダウンロード判定から、最近ダウンロードしたから再ダウンロードしない、という条件を除去する](https://redmine.u6k.me/issues/7020)
+- [#6981: パース処理の速度を改善する](https://redmine.u6k.me/issues/6981)
 
 ## [1.2.0] - 2019-04-25
 

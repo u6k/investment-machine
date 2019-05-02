@@ -36,4 +36,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'pg'
   spec.add_dependency 'activerecord'
   spec.add_dependency 'standalone_migrations'
+  spec.add_dependency 'activerecord-import', '~> 1.0', '>= 1.0.1'
 end

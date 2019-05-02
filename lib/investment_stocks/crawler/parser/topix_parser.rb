@@ -1,5 +1,6 @@
 require "csv"
 require "active_record"
+require "activerecord-import"
 require "crawline"
 
 module InvestmentStocks::Crawler::Parser
@@ -54,8 +55,14 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def parse(context)
-      @prices.each do |price|
-        price.save! if price.valid?
+      @logger.debug("TopixCsvParser#parse: start")
+
+      ActiveRecord::Base.transaction do
+        InvestmentStocks::Crawler::Model::Topix.where(date: Time.new(@prices[0].date.year, 1, 1)..Time.new(@prices[0].date.year, 12, 31, 23, 59, 59)).destroy_all
+        @logger.debug("TopixCsvParser#parse: Topix(year: #{@prices[0].date.year}) destroy all")
+
+        InvestmentStocks::Crawler::Model::Topix.import(@prices)
+        @logger.debug("TopixCsvParser#parse: Topix(count: #{@prices.count}) saved")
       end
     end
 

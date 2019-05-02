@@ -1,5 +1,6 @@
 require "nokogiri"
 require "active_record"
+require "activerecord-import"
 require "crawline"
 
 module InvestmentStocks::Crawler::Parser
@@ -75,14 +76,19 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def related_links
-      nil
     end
 
     def parse(context)
+      @logger.debug("NikkeiAverageDataParser#parse: start")
+
       return if not valid?
 
-      @prices.each do |price|
-        price.save! if price.valid?
+      ActiveRecord::Base.transaction do
+        InvestmentStocks::Crawler::Model::NikkeiAverage.where(date: Time.new(@prices[0].date.year, @prices[0].date.month, 1)..(Time.new(@prices[0].date.year, @prices[0].date.month + 1, 1) - 24 * 60 * 60)).destroy_all
+        @logger.debug("NikkeiAverageDataParser#parse: NikkeiAverage(year=#{@prices[0].date.year}, month=#{@prices[0].date.month}) destroy all")
+
+        InvestmentStocks::Crawler::Model::NikkeiAverage.import(@prices)
+        @logger.debug("NikkeiAverageDataParser#parse: NikkeiAverage(count: #{@prices.count}) saved")
       end
     end
 
