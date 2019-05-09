@@ -1,5 +1,5 @@
 module InvestmentStocks
   module Crawler
-    VERSION = "1.4.0"
+    VERSION = "1.5.0-develop"
   end
 end
