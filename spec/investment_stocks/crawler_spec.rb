@@ -22,9 +22,9 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
       status: [200, "OK"],
       body: File.open("spec/data/stock_prices_page.1301.html").read)
 
-    WebMock.stub_request(:get, "https://kabuoji3.com/stock/1301/2019/").to_return(
+    WebMock.stub_request(:get, "https://kabuoji3.com/stock/1301/2018/").to_return(
       status: [200, "OK"],
-      body: File.open("spec/data/stock_prices_page.1301.html").read)
+      body: File.open("spec/data/stock_prices_page.1301.2018.html").read)
 
     WebMock.stub_request(:get, /^https:\/\/resource\.ufocatch\.com\/.*$/).to_return(
       status: [404, "Not Found"])

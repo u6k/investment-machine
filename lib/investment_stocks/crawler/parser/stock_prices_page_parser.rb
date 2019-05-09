@@ -16,37 +16,34 @@ module InvestmentStocks::Crawler::Parser
     end
 
     def redownload?
-      @logger.debug("StockPricesPageParser#redownload?: start: now=#{Time.now}, page_date=#{@stock_prices[0].date}")
+      @logger.debug("StockPricesPageParser#redownload?: start")
 
-      (Time.now - @stock_prices[0].date) < (30 * 24 * 60 * 60)
-    end
-
-    def valid?
-      @logger.debug("StockPricesPageParser#valid?")
-
-      (not @stock_prices.empty?)
+      if not @stock_prices.empty?
+        (Time.now - @stock_prices[0].date) < (30 * 24 * 60 * 60)
+      else
+        true
+      end
     end
 
     def related_links
-      (valid? ? @related_links : nil)
+      @related_links
     end
 
     def parse(context)
       @logger.debug("StockPricesPageParser#parse: start")
 
       ActiveRecord::Base.transaction do
-        if @company.valid?
-          @company.save!
-          @logger.debug("StockPricesPageParser#parse: Company(ticker_symbol: @company.ticker_symbol) saved")
-        else
-          @logger.debug("StockPricesPageParser#parse: Company(ticker_symbol: @company.ticker_symbol) skip")
-        end
-  
-        InvestmentStocks::Crawler::Model::StockPrice.where(ticker_symbol: @company.ticker_symbol, date: Time.new(@stock_prices[0].date.year, 1, 1, 0, 0, 0)..Time.new(@stock_prices[0].date.year, 12, 31, 23, 59, 59)).destroy_all
-        @logger.debug("StockPricesPageParser#parse: StockPrice(date.year: #{@stock_prices[0].date.year}) destroy all")
+        InvestmentStocks::Crawler::Model::Company.where(ticker_symbol: @company.ticker_symbol).destroy_all
+        @company.save!
+        @logger.debug("StockPricesPageParser#parse: Company(ticker_symbol: @company.ticker_symbol) saved")
 
-        InvestmentStocks::Crawler::Model::StockPrice.import(@stock_prices)
-        @logger.debug("StockPricesPageParser#parse: StockPrice(count: #{@stock_prices.count}) saved")
+        if not @stock_prices.empty?
+          InvestmentStocks::Crawler::Model::StockPrice.where(ticker_symbol: @company.ticker_symbol, date: Time.new(@stock_prices[0].date.year, 1, 1, 0, 0, 0)..Time.new(@stock_prices[0].date.year, 12, 31, 23, 59, 59)).destroy_all
+          @logger.debug("StockPricesPageParser#parse: StockPrice(date.year: #{@stock_prices[0].date.year}) destroy all")
+
+          InvestmentStocks::Crawler::Model::StockPrice.import(@stock_prices)
+          @logger.debug("StockPricesPageParser#parse: StockPrice(count: #{@stock_prices.count}) saved")
+        end
       end
     end
 
@@ -102,6 +99,8 @@ module InvestmentStocks::Crawler::Parser
 
         stock_price
       end
+
+      @stock_prices = [] if not @stock_prices.empty? and @stock_prices[0].date.year != @stock_prices[-1].date.year
 
       @stock_prices.sort! do |a, b|
         b.date <=> a.date
