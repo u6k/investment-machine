@@ -29,11 +29,11 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
     WebMock.stub_request(:get, /^https:\/\/resource\.ufocatch\.com\/.*$/).to_return(
       status: [404, "Not Found"])
 
-    WebMock.stub_request(:get, "https://resource.ufocatch.com/atom/edinetx").to_return(
+    WebMock.stub_request(:get, "https://resource.ufocatch.com/atom/edinetx/").to_return(
       status: [200, "OK"],
       body: File.open("spec/data/ufocatch_edinet.1.atom").read)
 
-    WebMock.stub_request(:get, "https://resource.ufocatch.com/atom/tdnetx").to_return(
+    WebMock.stub_request(:get, "https://resource.ufocatch.com/atom/tdnetx/").to_return(
       status: [200, "OK"],
       body: File.open("spec/data/ufocatch_tdnet.1.atom").read)
 
@@ -171,7 +171,7 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
       interval: 0.001,
-      entrypoint_url: "https://resource.ufocatch.com/atom/edinetx",
+      entrypoint_url: "https://resource.ufocatch.com/atom/edinetx/",
       db_database: ENV["DB_DATABASE"],
       db_host: ENV["DB_HOST"],
       db_port: ENV["DB_PORT"],
@@ -194,7 +194,7 @@ RSpec.describe InvestmentStocks::Crawler::CLI do
       s3_endpoint: ENV["AWS_S3_ENDPOINT"],
       s3_force_path_style: ENV["AWS_S3_FORCE_PATH_STYLE"],
       interval: 0.001,
-      entrypoint_url: "https://resource.ufocatch.com/atom/tdnetx",
+      entrypoint_url: "https://resource.ufocatch.com/atom/tdnetx/",
       db_database: ENV["DB_DATABASE"],
       db_host: ENV["DB_HOST"],
       db_port: ENV["DB_PORT"],
