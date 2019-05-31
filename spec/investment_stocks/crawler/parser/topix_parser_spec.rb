@@ -158,23 +158,24 @@ RSpec.describe InvestmentStocks::Crawler::Parser::TopixCsvParser do
       end
     end
 
-    context "1990s on web" do
-      it "is valid" do
-        data = @downloader.download_with_get(@url_1990)
-        parser = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_1990, data)
+    # TODO: ticket 7116
+    #context "1990s on web" do
+    #  it "is valid" do
+    #    data = @downloader.download_with_get(@url_1990)
+    #    parser = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_1990, data)
 
-        expect(parser).to be_valid
-      end
-    end
+    #    expect(parser).to be_valid
+    #  end
+    #end
 
-    context "2019s on web" do
-      it "is valid" do
-        data = @downloader.download_with_get(@url_2019)
-        parser = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_2019, data)
+    #context "2019s on web" do
+    #  it "is valid" do
+    #    data = @downloader.download_with_get(@url_2019)
+    #    parser = InvestmentStocks::Crawler::Parser::TopixCsvParser.new(@url_2019, data)
 
-        expect(parser).to be_valid
-      end
-    end
+    #    expect(parser).to be_valid
+    #  end
+    #end
   end
 
   describe "#related_links" do
