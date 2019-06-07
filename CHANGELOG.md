@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2019-06-07
+
+### Changed
+
+- [#7096: 出来高(turnover->volume)、始値(open_price)、調整後終値(adjusted_close_price)の項目名を修正する](https://redmine.u6k.me/issues/7096)
+
 ## [1.4.1] - 2019-05-31
 
 ### Fixed

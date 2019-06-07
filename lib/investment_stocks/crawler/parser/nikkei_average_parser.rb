@@ -108,7 +108,7 @@ module InvestmentStocks::Crawler::Parser
         price.date = Time.local(list_date_parts[0].to_i, list_date_parts[1].to_i, list_date_parts[2].to_i, 0, 0, 0)
 
         list_value = tr.at_xpath("td[2]").text
-        price.opening_price = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
+        price.open_price = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)
 
         list_value = tr.at_xpath("td[3]").text
         price.high_price = (list_value == "-" ? nil : list_value.gsub(/,/, '').to_f)

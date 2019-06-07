@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_09_042450) do
+ActiveRecord::Schema.define(version: 2019_06_07_035801) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,7 +44,7 @@ ActiveRecord::Schema.define(version: 2019_05_09_042450) do
 
   create_table "djia", force: :cascade do |t|
     t.datetime "date"
-    t.float "opening_price"
+    t.float "open_price"
     t.float "high_price"
     t.float "low_price"
     t.float "close_price"
@@ -52,7 +52,7 @@ ActiveRecord::Schema.define(version: 2019_05_09_042450) do
 
   create_table "nikkei_averages", force: :cascade do |t|
     t.datetime "date"
-    t.float "opening_price"
+    t.float "open_price"
     t.float "high_price"
     t.float "low_price"
     t.float "close_price"
@@ -61,17 +61,17 @@ ActiveRecord::Schema.define(version: 2019_05_09_042450) do
   create_table "stock_prices", force: :cascade do |t|
     t.string "ticker_symbol"
     t.datetime "date"
-    t.integer "opening_price"
+    t.integer "open_price"
     t.integer "high_price"
     t.integer "low_price"
     t.integer "close_price"
-    t.integer "turnover"
-    t.integer "adjustment_value"
+    t.integer "volume"
+    t.integer "adjusted_close_price"
   end
 
   create_table "topixes", force: :cascade do |t|
     t.datetime "date"
-    t.float "opening_price"
+    t.float "open_price"
     t.float "high_price"
     t.float "low_price"
     t.float "close_price"

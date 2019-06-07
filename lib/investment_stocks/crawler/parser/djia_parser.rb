@@ -78,7 +78,7 @@ module InvestmentStocks::Crawler::Parser
 
         price = InvestmentStocks::Crawler::Model::Djia.new
         price.date = Time.local(date_parts[2].to_i + (date_parts[2].to_i > 89 ? 1900 : 2000), date_parts[0].to_i, date_parts[1].to_i)
-        price.opening_price = row[1].to_f
+        price.open_price = row[1].to_f
         price.high_price = row[2].to_f
         price.low_price = row[3].to_f
         price.close_price = row[4].to_f
