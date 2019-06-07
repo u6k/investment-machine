@@ -75,12 +75,12 @@ module InvestmentStocks::Crawler::Parser
         stock_price = InvestmentStocks::Crawler::Model::StockPrice.new
         stock_price.ticker_symbol = @company.ticker_symbol
         stock_price.date = Time.local(tr.at_xpath("td[1]").text[0..3], tr.at_xpath("td[1]").text[5..6], tr.at_xpath("td[1]").text[8..9])
-        stock_price.opening_price = tr.at_xpath("td[2]").text.to_i
+        stock_price.open_price = tr.at_xpath("td[2]").text.to_i
         stock_price.high_price = tr.at_xpath("td[3]").text.to_i
         stock_price.low_price = tr.at_xpath("td[4]").text.to_i
         stock_price.close_price = tr.at_xpath("td[5]").text.to_i
-        stock_price.turnover = tr.at_xpath("td[6]").text.to_i
-        stock_price.adjustment_value = tr.at_xpath("td[7]").text.to_i
+        stock_price.volume = tr.at_xpath("td[6]").text.to_i
+        stock_price.adjusted_close_price = tr.at_xpath("td[7]").text.to_i
 
         stock_price
       end
@@ -90,12 +90,12 @@ module InvestmentStocks::Crawler::Parser
         stock_price = InvestmentStocks::Crawler::Model::StockPrice.new
         stock_price.ticker_symbol = @company.ticker_symbol
         stock_price.date = Time.local(tr.at_xpath("td[1]").text[0..3], tr.at_xpath("td[1]").text[5..6], tr.at_xpath("td[1]").text[8..9])
-        stock_price.opening_price = tr.at_xpath("td[2]").text.to_i
+        stock_price.open_price = tr.at_xpath("td[2]").text.to_i
         stock_price.high_price = tr.at_xpath("td[3]").text.to_i
         stock_price.low_price = tr.at_xpath("td[4]").text.to_i
         stock_price.close_price = tr.at_xpath("td[5]").text.to_i
-        stock_price.turnover = tr.at_xpath("td[6]").text.to_i
-        stock_price.adjustment_value = tr.at_xpath("td[7]").text.to_i
+        stock_price.volume = tr.at_xpath("td[6]").text.to_i
+        stock_price.adjusted_close_price = tr.at_xpath("td[7]").text.to_i
 
         stock_price
       end
