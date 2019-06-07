@@ -67,7 +67,6 @@ ActiveRecord::Schema.define(version: 2019_06_07_035801) do
     t.integer "close_price"
     t.integer "volume"
     t.integer "adjusted_close_price"
-    t.index ["ticker_symbol"], name: "ticker_symbol_idx"
   end
 
   create_table "topixes", force: :cascade do |t|
