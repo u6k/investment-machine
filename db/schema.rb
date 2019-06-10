@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_06_07_035801) do
+ActiveRecord::Schema.define(version: 2019_06_10_144601) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 2019_06_07_035801) do
     t.string "ticker_symbol"
     t.string "name"
     t.string "market"
+    t.index ["ticker_symbol"], name: "index_companies_on_ticker_symbol"
   end
 
   create_table "crawline_caches", force: :cascade do |t|
@@ -48,6 +49,7 @@ ActiveRecord::Schema.define(version: 2019_06_07_035801) do
     t.float "high_price"
     t.float "low_price"
     t.float "close_price"
+    t.index ["date"], name: "index_djia_on_date"
   end
 
   create_table "nikkei_averages", force: :cascade do |t|
@@ -56,6 +58,7 @@ ActiveRecord::Schema.define(version: 2019_06_07_035801) do
     t.float "high_price"
     t.float "low_price"
     t.float "close_price"
+    t.index ["date"], name: "index_nikkei_averages_on_date"
   end
 
   create_table "stock_prices", force: :cascade do |t|
@@ -67,6 +70,8 @@ ActiveRecord::Schema.define(version: 2019_06_07_035801) do
     t.integer "close_price"
     t.integer "volume"
     t.integer "adjusted_close_price"
+    t.index ["date"], name: "index_stock_prices_on_date"
+    t.index ["ticker_symbol"], name: "index_stock_prices_on_ticker_symbol"
   end
 
   create_table "topixes", force: :cascade do |t|
@@ -75,6 +80,7 @@ ActiveRecord::Schema.define(version: 2019_06_07_035801) do
     t.float "high_price"
     t.float "low_price"
     t.float "close_price"
+    t.index ["date"], name: "index_topixes_on_date"
   end
 
   add_foreign_key "crawline_headers", "crawline_caches", column: "crawline_cache_id"
